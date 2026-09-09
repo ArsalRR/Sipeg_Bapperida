@@ -21,11 +21,7 @@
             </button>
         </div>
     </div>
-
-    <!-- Table Container -->
     <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-        
-        <!-- Table Controls (Search & Show Entries) -->
         <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between gap-4">
             <div class="flex items-center gap-2">
                 <span class="text-sm text-gray-500 dark:text-gray-400">Tampilkan</span>
@@ -44,8 +40,6 @@
                 <input type="text" x-model="search" placeholder="Cari data..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
             </div>
         </div>
-
-        <!-- The Table -->
         <div class="overflow-x-auto" id="printable-area">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -114,8 +108,6 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Pagination -->
         <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <span class="text-sm text-gray-500 dark:text-gray-400">
                 Menampilkan <span x-text="filteredUsers.length > 0 ? ((currentPage - 1) * perPage) + 1 : 0"></span> 
@@ -140,10 +132,8 @@
         </div>
     </div>
 
-    <!-- Modal Form -->
     <div x-show="modalOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <!-- Overlay -->
             <div x-show="modalOpen" @click="modalOpen = false" x-transition.opacity class="fixed inset-0 transition-opacity bg-slate-900/50 dark:bg-black/80 backdrop-blur-sm" aria-hidden="true"></div>
 
             <div x-show="modalOpen" x-transition class="relative inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-[#111111] shadow-xl rounded-2xl border border-gray-100 dark:border-gray-800">
@@ -190,11 +180,11 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hubungkan Pegawai (Opsional)</label>
                             <select name="pegawai_id" x-model="form.pegawai_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:outline-none">
                                 <option value="">-- Tidak Dihubungkan --</option>
-                                <template x-if="isEdit && currentPegawai">
-                                    <option :value="currentPegawai.id" x-text="currentPegawai.nama + ' (Saat Ini)'"></option>
+                                <template x-if="isEdit && currentPegawai && currentPegawai.id">
+                                    <option :value="currentPegawai.id" x-text="currentPegawai.nama + ' (NIP: ' + (currentPegawai.nip || 'Belum diisi') + ')'" selected></option>
                                 </template>
                                 @foreach($pegawais as $pegawai)
-                                    <option value="{{ $pegawai->id }}">{{ $pegawai->nama }} - {{ $pegawai->nip }}</option>
+                                    <option value="{{ $pegawai->id }}">{{ $pegawai->nama }} (NIP: {{ $pegawai->nip ?? 'Belum diisi' }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -212,8 +202,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Hidden Delete Form -->
     <form id="delete-form" method="POST" style="display: none;">
         @csrf
         @method('DELETE')

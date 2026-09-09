@@ -18,10 +18,33 @@ class Pegawai extends Model
         return $this->hasMany(HistoryPegawai::class)->orderBy('tanggal_berlaku', 'desc');
     }
 
+    public function me_dokumenFiles()
+    {
+        return $this->hasMany(DokumenFile::class);
+    }
+
+    public function keluargas()
+    {
+        return $this->hasMany(Keluarga::class);
+    }
+
+    public function dokumenFiles()
+    {
+        return $this->hasMany(DokumenFile::class);
+    }
+
+
     protected static function booted()
     {
         static::updated(function ($pegawai) {
             $trackedFields = [
+                'nama',
+                'nip',
+                'tempat_lahir',
+                'tanggal_lahir',
+                'jenis_kelamin',
+                'agama',
+                'alamat',
                 'gelar_depan',
                 'gelar_belakang',
                 'status_kepegawaian',
@@ -32,16 +55,23 @@ class Pegawai extends Model
 
             if ($pegawai->wasChanged($trackedFields)) {
                 HistoryPegawai::create([
-                    'pegawai_id' => $pegawai->id,
-                    'user_id' => auth()->id(),
-                    'gelar_depan' => $pegawai->getOriginal('gelar_depan'),
-                    'gelar_belakang' => $pegawai->getOriginal('gelar_belakang'),
+                    'pegawai_id'         => $pegawai->id,
+                    'user_id'            => auth()->id(),
+                    'nama'               => $pegawai->getOriginal('nama'),
+                    'nip'                => $pegawai->getOriginal('nip'),
+                    'tempat_lahir'       => $pegawai->getOriginal('tempat_lahir'),
+                    'tanggal_lahir'      => $pegawai->getOriginal('tanggal_lahir'),
+                    'jenis_kelamin'      => $pegawai->getOriginal('jenis_kelamin'),
+                    'agama'              => $pegawai->getOriginal('agama'),
+                    'alamat'             => $pegawai->getOriginal('alamat'),
+                    'gelar_depan'        => $pegawai->getOriginal('gelar_depan'),
+                    'gelar_belakang'     => $pegawai->getOriginal('gelar_belakang'),
                     'status_kepegawaian' => $pegawai->getOriginal('status_kepegawaian'),
-                    'golongan' => $pegawai->getOriginal('golongan'),
-                    'jabatan_id' => $pegawai->getOriginal('jabatan_id'),
-                    'status_pernikahan' => $pegawai->getOriginal('status_pernikahan'),
-                    // Use the original effective date for the history record
-                    'tanggal_berlaku' => $pegawai->getOriginal('tanggal_berlaku') ?? ($pegawai->getOriginal('updated_at') ?? $pegawai->getOriginal('created_at')),
+                    'golongan'           => $pegawai->getOriginal('golongan'),
+                    'jabatan_id'         => $pegawai->getOriginal('jabatan_id'),
+                    'status_pernikahan'  => $pegawai->getOriginal('status_pernikahan'),
+                    // Simpan tanggal_berlaku lama sebagai penanda versi
+                    'tanggal_berlaku'    => $pegawai->getOriginal('tanggal_berlaku') ?? ($pegawai->getOriginal('updated_at') ?? $pegawai->getOriginal('created_at')),
                 ]);
             }
         });

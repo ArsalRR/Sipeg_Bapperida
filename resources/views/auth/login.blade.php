@@ -4,8 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - SIMPEG ASN</title>
-    
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,17 +15,12 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
-
-    <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased selection:bg-blue-600 selection:text-white transition-colors duration-300">
 
     <div class="min-h-screen w-full flex">
-        
-        <!-- Panel Kiri (Branding) -->
         <div class="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 to-slate-900 flex-col justify-between p-12 text-white relative overflow-hidden">
-            <!-- Decorative element -->
             <div class="absolute -top-24 -left-24 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl"></div>
             <div class="absolute bottom-0 right-0 w-full h-1/2 bg-gradient-to-t from-slate-900/50 to-transparent"></div>
 
@@ -49,13 +42,8 @@
                 <p class="text-sm text-blue-200/60">&copy; 2026 SIMPEG ASN. Hak Cipta Dilindungi.</p>
             </div>
         </div>
-
-        <!-- Panel Kanan (Form Login) -->
         <div class="w-full lg:w-1/2 bg-white dark:bg-slate-950 relative flex flex-col transition-colors duration-300">
-            
-            <!-- Top Right Actions -->
             <div class="absolute top-6 right-6 z-10 flex items-center gap-3">
-                <!-- SSO Info Toggle -->
                 <button 
                     type="button" 
                     onclick="openSsoModal()"
@@ -66,12 +54,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </button>
-                
-                <!-- Theme Toggle -->
                 <x-theme-toggle />
             </div>
 
-            <!-- Mobile Logo -->
             <div class="lg:hidden absolute top-6 left-6 flex items-center gap-2">
                 <div class="w-8 h-8 bg-blue-700 dark:bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-lg shadow-sm">
                     A
@@ -86,8 +71,6 @@
 
                     <form method="POST" action="{{ route('login') }}" class="w-full max-w-sm mt-8">
                         @csrf
-                        
-                        <!-- Login (Email/Username) -->
                         <div class="mb-6 relative">
                             <label for="login" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Email atau Username</label>
                             <input id="login" name="login" type="text" autocomplete="username" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm" value="{{ old('login') }}">
@@ -95,8 +78,6 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <!-- Password -->
                         <div class="mb-6 relative">
                             <label for="password" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Kata Sandi</label>
                             <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm">
@@ -104,8 +85,6 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <!-- Math Captcha -->
                         <div class="mb-8 relative">
                             <label for="captcha" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Keamanan: {{ $captchaQuestion }}</label>
                             <input id="captcha" name="captcha" type="number" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm">
@@ -113,8 +92,6 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <!-- Buttons -->
                         <div class="pt-2">
                             <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-md shadow-sm text-sm font-semibold text-white bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 dark:focus:ring-blue-600 transition-all transform hover:-translate-y-0.5">
                                 Masuk
@@ -170,7 +147,6 @@
             @endphp
 
             @if (count($ssoSites) > 0)
-                <!-- Connected Sites Section -->
                 <div class="px-6 pb-6">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
@@ -227,8 +203,6 @@
                     </div>
                 </div>
             @endif
-
-            <!-- Footer -->
             <div class="px-6 py-4 bg-gray-50/50 dark:bg-slate-900/30 border-t border-gray-100 dark:border-gray-800">
                 <button
                     type="button"

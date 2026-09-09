@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6 pb-20">
-    <!-- Header -->
     <div class="flex justify-between items-center mb-8">
         <div class="flex items-center gap-3">
             <div class="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
@@ -13,8 +12,6 @@
             <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Pengaturan Profil Mandiri</h2>
         </div>
     </div>
-
-    <!-- Global Errors Alert -->
     @if ($errors->any())
     <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-lg shadow-sm dark:bg-red-900/20 dark:border-red-500">
         <div class="flex">
@@ -42,10 +39,7 @@
         @method('PUT')
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- Left Column: Media & Security -->
             <div class="lg:col-span-1 space-y-8">
-                <!-- Profile Picture -->
                 <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 text-center">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Foto Profil</h3>
                     <div class="relative w-48 h-48 mx-auto mb-6 group">
@@ -60,8 +54,6 @@
                     @error('foto') <p class="text-red-500 text-[10px] font-semibold mt-1">{{ $message }}</p> @enderror
                     <p class="text-xs text-gray-500 mb-4 px-4">Klik pada foto untuk mengganti. Format JPEG/PNG, Max 2MB.</p>
                 </div>
-
-                <!-- Security Management -->
                 <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Keamanan Akun</h3>
                     
@@ -92,10 +84,7 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Right Column: Profile Information -->
             <div class="lg:col-span-2 space-y-8">
-                <!-- Account Info -->
                 <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">Informasi Akun</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -111,8 +100,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Personal Detail -->
                 <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">Identitas Diri</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -174,8 +161,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Employment Detail -->
                 <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">Status Kepegawaian</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -228,8 +213,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Mobile Save Button -->
                 <div class="lg:hidden">
                     <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-600/20 transition-all active:scale-95">
                         Simpan Perubahan

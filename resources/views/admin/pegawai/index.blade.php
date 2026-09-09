@@ -23,10 +23,9 @@
         </div>
     </div>
 
-    <!-- Table Container -->
     <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
 
-        <!-- Table Controls -->
+
         <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between gap-4">
             <div class="flex items-center gap-2">
                 <span class="text-sm text-gray-500 dark:text-gray-400">Tampilkan</span>
@@ -46,8 +45,6 @@
                 <input type="text" x-model="search" placeholder="Cari NIP atau Nama..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
             </div>
         </div>
-
-        <!-- The Table -->
         <div class="overflow-x-auto" id="printable-area">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -108,7 +105,7 @@
             </table>
         </div>
 
-        <!-- Pagination -->
+
         <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <span class="text-sm text-gray-500 dark:text-gray-400">
                 Menampilkan <span x-text="filteredPegawai.length > 0 ? ((currentPage - 1) * perPage) + 1 : 0"></span>
@@ -133,9 +130,7 @@
         </div>
     </div>
 
-    </div> <!-- End of max-w-7xl -->
-
-    <!-- ===================== MODAL FORM (TELEPORTED KE BODY, BEBAS DARI STACKING CONTEXT LAYOUT) ===================== -->
+    </div>
     <template x-teleport="body">
     <div x-show="modalOpen"
          class="flex items-center justify-center p-6 sm:p-10"
@@ -143,20 +138,18 @@
          style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999;"
          @keydown.escape.window="modalOpen = false">
 
-        <!-- Overlay -->
         <div x-show="modalOpen"
              x-transition.opacity
              @click="modalOpen = false"
              class="absolute inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm"></div>
 
-        <!-- Modal Content: flex-col + max-h berbasis calc() supaya margin ke tepi layar lebih lega dan konsisten -->
         <div x-show="modalOpen"
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
              class="relative w-full max-w-4xl max-h-[calc(100vh-3rem)] sm:max-h-[calc(100vh-5rem)] flex flex-col bg-white dark:bg-[#111111] shadow-2xl rounded-2xl border border-gray-100 dark:border-gray-800 transition-all transform z-10 overflow-hidden">
 
-            <!-- HEADER (sticky, tinggi tetap, judul+NIP disatukan biar hemat ruang vertikal) -->
+
             <div class="flex justify-between items-center gap-4 px-6 py-3.5 border-b border-gray-100 dark:border-gray-800 shrink-0">
                 <div class="min-w-0 flex items-baseline gap-2">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white truncate shrink-0" x-text="isEdit ? 'Detail & Edit Data Pegawai' : 'Tambah Pegawai Baru'"></h3>
@@ -167,7 +160,6 @@
                 </button>
             </div>
 
-            <!-- TABS (hanya tampil saat edit, padding dirampingkan) -->
             <div class="px-6 pt-3 shrink-0" x-show="isEdit" x-cloak>
                 <div class="inline-flex bg-gray-100 dark:bg-slate-900 rounded-lg p-1 gap-1">
                     <button @click="activeTab = 'data'" type="button"
@@ -184,10 +176,8 @@
                 </div>
             </div>
 
-            <!-- BODY (scrollable, padding konsisten px-6, jarak atas disesuaikan tergantung ada tab / tidak) -->
             <div class="flex-1 overflow-y-auto px-6 pb-6" :class="isEdit ? 'pt-4' : 'pt-5'">
 
-                <!-- TAB: DATA -->
                 <div x-show="activeTab === 'data'">
                     <form :action="formAction" method="POST" enctype="multipart/form-data" id="pegawai-form" @submit="submitting = true">
                     @csrf
@@ -195,7 +185,6 @@
                         <input type="hidden" name="_method" value="PUT">
                     </template>
 
-                    <!-- FOTO PROFIL -->
                     <div class="flex items-center gap-4 pb-5 mb-5 border-b border-gray-100 dark:border-gray-800">
                         <div class="relative shrink-0 w-20 h-20">
                             <div class="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden">
@@ -216,7 +205,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                        <!-- Identitas Utama -->
                         <div class="space-y-4">
                             <h4 class="flex items-center gap-2 font-semibold text-blue-600 dark:text-blue-400 text-sm mb-1">
                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -275,8 +263,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Data Kepegawaian -->
                         <div class="space-y-4">
                             <h4 class="flex items-center gap-2 font-semibold text-blue-600 dark:text-blue-400 text-sm mb-1">
                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2M5 21h2m10 0h-6"></path></svg>
@@ -356,7 +342,6 @@
                             </div>
                         </div>
 
-                        <!-- Alamat -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Alamat Lengkap <span class="text-red-500">*</span></label>
                             <textarea name="alamat" x-model="form.alamat" required rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none resize-none"></textarea>
@@ -365,7 +350,6 @@
                     </form>
                 </div>
 
-                <!-- TAB: HISTORY -->
                 <div x-show="activeTab === 'history'" x-cloak>
                     <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-800">
                         <table class="w-full text-left border-collapse">
@@ -407,8 +391,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- FOOTER (sticky, hanya muncul saat tab data) -->
             <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-800 shrink-0" x-show="activeTab === 'data'">
                 <button type="button" @click="modalOpen = false" class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-[#111111] dark:text-gray-300 dark:border-gray-700 dark:hover:bg-slate-800 transition-colors">
                     Batal
@@ -421,9 +403,6 @@
         </div>
     </div>
     </template>
-    <!-- ===================== END MODAL ===================== -->
-
-    <!-- Hidden Delete Form -->
     <form id="delete-form" method="POST" style="display: none;">
         @csrf
         @method('DELETE')

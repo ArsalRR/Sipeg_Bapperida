@@ -4,8 +4,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Daftar Akun - SIMPEG ASN</title>
-    
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -17,15 +15,11 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
-
-    <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased selection:bg-blue-600 selection:text-white transition-colors duration-300">
 
     <div class="min-h-screen w-full flex">
-        
-        <!-- Panel Kiri (Branding) -->
         <div class="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-700 to-slate-900 flex-col justify-between p-12 text-white relative overflow-hidden">
             <div class="absolute -top-24 -left-24 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl"></div>
             <div class="absolute bottom-0 right-0 w-full h-1/2 bg-gradient-to-t from-slate-900/50 to-transparent"></div>
@@ -48,8 +42,6 @@
                 <p class="text-sm text-blue-200/60">&copy; 2026 SIMPEG ASN. Hak Cipta Dilindungi.</p>
             </div>
         </div>
-
-        <!-- Panel Kanan (Form Register) -->
         <div class="w-full lg:w-1/2 bg-white dark:bg-slate-950 relative flex flex-col transition-colors duration-300">
             
             <div class="absolute top-6 right-6 z-10">
@@ -70,8 +62,6 @@
 
                     <form method="POST" action="{{ route('register') }}" class="w-full mt-8 space-y-5">
                         @csrf
-                        
-                        <!-- Nama Lengkap -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Nama Lengkap</label>
                             <input id="name" name="name" type="text" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm" value="{{ old('name') }}">
@@ -79,8 +69,6 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <!-- Username -->
                         <div>
                             <label for="username" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Username</label>
                             <input id="username" name="username" type="text" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm" value="{{ old('username') }}">
@@ -88,8 +76,6 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <!-- Email -->
                         <div>
                             <label for="email" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Email</label>
                             <input id="email" name="email" type="email" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm" value="{{ old('email') }}">
@@ -97,8 +83,6 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <!-- Password -->
                         <div>
                             <label for="password" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Kata Sandi</label>
                             <input id="password" name="password" type="password" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm">
@@ -106,8 +90,6 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <!-- Confirm Password -->
                         <div>
                             <label for="password_confirmation" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Konfirmasi Kata Sandi</label>
                             <input id="password_confirmation" name="password_confirmation" type="password" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm">

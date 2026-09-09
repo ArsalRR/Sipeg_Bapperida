@@ -11,11 +11,8 @@
             Tambah Jabatan
         </button>
     </div>
-
-    <!-- Table Container -->
     <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-        
-        <!-- Table Controls -->
+
         <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center gap-4">
             <div class="relative w-full sm:w-64">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -53,8 +50,6 @@
             </table>
         </div>
     </div>
-
-    <!-- Modal Form -->
     <div x-show="modalOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
             <div x-show="modalOpen" @click="modalOpen = false" x-transition.opacity class="fixed inset-0 transition-opacity bg-slate-900/50 dark:bg-black/80 backdrop-blur-sm" aria-hidden="true"></div>
@@ -101,7 +96,6 @@
         </div>
     </div>
 
-    <!-- Hidden Delete Form -->
     <form id="delete-form" method="POST" style="display: none;">
         @csrf
         @method('DELETE')

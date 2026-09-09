@@ -70,18 +70,24 @@ class UserController extends Controller
             }
             $user->save();
 
-            // Reset relasi pegawai lama jika diubah
-            if ($user->pegawai && $user->pegawai->id != ($validated['pegawai_id'] ?? null)) {
-                $user->pegawai->update(['user_id' => null]);
-            }
+            $newPegawaiId = $validated['pegawai_id'] ?? null;
+            $oldPegawai = $user->pegawai;
 
-            // Set relasi pegawai baru
-            if (!empty($validated['pegawai_id'])) {
-                Pegawai::where('id', $validated['pegawai_id'])->update(['user_id' => $user->id]);
+            // Jika dihubungkan ke Pegawai baru yang terdaftar di master pegawai
+            if ($newPegawaiId && (!$oldPegawai || $oldPegawai->id != $newPegawaiId)) {
+                // Jika user sebelumnya punya record pegawai dummy buatan register (misal NIP nya kosong), hapus record dummynya
+                if ($oldPegawai && empty($oldPegawai->nip)) {
+                    $oldPegawai->forceDelete();
+                } elseif ($oldPegawai) {
+                    $oldPegawai->update(['user_id' => null]);
+                }
+
+                // Hubungkan user ke pegawai pilihan admin
+                Pegawai::where('id', $newPegawaiId)->update(['user_id' => $user->id]);
             }
         });
 
-        return redirect()->route('admin.users.index')->with('success', 'Perubahan disimpan!');
+        return redirect()->route('admin.users.index')->with('success', 'Perubahan data user berhasil disimpan!');
     }
 
     public function destroy(User $user): RedirectResponse

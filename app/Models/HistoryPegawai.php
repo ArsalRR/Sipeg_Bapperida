@@ -9,6 +9,13 @@ class HistoryPegawai extends Model
     protected $fillable = [
         'pegawai_id',
         'user_id',
+        'nama',
+        'nip',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'jenis_kelamin',
+        'agama',
+        'alamat',
         'gelar_depan',
         'gelar_belakang',
         'status_kepegawaian',
@@ -20,6 +27,7 @@ class HistoryPegawai extends Model
 
     protected $casts = [
         'tanggal_berlaku' => 'date',
+        'tanggal_lahir'   => 'date',
     ];
 
     public function pegawai()

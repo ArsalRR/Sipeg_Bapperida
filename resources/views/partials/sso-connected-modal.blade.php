@@ -11,7 +11,6 @@
             id="ssoConnectedModalBox"
             class="relative w-full max-w-lg bg-white dark:bg-[#111111] rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden"
         >
-            <!-- Header -->
             <div class="px-6 pt-8 pb-4">
                 <div class="flex items-start justify-between">
                     <div class="space-y-2">
@@ -109,8 +108,6 @@
                     </div>
                 </div>
             @endif
-
-            <!-- Footer -->
             <div class="px-6 py-4 bg-gray-50/50 dark:bg-slate-900/30 border-t border-gray-100 dark:border-gray-800">
                 <button
                     type="button"
