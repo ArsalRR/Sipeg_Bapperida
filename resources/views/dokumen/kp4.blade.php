@@ -209,7 +209,7 @@
                 Keterangan ini saya buat dengan sesungguhnya dan apabila keterangan ini ternyata <strong>tidak benar (palsu)</strong>, saya bersedia dituntut dimuka pengadilan berdasarkan Undang-undang yang berlaku, dan bersedia mengembalikan semua penghasilan yang telah saya terima yang seharusnya bukan menjadi hak saya.
             </div>
 
-            <table class="w-full border-collapse mt-4 text-[11pt]">
+            <table class="w-full border-collapse mt-10 text-[11pt] signature-block">
                 <tr>
                     <td class="w-1/2 text-center align-top">
                         Mengetahui:<br>
@@ -236,32 +236,57 @@
 <script>
 function triggerPrint() {
     const printSection = document.getElementById('kp4-document-sheet').cloneNode(true);
-    
+
     const style = document.createElement('style');
     style.innerHTML = `
         @media print {
+            @page {
+                size: A4;
+                margin: 15mm; /* margin ini otomatis berulang di SETIAP halaman, termasuk halaman 2, 3, dst */
+            }
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
             #print-area {
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 210mm;
-                padding: 15mm;
+                width: 100%;
+            }
+            /* Karena margin sudah diatur lewat @page, padding manual di sheet dimatikan saat print
+               supaya tidak dobel margin */
+            #print-area #kp4-document-sheet {
+                width: 100% !important;
+                min-height: 0 !important;
+                padding: 0 !important;
                 box-shadow: none !important;
+            }
+            /* Cegah SATU BARIS tabel terpotong di tengah saat pindah halaman.
+               Sengaja tidak diterapkan ke <table> itu sendiri, supaya tabel yang
+               panjang (misal data keluarga) tetap boleh mengalir ke halaman
+               berikutnya secara wajar tanpa menyisakan ruang kosong besar. */
+            tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            thead {
+                display: table-header-group; /* header tabel ikut terulang di tiap halaman */
+            }
+            .signature-block {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
     `;
-    
+
     const printArea = document.createElement('div');
     printArea.id = 'print-area';
     printArea.appendChild(printSection);
-    
+
     document.body.appendChild(printArea);
     document.head.appendChild(style);
-    
+
     window.print();
-    
+
     document.body.removeChild(printArea);
     document.head.removeChild(style);
 }

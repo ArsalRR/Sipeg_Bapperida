@@ -37,7 +37,7 @@ class DokumenController extends Controller
 
         // Tanggal Patokan Resmi Cetak KP4: 03 Januari [Tahun Pilihan]
         $dateCutoff = sprintf('%d-01-03', $selectedYear);
-        $tanggalSurat = sprintf('03 Januari %d', $selectedYear);
+        $tanggalSurat = sprintf('01 Januari %d', $selectedYear);
 
         $activeHistory = null;
 

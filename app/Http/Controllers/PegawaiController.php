@@ -51,7 +51,7 @@ class PegawaiController extends Controller
         }
 
         if ($request->hasFile('foto')) {
-            $validated['foto'] = $request->file('foto')->store('pegawai/foto', 'public');
+            $validated['foto'] = $request->file('foto')->storage('pegawai/foto', 'public');
         }
 
         Pegawai::create($validated);
