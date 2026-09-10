@@ -62,13 +62,7 @@
 
                     <form method="POST" action="{{ route('register') }}" class="w-full mt-8 space-y-5">
                         @csrf
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Nama Lengkap</label>
-                            <input id="name" name="name" type="text" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm" value="{{ old('name') }}">
-                            @error('name')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+
                         <div>
                             <label for="username" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Username</label>
                             <input id="username" name="username" type="text" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm" value="{{ old('username') }}">

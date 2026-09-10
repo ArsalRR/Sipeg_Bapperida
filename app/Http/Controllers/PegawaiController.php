@@ -18,7 +18,7 @@ class PegawaiController extends Controller
     public function index(): View
     {
         $pegawais = Pegawai::with(['jabatan', 'user', 'histories.jabatan', 'histories.user'])->latest()->get();
-        $jabatans = Jabatan::all();
+        $jabatans = Jabatan::withCount('pegawais')->get();
         $users = User::whereDoesntHave('pegawai')->get();
         
         return view('admin.pegawai.index', compact('pegawais', 'jabatans', 'users'));
@@ -54,6 +54,14 @@ class PegawaiController extends Controller
             $validated['foto'] = $request->file('foto')->storage('pegawai/foto', 'public');
         }
 
+        // Cek kapasitas jabatan
+        $jabatan = Jabatan::find($validated['jabatan_id']);
+        if ($jabatan && $jabatan->jumlah !== null) {
+            if ($jabatan->pegawais()->count() >= $jabatan->jumlah) {
+                return back()->withInput()->with('error', "Jabatan {$jabatan->nama_jabatan} sudah terisi penuh ({$jabatan->jumlah} orang).");
+            }
+        }
+
         Pegawai::create($validated);
 
         return redirect()->route('admin.pegawais.index')->with('success', 'Pegawai berhasil ditambahkan!');
@@ -86,6 +94,16 @@ class PegawaiController extends Controller
                 Storage::disk('public')->delete($pegawai->foto);
             }
             $validated['foto'] = $request->file('foto')->store('pegawai/foto', 'public');
+        }
+
+        // Cek kapasitas jabatan (kecualikan pegawai ini sendiri)
+        if ($validated['jabatan_id'] != $pegawai->jabatan_id) {
+            $jabatan = Jabatan::find($validated['jabatan_id']);
+            if ($jabatan && $jabatan->jumlah !== null) {
+                if ($jabatan->pegawais()->count() >= $jabatan->jumlah) {
+                    return back()->withInput()->with('error', "Jabatan {$jabatan->nama_jabatan} sudah terisi penuh ({$jabatan->jumlah} orang).");
+                }
+            }
         }
 
         $pegawai->update($validated);

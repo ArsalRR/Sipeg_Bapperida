@@ -60,29 +60,24 @@ class UserController extends Controller
             'pegawai_id' => ['nullable', 'exists:pegawais,id'],
         ]);
 
-        DB::transaction(function () use ($validated, $user) {
+        DB::transaction(function () use ($request, $validated, $user) {
             $user->username = $validated['username'];
             $user->email = $validated['email'];
             $user->role = $validated['role'];
 
-            if (!empty($validated['password'])) {
+            if ($request->filled('password')) {
                 $user->password = Hash::make($validated['password']);
             }
             $user->save();
 
-            $newPegawaiId = $validated['pegawai_id'] ?? null;
+            $newPegawaiId = !empty($validated['pegawai_id']) ? (int)$validated['pegawai_id'] : null;
             $oldPegawai = $user->pegawai;
 
-            // Jika dihubungkan ke Pegawai baru yang terdaftar di master pegawai
-            if ($newPegawaiId && (!$oldPegawai || $oldPegawai->id != $newPegawaiId)) {
-                // Jika user sebelumnya punya record pegawai dummy buatan register (misal NIP nya kosong), hapus record dummynya
-                if ($oldPegawai && empty($oldPegawai->nip)) {
-                    $oldPegawai->forceDelete();
-                } elseif ($oldPegawai) {
-                    $oldPegawai->update(['user_id' => null]);
-                }
+            if ($oldPegawai && $oldPegawai->id !== $newPegawaiId) {
+                $oldPegawai->update(['user_id' => null]);
+            }
 
-                // Hubungkan user ke pegawai pilihan admin
+            if ($newPegawaiId && (!$oldPegawai || $oldPegawai->id !== $newPegawaiId)) {
                 Pegawai::where('id', $newPegawaiId)->update(['user_id' => $user->id]);
             }
         });
@@ -98,12 +93,12 @@ class UserController extends Controller
 
         DB::transaction(function () use ($user) {
             if ($user->pegawai) {
-                $user->pegawai->delete(); 
+                $user->pegawai->update(['user_id' => null]);
             }
             $user->delete();
         });
 
-        return redirect()->route('admin.users.index')->with('success', 'User dan Data Pegawai telah dihapus.');
+        return redirect()->route('admin.users.index')->with('success', 'User telah dihapus.');
     }
 
     public function activate(User $user): RedirectResponse

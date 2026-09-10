@@ -84,25 +84,17 @@ class AuthController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users,username', 'regex:/^\S+$/'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'name' => ['required', 'string', 'max:255'],
         ], [
             'username.regex' => 'Username tidak boleh mengandung spasi.'
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $user = User::create([
-                'username' => $validated['username'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'role' => 'user',
-                'is_active' => false,
-            ]);
-
-            Pegawai::create([
-                'user_id' => $user->id,
-                'nama' => $validated['name'],
-            ]);
-        });
+        User::create([
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => 'user',
+            'is_active' => false,
+        ]);
 
         return redirect()->route('login')->with('success', 'Pendaftaran berhasil! Akun Anda menunggu persetujuan superadmin. Silakan hubungi admin untuk aktivasi.');
     }

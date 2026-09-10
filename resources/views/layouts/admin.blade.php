@@ -100,12 +100,12 @@
                 <div class="flex items-center gap-3 pl-2 sm:pl-4 border-l border-gray-200 dark:border-gray-800 shrink-0">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight">
-                            {{ auth()->user()->pegawai->nama_lengkap ?? auth()->user()->username }}
+                            {{ auth()->user()->pegawai?->nama_lengkap ?? auth()->user()->username }}
                         </p>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 capitalize">{{ auth()->user()->role ?? 'Admin' }}</p>
                     </div>
                     <div class="w-10 h-10 rounded-full bg-slate-900 dark:bg-gray-800 flex items-center justify-center text-white font-bold shadow-sm border border-gray-200 dark:border-gray-700 shrink-0">
-                        {{ substr(auth()->user()->pegawai->nama ?? auth()->user()->username, 0, 1) }}
+                        {{ substr(auth()->user()->pegawai?->nama ?? auth()->user()->username, 0, 1) }}
                     </div>
 
                     <form method="POST" action="{{ route('logout') }}" class="ml-1 shrink-0">

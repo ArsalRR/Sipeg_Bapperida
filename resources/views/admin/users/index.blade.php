@@ -163,7 +163,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                            <input type="password" name="password" :required="!isEdit" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                            <input type="password" name="password" x-model="form.password" autocomplete="new-password" :required="!isEdit" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:outline-none">
                             <p x-show="isEdit" class="text-xs text-gray-500 mt-1">Kosongkan jika tidak ingin mengubah password.</p>
                         </div>
 
@@ -225,6 +225,7 @@ document.addEventListener('alpine:init', () => {
         form: {
             username: '',
             email: '',
+            password: '',
             role: 'user',
             pegawai_id: ''
         },
@@ -342,7 +343,7 @@ document.addEventListener('alpine:init', () => {
         openCreateModal() {
             this.isEdit = false;
             this.formAction = '{{ route("admin.users.store") }}';
-            this.form = { username: '', email: '', role: 'user', pegawai_id: '' };
+            this.form = { username: '', email: '', password: '', role: 'user', pegawai_id: '' };
             this.currentPegawai = null;
             this.modalOpen = true;
         },
@@ -352,6 +353,7 @@ document.addEventListener('alpine:init', () => {
             this.form = { 
                 username: user.username, 
                 email: user.email, 
+                password: '',
                 role: user.role, 
                 pegawai_id: pegawai ? pegawai.id : '' 
             };
@@ -361,7 +363,7 @@ document.addEventListener('alpine:init', () => {
         confirmDelete(url) {
             Swal.fire({
                 title: 'Apakah Anda yakin?',
-                text: "Data Pegawai terkait juga akan ikut dihapus permanen!",
+                text: "Akun user ini akan dihapus.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',

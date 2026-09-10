@@ -15,6 +15,7 @@ class Jabatan extends Model
     protected $fillable = [
         'nama_jabatan',
         'jenis_jabatan',
+        'jumlah',
     ];
 
     public function pegawais(): HasMany

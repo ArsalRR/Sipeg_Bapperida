@@ -26,7 +26,7 @@
                     Cetak Dokumen Form KP4 Pegawai:
                 </label>
                 <div class="text-sm font-bold text-slate-900 dark:text-white">
-                    {{ auth()->user()->pegawai->nama_lengkap ?? auth()->user()->username }}
+                    {{ auth()->user()->pegawai?->nama_lengkap ?? auth()->user()->username }}
                 </div>
             </div>
             @endif

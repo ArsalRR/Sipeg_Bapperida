@@ -14,7 +14,7 @@ class JabatanController extends Controller
 {
     public function index(): View
     {
-        $jabatans = Jabatan::latest()->get();
+        $jabatans = Jabatan::withCount('pegawais')->latest()->get();
         return view('admin.jabatan.index', compact('jabatans'));
     }
 
@@ -23,7 +23,12 @@ class JabatanController extends Controller
         $validated = $request->validate([
             'nama_jabatan' => ['required', 'string', 'max:255'],
             'jenis_jabatan' => ['required', Rule::in(['Struktural', 'Fungsional', 'Pelaksana'])],
+            'jumlah' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        if (empty($validated['jumlah'])) {
+            $validated['jumlah'] = null;
+        }
 
         Jabatan::create($validated);
 
@@ -35,7 +40,13 @@ class JabatanController extends Controller
         $validated = $request->validate([
             'nama_jabatan' => ['required', 'string', 'max:255'],
             'jenis_jabatan' => ['required', Rule::in(['Struktural', 'Fungsional', 'Pelaksana'])],
+            'jumlah' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        // Jika jumlah dikosongkan, set null
+        if (empty($validated['jumlah'])) {
+            $validated['jumlah'] = null;
+        }
 
         $jabatan->update($validated);
 

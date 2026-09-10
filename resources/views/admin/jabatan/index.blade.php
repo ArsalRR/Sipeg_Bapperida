@@ -28,6 +28,8 @@
                     <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
                         <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Nama Jabatan</th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Jenis Jabatan</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 text-center">Jumlah Maks</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 text-center">Terisi</th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -36,6 +38,10 @@
                         <tr class="hover:bg-gray-50/50 dark:hover:bg-[#18181b] transition-colors">
                             <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white" x-text="j.nama_jabatan"></td>
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" x-text="j.jenis_jabatan"></td>
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 text-center" x-text="j.jumlah !== null ? j.jumlah : '∞'"></td>
+                            <td class="px-6 py-4 text-sm text-center">
+                                <span :class="j.jumlah !== null && j.pegawais_count >= j.jumlah ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" x-text="j.pegawais_count + (j.jumlah !== null ? '/' + j.jumlah : '')"></span>
+                            </td>
                             <td class="px-6 py-4 text-right space-x-2">
                                 <button @click="openEditModal(j)" class="text-blue-600 hover:text-blue-800 dark:text-blue-500 dark:hover:text-blue-400 p-1">
                                     Edit
@@ -81,6 +87,11 @@
                                 <option value="Pelaksana">Pelaksana</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah Maksimum Pegawai</label>
+                            <input type="number" name="jumlah" x-model="form.jumlah" min="1" placeholder="Kosongkan jika tidak dibatasi" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Kosongkan bila tidak ada batas maksimal.</p>
+                        </div>
                     </div>
 
                     <div class="mt-6 flex justify-end gap-3">
@@ -112,7 +123,8 @@ document.addEventListener('alpine:init', () => {
         formAction: '',
         form: {
             nama_jabatan: '',
-            jenis_jabatan: 'Struktural'
+            jenis_jabatan: 'Struktural',
+            jumlah: ''
         },
 
         get filteredJabatan() {
@@ -124,13 +136,13 @@ document.addEventListener('alpine:init', () => {
         openCreateModal() {
             this.isEdit = false;
             this.formAction = '{{ route("admin.jabatans.store") }}';
-            this.form = { nama_jabatan: '', jenis_jabatan: 'Struktural' };
+            this.form = { nama_jabatan: '', jenis_jabatan: 'Struktural', jumlah: '' };
             this.modalOpen = true;
         },
         openEditModal(j) {
             this.isEdit = true;
             this.formAction = `/admin/jabatans/${j.id}`;
-            this.form = { nama_jabatan: j.nama_jabatan, jenis_jabatan: j.jenis_jabatan };
+            this.form = { nama_jabatan: j.nama_jabatan, jenis_jabatan: j.jenis_jabatan, jumlah: j.jumlah || '' };
             this.modalOpen = true;
         },
         confirmDelete(url) {

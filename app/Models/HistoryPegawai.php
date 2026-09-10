@@ -11,6 +11,7 @@ class HistoryPegawai extends Model
         'user_id',
         'nama',
         'nip',
+        'nik',
         'tempat_lahir',
         'tanggal_lahir',
         'jenis_kelamin',

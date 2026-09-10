@@ -285,14 +285,14 @@
                                     Golongan
                                     <span x-show="form.status_kepegawaian === 'Non ASN'" class="text-gray-400 font-normal">(tidak berlaku)</span>
                                 </label>
-                                <select x-show="['PNS','CPNS'].includes(form.status_kepegawaian)" name="golongan" x-model="form.golongan" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                <select x-show="['PNS','CPNS'].includes(form.status_kepegawaian)" :disabled="!['PNS','CPNS'].includes(form.status_kepegawaian)" name="golongan" x-model="form.golongan" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
                                     <option value="">-- Pilih Golongan --</option>
                                     <option value="I/a">I/a</option><option value="I/b">I/b</option><option value="I/c">I/c</option><option value="I/d">I/d</option>
                                     <option value="II/a">II/a</option><option value="II/b">II/b</option><option value="II/c">II/c</option><option value="II/d">II/d</option>
                                     <option value="III/a">III/a</option><option value="III/b">III/b</option><option value="III/c">III/c</option><option value="III/d">III/d</option>
                                     <option value="IV/a">IV/a</option><option value="IV/b">IV/b</option><option value="IV/c">IV/c</option><option value="IV/d">IV/d</option><option value="IV/e">IV/e</option>
                                 </select>
-                                <select x-show="['PPPK','PPPK Paruh Waktu'].includes(form.status_kepegawaian)" name="golongan" x-model="form.golongan" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                <select x-show="['PPPK','PPPK Paruh Waktu'].includes(form.status_kepegawaian)" :disabled="!['PPPK','PPPK Paruh Waktu'].includes(form.status_kepegawaian)" name="golongan" x-model="form.golongan" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
                                     <option value="">-- Pilih Golongan --</option>
                                     <template x-for="g in ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII']" :key="g">
                                         <option :value="g" x-text="g"></option>
@@ -301,32 +301,52 @@
                                 <input x-show="form.status_kepegawaian === 'Non ASN'" type="text" disabled value="-" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-400">
                             </div>
 
-                            <div>
+                            <div x-data="{ jabatanOpen: false }" class="relative">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Jabatan <span class="text-red-500">*</span></label>
-                                <select name="jabatan_id" x-model="form.jabatan_id" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
-                                    <option value="">-- Pilih Jabatan --</option>
-                                    @foreach($jabatans as $jab)
-                                        <option value="{{ $jab->id }}">{{ $jab->nama_jabatan }} ({{ $jab->jenis_jabatan }})</option>
-                                    @endforeach
+                                <input type="hidden" name="jabatan_id" x-model="form.jabatan_id" required>
+                                <button type="button" @click="jabatanOpen = !jabatanOpen" @click.outside="jabatanOpen = false"
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-left flex items-center justify-between">
+                                    <span x-text="form.jabatan_id ? getJabatanNama(form.jabatan_id) : '-- Pilih Jabatan --'" :class="!form.jabatan_id ? 'text-gray-400' : ''"></span>
+                                    <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                <div x-show="jabatanOpen" x-transition x-cloak
+                                    class="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
+                                    <template x-for="jab in allJabatans" :key="jab.id">
+                                        <button type="button"
+                                            @click="
+                                                if (jab.jumlah !== null && jab.pegawais_count >= jab.jumlah && form.jabatan_id != jab.id) {
+                                                    Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Jabatan Penuh!',
+                                                        text: 'Jabatan ' + jab.nama_jabatan + ' sudah terisi penuh (' + jab.pegawais_count + '/' + jab.jumlah + ')',
+                                                        confirmButtonColor: '#3085d6'
+                                                    });
+                                                } else {
+                                                    form.jabatan_id = jab.id;
+                                                    jabatanOpen = false;
+                                                }
+                                            "
+                                            :class="jab.jumlah !== null && jab.pegawais_count >= jab.jumlah && form.jabatan_id != jab.id
+                                                ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed bg-gray-50 dark:bg-[#111]'
+                                                : (form.jabatan_id == jab.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-white hover:bg-gray-100 dark:hover:bg-[#222]')"
+                                            class="w-full px-4 py-2.5 text-left text-sm flex items-center justify-between border-b border-gray-100 dark:border-gray-800 last:border-0 transition-colors">
+                                            <span>
+                                                <span x-text="jab.nama_jabatan"></span>
+                                                <span class="text-xs ml-1 opacity-60" x-text="'(' + jab.jenis_jabatan + ')'"></span>
+                                            </span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Status Pernikahan <span class="text-red-500">*</span></label>
+                                <select name="status_pernikahan" x-model="form.status_pernikahan" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                    <option value="Lajang">Lajang</option>
+                                    <option value="Menikah">Menikah</option>
+                                    <option value="Cerai Hidup">Cerai Hidup</option>
+                                    <option value="Cerai Mati">Cerai Mati</option>
                                 </select>
                             </div>
-
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Status Pernikahan <span class="text-red-500">*</span></label>
-                                    <select name="status_pernikahan" x-model="form.status_pernikahan" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
-                                        <option value="Lajang">Lajang</option>
-                                        <option value="Menikah">Menikah</option>
-                                        <option value="Cerai Hidup">Cerai Hidup</option>
-                                        <option value="Cerai Mati">Cerai Mati</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-blue-600 dark:text-blue-400 mb-1.5">Tgl Berlaku <span class="text-red-500">*</span></label>
-                                    <input type="date" name="tanggal_berlaku" x-model="form.tanggal_berlaku" required class="w-full px-4 py-2 border-2 border-blue-100 dark:border-blue-900/30 rounded-lg bg-blue-50/30 dark:bg-blue-900/10 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
-                                </div>
-                            </div>
-                            <p class="text-[11px] text-gray-500 -mt-2.5">Kapan status/jabatan di atas mulai berlaku (untuk riwayat).</p>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Akun Terhubung</label>
@@ -346,41 +366,71 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Alamat Lengkap <span class="text-red-500">*</span></label>
                             <textarea name="alamat" x-model="form.alamat" required rows="3" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none resize-none"></textarea>
                         </div>
+
+                        <div class="md:col-span-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                            <div class="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <div>
+                                    <label class="block text-sm font-bold text-blue-600 dark:text-blue-400">Tanggal Berlaku Perubahan <span class="text-red-500">*</span></label>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kapan data status/jabatan/golongan di atas mulai berlaku (untuk pencatatan riwayat).</p>
+                                </div>
+                                <div class="w-full sm:w-56 shrink-0">
+                                    <input type="date" name="tanggal_berlaku" x-model="form.tanggal_berlaku" required class="w-full px-4 py-2 border-2 border-blue-500 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-600 outline-none shadow-sm">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     </form>
                 </div>
 
                 <div x-show="activeTab === 'history'" x-cloak>
                     <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-800">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-collapse" style="min-width: 1100px;">
                             <thead>
                                 <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Tgl Berlaku</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Jabatan</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Gol</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Status</th>
-                                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Gelar</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Tgl Berlaku</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">NIP</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">NIK</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Nama Lengkap</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Tempat, Tgl Lahir</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Kelamin</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Agama</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Jabatan</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Gol</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Status</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Pernikahan</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Alamat</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                                 <template x-for="h in histories" :key="h.id">
                                     <tr class="hover:bg-gray-50/50 dark:hover:bg-[#18181b] transition-colors">
-                                        <td class="px-4 py-3 text-sm text-slate-900 dark:text-white" x-text="new Date(h.tanggal_berlaku).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})"></td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="h.jabatan ? h.jabatan.nama_jabatan : '-'"></td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="h.golongan || '-'"></td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="h.status_kepegawaian"></td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="((h.gelar_depan ? h.gelar_depan + ' ' : '') + (h.gelar_belakang ? ', ' + h.gelar_belakang : '')) || '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-slate-900 dark:text-white whitespace-nowrap"
+                                            x-text="new Date(h.tanggal_berlaku).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'})"></td>
+                                        <td class="px-3 py-3 text-xs font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.nip || '-'"></td>
+                                        <td class="px-3 py-3 text-xs font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.nik || '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap"
+                                            x-text="(h.gelar_depan ? h.gelar_depan + ' ' : '') + (h.nama || '-') + (h.gelar_belakang ? ', ' + h.gelar_belakang : '')"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap"
+                                            x-text="(h.tempat_lahir || '-') + ', ' + (h.tanggal_lahir ? new Date(h.tanggal_lahir).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-')"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.jenis_kelamin || '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.agama || '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400"
+                                            x-text="h.jabatan ? h.jabatan.nama_jabatan + ' (' + h.jabatan.jenis_jabatan + ')' : '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.golongan || '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.status_kepegawaian || '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.status_pernikahan || '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400" style="min-width:160px;" x-text="h.alamat || '-'"></td>
                                     </tr>
                                 </template>
                                 <template x-if="histories.length === 0">
                                     <tr>
-                                        <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400 italic">Belum ada riwayat perubahan data.</td>
+                                        <td colspan="12" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400 italic">Belum ada riwayat perubahan data.</td>
                                     </tr>
                                 </template>
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/20">
+                    <div class="mt-5 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/20">
                         <div class="flex gap-3">
                             <svg class="w-5 h-5 text-blue-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <p class="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
@@ -390,7 +440,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
             <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-800 shrink-0" x-show="activeTab === 'data'">
                 <button type="button" @click="modalOpen = false" class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-[#111111] dark:text-gray-300 dark:border-gray-700 dark:hover:bg-slate-800 transition-colors">
                     Batal
@@ -414,11 +463,27 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('pegawaiCrud', () => ({
         allPegawai: @json($pegawais),
+        allJabatans: @json($jabatans),
         search: '',
         perPage: 5,
         currentPage: 1,
         sortCol: 'nama',
         sortAsc: true,
+
+        formatGelar(depan, belakang) {
+            depan = (depan || '').trim();
+            belakang = (belakang || '').trim();
+            let parts = [];
+            if (depan) parts.push(depan);
+            if (belakang) parts.push(belakang);
+            return parts.join(', ') || '-';
+        },
+
+        getJabatanNama(id) {
+            if (!id) return '-';
+            const j = this.allJabatans.find(item => item.id == id);
+            return j ? j.nama_jabatan : '-';
+        },
 
         modalOpen: false,
         isEdit: false,
