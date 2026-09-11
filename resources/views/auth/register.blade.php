@@ -42,22 +42,25 @@
                 <p class="text-sm text-blue-200/60">&copy; 2026 SIMPEG ASN. Hak Cipta Dilindungi.</p>
             </div>
         </div>
-        <div class="w-full lg:w-1/2 bg-white dark:bg-slate-950 relative flex flex-col transition-colors duration-300">
+        <div class="w-full lg:w-1/2 bg-white dark:bg-slate-950 flex flex-col justify-between transition-colors duration-300 min-h-screen">
             
-            <div class="absolute top-6 right-6 z-10">
-                <x-theme-toggle />
-            </div>
-
-            <div class="lg:hidden absolute top-6 left-6 flex items-center gap-2">
-                <div class="w-8 h-8 bg-blue-700 dark:bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                    A
+            <div class="w-full px-6 py-6 flex items-center justify-between z-10 shrink-0">
+                <div class="lg:hidden flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-700 dark:bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                        A
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">SIMPEG</span>
                 </div>
-                <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">SIMPEG</span>
+                <div class="hidden lg:block"></div>
+
+                <div class="flex items-center gap-3">
+                    <x-theme-toggle />
+                </div>
             </div>
 
-            <div class="flex flex-col justify-center items-center min-h-screen px-8 sm:px-12 py-20">
+            <div class="flex-1 flex flex-col justify-center items-center px-6 sm:px-12 py-8">
                 <div class="w-full max-w-md">
-                    <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Pendaftaran Akun Baru</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2">Pendaftaran Akun Baru</h2>
                     <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm">Lengkapi data di bawah ini untuk mendaftar.</p>
 
                     <form method="POST" action="{{ route('register') }}" class="w-full mt-8 space-y-5">

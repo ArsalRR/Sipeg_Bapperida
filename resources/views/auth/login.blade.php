@@ -42,50 +42,53 @@
                 <p class="text-sm text-blue-200/60">&copy; 2026 SIMPEG ASN. Hak Cipta Dilindungi.</p>
             </div>
         </div>
-        <div class="w-full lg:w-1/2 bg-white dark:bg-slate-950 relative flex flex-col transition-colors duration-300">
-            <div class="absolute top-6 right-6 z-10 flex items-center gap-3">
-                <button 
-                    type="button" 
-                    onclick="openSsoModal()"
-                    class="p-2 rounded-lg text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    title="Informasi SSO"
-                >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </button>
-                <x-theme-toggle />
-            </div>
-
-            <div class="lg:hidden absolute top-6 left-6 flex items-center gap-2">
-                <div class="w-8 h-8 bg-blue-700 dark:bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                    A
+        <div class="w-full lg:w-1/2 bg-white dark:bg-slate-950 flex flex-col justify-between transition-colors duration-300 min-h-screen">
+            <div class="w-full px-6 py-6 flex items-center justify-between z-10 shrink-0">
+                <div class="lg:hidden flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-700 dark:bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                        A
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">SIMPEG</span>
                 </div>
-                <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">SIMPEG</span>
+                <div class="hidden lg:block"></div>
+
+                <div class="flex items-center gap-3">
+                    <button 
+                        type="button" 
+                        onclick="openSsoModal()"
+                        class="p-2 rounded-lg text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        title="Informasi SSO"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </button>
+                    <x-theme-toggle />
+                </div>
             </div>
 
-            <div class="flex flex-col justify-center items-center h-full px-8 sm:px-12">
+            <div class="flex-1 flex flex-col justify-center items-center px-6 sm:px-12 py-8">
                 <div class="w-full max-w-sm">
-                    <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Selamat Datang Kembali!</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2">Selamat Datang Kembali!</h2>
                     <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm">Silakan masuk menggunakan kredensial Anda.</p>
 
-                    <form method="POST" action="{{ route('login') }}" class="w-full max-w-sm mt-8">
+                    <form method="POST" action="{{ route('login') }}" class="w-full max-w-sm mt-6">
                         @csrf
-                        <div class="mb-6 relative">
+                        <div class="mb-5 relative">
                             <label for="login" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Email atau Username</label>
                             <input id="login" name="login" type="text" autocomplete="username" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm" value="{{ old('login') }}">
                             @error('login')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div class="mb-6 relative">
+                        <div class="mb-5 relative">
                             <label for="password" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Kata Sandi</label>
                             <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm">
                             @error('password')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div class="mb-8 relative">
+                        <div class="mb-6 relative">
                             <label for="captcha" class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Keamanan: {{ $captchaQuestion }}</label>
                             <input id="captcha" name="captcha" type="number" required class="block w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors shadow-sm">
                             @error('captcha')
@@ -104,14 +107,14 @@
                                 Login dengan SSO BKN
                             </button>
 
-                            <p class="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+                            <p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
                                 Belum memiliki akun? 
                                 <a href="{{ route('register') }}" class="font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400">Daftar Akun</a>
                             </p>
                         </div>
                     </form>
                     
-                    <div class="mt-12 text-center lg:hidden">
+                    <div class="mt-8 mb-4 text-center lg:hidden">
                         <p class="text-xs text-gray-500 dark:text-gray-500">&copy; 2026 SIMPEG ASN. Hak Cipta Dilindungi.</p>
                     </div>
                 </div>
