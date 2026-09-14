@@ -91,12 +91,20 @@
                                         </button>
                                     </form>
                                 </template>
-                                <button @click="openEditModal(user, user.pegawai)" class="text-blue-600 hover:text-blue-800 dark:text-blue-500 dark:hover:text-blue-400 p-1">
-                                    Edit
-                                </button>
-                                <button @click="confirmDelete('{{ url('/admin/users') }}/' + user.id)" class="text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400 p-1">
-                                    Hapus
-                                </button>
+                                <div class="flex items-center justify-end gap-1">
+                                    <div class="relative group">
+                                        <button @click="openEditModal(user, user.pegawai)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-0.5 text-[10px] font-medium bg-gray-800 text-white rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Edit</span>
+                                    </div>
+                                    <div class="relative group">
+                                        <button @click="confirmDelete('{{ url('/admin/users') }}/' + user.id)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-0.5 text-[10px] font-medium bg-gray-800 text-white rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Hapus</span>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </template>
