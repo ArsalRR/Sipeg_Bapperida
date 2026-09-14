@@ -295,20 +295,59 @@ document.addEventListener('alpine:init', () => {
         },
 
         exportExcel() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            // Header
-            csvContent += "Username,Email,Role,Nama Pegawai\n";
-            // Rows
-            this.filteredUsers.forEach(function(rowArray) {
-                let pegawai = rowArray.pegawai ? rowArray.pegawai.nama : '-';
-                let row = `"${rowArray.username}","${rowArray.email}","${rowArray.role}","${pegawai}"`;
-                csvContent += row + "\n";
+            let rows = '';
+            this.filteredUsers.forEach(function(u, idx) {
+                let pegawai = u.pegawai ? u.pegawai.nama : '-';
+                rows += `<tr>
+                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${idx + 1}</td>
+                    <td style="border: 1px solid #000000; mso-number-format:'\\@'; vertical-align: middle;">${u.username || '-'}</td>
+                    <td style="border: 1px solid #000000; vertical-align: middle;">${u.email || '-'}</td>
+                    <td style="border: 1px solid #000000; text-transform: capitalize; vertical-align: middle;">${u.role || '-'}</td>
+                    <td style="border: 1px solid #000000; vertical-align: middle;">${pegawai}</td>
+                </tr>`;
             });
-            
-            const encodedUri = encodeURI(csvContent);
+
+            const excelTemplate = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                    <!--[if gte mso 9]>
+                    <` + `xml>
+                        <` + `x:ExcelWorkbook>
+                            <` + `x:ExcelWorksheets>
+                                <` + `x:ExcelWorksheet>
+                                    <` + `x:Name>Data User</` + `x:Name>
+                                    <` + `x:WorksheetOptions>
+                                        <` + `x:DisplayGridlines/>
+                                    </` + `x:WorksheetOptions>
+                                </` + `x:ExcelWorksheet>
+                            </` + `x:ExcelWorksheets>
+                        </` + `x:ExcelWorkbook>
+                    </` + `xml>
+                    <![endif]-->
+                </head>
+                <body>
+                    <table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px;">
+                        <thead>
+                            <tr style="background-color: #000000; color: #ffffff;">
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">No</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Username</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Email</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Role</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Nama Pegawai Terhubung</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </body>
+                </html>`;
+
+            const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "Data_User_SIMPEG.csv");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Data_User_SIMPEG_${new Date().toISOString().split('T')[0]}.xls`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

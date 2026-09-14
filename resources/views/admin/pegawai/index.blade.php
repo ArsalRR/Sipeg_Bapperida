@@ -38,28 +38,70 @@
                 <span class="text-sm text-gray-500 dark:text-gray-400">baris</span>
             </div>
 
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" x-model="search" placeholder="Cari NIP, NIK, atau Nama..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
                 </div>
-                <input type="text" x-model="search" placeholder="Cari NIP atau Nama..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+
+                {{-- Column Toggle Dropdown --}}
+                <div class="relative" @click.outside="showColumnDropdown = false">
+                    <button @click="showColumnDropdown = !showColumnDropdown" class="px-3.5 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-800 text-slate-700 dark:text-gray-300 font-medium rounded-lg text-sm transition-colors flex items-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span>Kolom</span>
+                        <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+
+                    <div x-show="showColumnDropdown" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute right-0 mt-2 w-56 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 p-3 space-y-2">
+                        <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-1 pb-1 border-b border-gray-100 dark:border-gray-800">Tampilkan Kolom</div>
+                        <template x-for="(col, key) in columns" :key="key">
+                            <label class="flex items-center gap-2.5 px-1 py-1 hover:bg-gray-50 dark:hover:bg-slate-800/60 rounded-md cursor-pointer text-sm text-slate-700 dark:text-gray-300 select-none">
+                                <input type="checkbox" x-model="columns[key].visible" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-900">
+                                <span x-text="col.label"></span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="overflow-x-auto" id="printable-area">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
-                        <th @click="sortBy('nip')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
-                            <div class="flex items-center gap-1">NIP <span x-html="sortIcon('nip')"></span></div>
-                        </th>
-                        <th @click="sortBy('nama')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
+                        <th x-show="columns.nama.visible" @click="sortBy('nama')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">Nama <span x-html="sortIcon('nama')"></span></div>
                         </th>
-                        <th @click="sortBy('jabatan_nama')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
+                        <th x-show="columns.nip.visible" @click="sortBy('nip')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
+                            <div class="flex items-center gap-1">NIP <span x-html="sortIcon('nip')"></span></div>
+                        </th>
+                        <th x-show="columns.jabatan.visible" @click="sortBy('jabatan_nama')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">Jabatan <span x-html="sortIcon('jabatan_nama')"></span></div>
                         </th>
-                        <th @click="sortBy('status_kepegawaian')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
+                        <th x-show="columns.status.visible" @click="sortBy('status_kepegawaian')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">Status <span x-html="sortIcon('status_kepegawaian')"></span></div>
+                        </th>
+                        <th x-show="columns.golongan.visible" @click="sortBy('golongan')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
+                            <div class="flex items-center gap-1">Golongan <span x-html="sortIcon('golongan')"></span></div>
+                        </th>
+                        <th x-show="columns.ttl.visible" class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                            TTL
+                        </th>
+                        <th x-show="columns.jk.visible" class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                            L/P
+                        </th>
+                        <th x-show="columns.agama.visible" class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                            Agama
+                        </th>
+                        <th x-show="columns.nik.visible" class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                            NIK
+                        </th>
+                        <th x-show="columns.pernikahan.visible" class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                            Status Nikah
+                        </th>
+                        <th x-show="columns.alamat.visible" class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                            Alamat
                         </th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 text-right print:hidden">Aksi</th>
                     </tr>
@@ -67,15 +109,28 @@
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                     <template x-for="p in paginatedPegawai" :key="p.id">
                         <tr class="hover:bg-gray-50/50 dark:hover:bg-[#18181b] transition-colors">
-                            <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white" x-text="p.nip"></td>
-                            <td class="px-6 py-4 text-sm text-slate-900 dark:text-white">
-                                <div class="flex flex-col">
-                                    <span x-text="(p.gelar_depan ? p.gelar_depan + ' ' : '') + p.nama + (p.gelar_belakang ? ', ' + p.gelar_belakang : '')"></span>
-                                    <span class="text-xs text-gray-500" x-text="'NIK: ' + p.nik"></span>
+                            {{-- Kolom Nama: foto kecil + nama (+ NIK jika kolom NIK disembunyikan) --}}
+                            <td x-show="columns.nama.visible" class="px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    {{-- Avatar / Foto --}}
+                                    <div class="shrink-0 w-9 h-9 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
+                                        <img x-show="p.foto" :src="p.foto ? '/storage/' + p.foto : ''" class="w-full h-full object-cover" :alt="p.nama">
+                                        <svg x-show="!p.foto" class="w-5 h-5 text-gray-400 dark:text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                                        </svg>
+                                    </div>
+                                    {{-- Nama & NIK --}}
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-medium text-slate-900 dark:text-white leading-tight"
+                                            x-text="(p.gelar_depan ? p.gelar_depan + ' ' : '') + p.nama + (p.gelar_belakang ? ', ' + p.gelar_belakang : '')"></p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 leading-tight mt-0.5" x-text="p.nik"></p>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" x-text="p.jabatan ? p.jabatan.nama_jabatan : '-'"></td>
-                            <td class="px-6 py-4 text-sm">
+                            {{-- Kolom NIP --}}
+                            <td x-show="columns.nip.visible" class="px-6 py-3 text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="p.nip"></td>
+                            <td x-show="columns.jabatan.visible" class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="p.jabatan ? p.jabatan.nama_jabatan : '-'"></td>
+                            <td x-show="columns.status.visible" class="px-6 py-3 text-sm">
                                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold"
                                     :class="{
                                         'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': p.status_kepegawaian === 'PNS',
@@ -86,19 +141,38 @@
                                     }" x-text="p.status_kepegawaian">
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right space-x-2 print:hidden">
-                                <button @click="openEditModal(p)" class="text-blue-600 hover:text-blue-800 dark:text-blue-500 dark:hover:text-blue-400 p-1">
-                                    Edit
-                                </button>
-                                <button @click="confirmDelete('{{ url('/admin/pegawais') }}/' + p.id)" class="text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400 p-1">
-                                    Hapus
-                                </button>
+                            <td x-show="columns.golongan.visible" class="px-6 py-3 text-sm text-slate-700 dark:text-gray-300 whitespace-nowrap"
+                                x-text="p.golongan ? getGolonganLabel(p.golongan) + ' (' + getGolonganDisplay(p.golongan) + ')' : '-'">
+                            </td>
+                            <td x-show="columns.ttl.visible" class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap"
+                                x-text="(p.tempat_lahir || '-') + ', ' + (p.tanggal_lahir ? new Date(p.tanggal_lahir).toLocaleDateString('id-ID', {day:'numeric',month:'short',year:'numeric'}) : '-')">
+                            </td>
+                            <td x-show="columns.jk.visible" class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="p.jenis_kelamin || '-'"></td>
+                            <td x-show="columns.agama.visible" class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="p.agama || '-'"></td>
+                            <td x-show="columns.nik.visible" class="px-6 py-3 text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="p.nik || '-'"></td>
+                            <td x-show="columns.pernikahan.visible" class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="p.status_pernikahan || '-'"></td>
+                            <td x-show="columns.alamat.visible" class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400 min-w-[200px]" x-text="p.alamat || '-'"></td>
+                            <td class="px-6 py-4 text-right print:hidden">
+                                <div class="flex items-center justify-end gap-1">
+                                    <div class="relative group">
+                                        <button @click="openEditModal(p)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-0.5 text-[10px] font-medium bg-gray-800 text-white rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Edit</span>
+                                    </div>
+                                    <div class="relative group">
+                                        <button @click="confirmDelete('{{ url('/admin/pegawais') }}/' + p.id)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-0.5 text-[10px] font-medium bg-gray-800 text-white rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Hapus</span>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </template>
                     <template x-if="paginatedPegawai.length === 0">
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Tidak ada data yang ditemukan.</td>
+                            <td :colspan="visibleColumnCount + 1" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Tidak ada data yang ditemukan.</td>
                         </tr>
                     </template>
                 </tbody>
@@ -469,6 +543,25 @@ document.addEventListener('alpine:init', () => {
         currentPage: 1,
         sortCol: 'nama',
         sortAsc: true,
+        showColumnDropdown: false,
+
+        columns: {
+            nama: { label: 'Nama', visible: true },
+            nip: { label: 'NIP', visible: true },
+            jabatan: { label: 'Jabatan', visible: true },
+            status: { label: 'Status Kepegawaian', visible: true },
+            golongan: { label: 'Golongan', visible: true },
+            ttl: { label: 'Tempat, Tgl Lahir', visible: false },
+            jk: { label: 'Jenis Kelamin', visible: false },
+            agama: { label: 'Agama', visible: false },
+            nik: { label: 'NIK', visible: false },
+            pernikahan: { label: 'Status Nikah', visible: false },
+            alamat: { label: 'Alamat', visible: false },
+        },
+
+        get visibleColumnCount() {
+            return Object.values(this.columns).filter(c => c.visible).length;
+        },
 
         formatGelar(depan, belakang) {
             depan = (depan || '').trim();
@@ -515,6 +608,26 @@ document.addEventListener('alpine:init', () => {
         init() {
             this.$watch('search', () => { this.currentPage = 1; });
             this.$watch('perPage', () => { this.currentPage = 1; });
+
+            // Load saved column preferences
+            const savedCols = localStorage.getItem('sipeg_pegawai_columns');
+            if (savedCols) {
+                try {
+                    const parsed = JSON.parse(savedCols);
+                    Object.keys(parsed).forEach(k => {
+                        if (this.columns[k]) {
+                            this.columns[k].visible = parsed[k];
+                        }
+                    });
+                } catch (e) {}
+            }
+
+            // Save column preferences on change
+            this.$watch('columns', (val) => {
+                const stateToSave = {};
+                Object.keys(val).forEach(k => stateToSave[k] = val[k].visible);
+                localStorage.setItem('sipeg_pegawai_columns', JSON.stringify(stateToSave));
+            }, { deep: true });
         },
 
         handlePhotoChange(e) {
@@ -579,6 +692,31 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        // Mapping golongan ke nama pangkat ASN Indonesia
+        golonganMap: {
+            // PNS/CPNS
+            'I/a': 'Juru Muda', 'I/b': 'Juru Muda Tingkat I', 'I/c': 'Juru', 'I/d': 'Juru Tingkat I',
+            'II/a': 'Pengatur Muda', 'II/b': 'Pengatur Muda Tingkat I', 'II/c': 'Pengatur', 'II/d': 'Pengatur Tingkat I',
+            'III/a': 'Penata Muda', 'III/b': 'Penata Muda Tingkat I', 'III/c': 'Penata', 'III/d': 'Penata Tingkat I',
+            'IV/a': 'Pembina', 'IV/b': 'Pembina Tingkat I', 'IV/c': 'Pembina Utama Muda',
+            'IV/d': 'Pembina Utama Madya', 'IV/e': 'Pembina Utama',
+        },
+
+        getGolonganLabel(gol) {
+            if (!gol) return '-';
+            // PNS/CPNS: format I/a, II/b, dst
+            if (this.golonganMap[gol]) return this.golonganMap[gol];
+            // PPPK: angka romawi saja → label "Golongan X"
+            return 'Golongan ' + gol;
+        },
+
+        getGolonganDisplay(gol) {
+            if (!gol) return '-';
+            // Ubah I/a → I A, IV/a → IV A
+            return gol.replace('/', ' ').toUpperCase();
+        },
+
+
         sortIcon(col) {
             if (this.sortCol !== col) return '<svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>';
             if (this.sortAsc) return '<svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>';
@@ -586,48 +724,139 @@ document.addEventListener('alpine:init', () => {
         },
 
         exportExcel() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "NIP,Nama,Gelar Depan,Gelar Belakang,NIK,Tempat Lahir,Tanggal Lahir,Jenis Kelamin,Agama,Status Kepegawaian,Jabatan,Golongan,Status Pernikahan\n";
-
-            this.filteredPegawai.forEach(function(p) {
+            const self = this;
+            let rows = '';
+            
+            this.allPegawai.forEach(function(p, idx) {
                 let jab = p.jabatan ? p.jabatan.nama_jabatan : '-';
-                let row = `"${p.nip}","${p.nama}","${p.gelar_depan || ''}","${p.gelar_belakang || ''}","${p.nik}","${p.tempat_lahir}","${p.tanggal_lahir}","${p.jenis_kelamin}","${p.agama}","${p.status_kepegawaian}","${jab}","${p.golongan || ''}","${p.status_pernikahan}"`;
-                csvContent += row + "\n";
+                let gol = p.golongan || '-';
+                let pangkat = gol ? self.getGolonganLabel(gol) : '-';
+                let namaLengkap = (p.gelar_depan ? p.gelar_depan + ' ' : '') + p.nama + (p.gelar_belakang ? ', ' + p.gelar_belakang : '');
+                let tglLahir = p.tanggal_lahir ? p.tanggal_lahir.split('T')[0] : '-';
+
+                rows += `<tr>
+                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${idx + 1}</td>
+                    <td style="border: 1px solid #000000; mso-number-format:'\\@'; vertical-align: middle;">${p.nip || '-'}</td>
+                    <td style="border: 1px solid #000000; vertical-align: middle;">${namaLengkap}</td>
+                    <td style="border: 1px solid #000000; mso-number-format:'\\@'; vertical-align: middle;">${p.nik || '-'}</td>
+                    <td style="border: 1px solid #000000; vertical-align: middle;">${p.tempat_lahir || '-'}</td>
+                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${tglLahir}</td>
+                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${p.jenis_kelamin || '-'}</td>
+                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${p.agama || '-'}</td>
+                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${p.status_kepegawaian || '-'}</td>
+                    <td style="border: 1px solid #000000; vertical-align: middle;">${jab}</td>
+                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${gol}</td>
+                    <td style="border: 1px solid #000000; vertical-align: middle;">${pangkat}</td>
+                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${p.status_pernikahan || '-'}</td>
+                    <td style="border: 1px solid #000000; vertical-align: middle;">${p.alamat || '-'}</td>
+                </tr>`;
             });
 
-            const encodedUri = encodeURI(csvContent);
+            const excelTemplate = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                    <!--[if gte mso 9]>
+                    <` + `xml>
+                        <` + `x:ExcelWorkbook>
+                            <` + `x:ExcelWorksheets>
+                                <` + `x:ExcelWorksheet>
+                                    <` + `x:Name>Data Pegawai</` + `x:Name>
+                                    <` + `x:WorksheetOptions>
+                                        <` + `x:DisplayGridlines/>
+                                    </` + `x:WorksheetOptions>
+                                </` + `x:ExcelWorksheet>
+                            </` + `x:ExcelWorksheets>
+                        </` + `x:ExcelWorkbook>
+                    </` + `xml>
+                    <![endif]-->
+                </head>
+                <body>
+                    <h2 style="font-family: Arial, sans-serif; color: #000000;">Data Pegawai SIMPEG BAPPERIDA</h2>
+                    <table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px;">
+                        <thead>
+                            <tr style="background-color: #000000; color: #ffffff;">
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">No</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">NIP</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Nama Lengkap</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">NIK</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Tempat Lahir</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Tanggal Lahir</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">L/P</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Agama</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Status Kepegawaian</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Jabatan</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Golongan</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Pangkat</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Status Nikah</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Alamat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </body>
+                </html>`;
+
+            const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "Data_Pegawai_SIMPEG.csv");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Data_Pegawai_SIMPEG_${new Date().toISOString().split('T')[0]}.xls`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         },
 
         printPdf() {
-            const printContent = document.getElementById('printable-area').innerHTML;
+            // Build tabel dari SEMUA data pegawai (bukan dari DOM yang terpaginasi)
+            const self = this;
+            let rows = '';
+            this.allPegawai.forEach(function(p, idx) {
+                let namaLengkap = (p.gelar_depan ? p.gelar_depan + ' ' : '') + p.nama + (p.gelar_belakang ? ', ' + p.gelar_belakang : '');
+                let jab = p.jabatan ? p.jabatan.nama_jabatan : '-';
+                let gol = p.golongan || '-';
+                let pangkat = p.golongan ? self.getGolonganLabel(p.golongan) : '-';
+                let golDisplay = p.golongan ? (pangkat + ' / ' + self.getGolonganDisplay(p.golongan)) : '-';
+                rows += `<tr style="background:${idx % 2 === 0 ? '#fff' : '#f9fafb'}">
+                    <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${idx + 1}</td>
+                    <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px;font-family:monospace">${p.nip}</td>
+                    <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${namaLengkap}</td>
+                    <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${jab}</td>
+                    <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${p.status_kepegawaian}</td>
+                    <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${golDisplay}</td>
+                </tr>`;
+            });
 
-            const style = document.createElement('style');
-            style.innerHTML = `
-                @media print {
-                    body { visibility: hidden; }
-                    #print-section { visibility: visible; position: absolute; left: 0; top: 0; width: 100%; }
-                    .print\\:hidden { display: none !important; }
+            const printHtml = `
+                <html><head>
+                <title>Laporan Data Pegawai SIMPEG</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    h2 { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+                    p.sub { font-size: 11px; color: #666; margin-bottom: 16px; }
                     table { width: 100%; border-collapse: collapse; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
-                }
-            `;
-            document.head.appendChild(style);
+                    thead tr { background: #1e40af; color: #fff; }
+                    th { border: 1px solid #e5e7eb; padding: 7px 8px; font-size: 10px; text-align: left; }
+                    @media print { @page { size: landscape; margin: 12mm; } }
+                </style>
+                </head><body>
+                <h2>Laporan Data Pegawai SIMPEG</h2>
+                <p class="sub">Dicetak pada: ${new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'})} | Total: ${self.allPegawai.length} pegawai</p>
+                <table>
+                    <thead><tr>
+                        <th>No</th><th>NIP</th><th>Nama Lengkap</th><th>Jabatan</th><th>Status</th><th>Golongan / Pangkat</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                </body></html>`;
 
-            const printSection = document.createElement('div');
-            printSection.id = 'print-section';
-            printSection.innerHTML = '<h2 style="font-size:20px; font-weight:bold; margin-bottom: 20px;">Laporan Data Pegawai SIMPEG</h2>' + printContent;
-            document.body.appendChild(printSection);
-
-            window.print();
-
-            document.body.removeChild(printSection);
-            document.head.removeChild(style);
+            const printWindow = window.open('', '_blank', 'width=1000,height=700');
+            printWindow.document.write(printHtml);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            setTimeout(() => printWindow.close(), 1000);
         },
 
         openCreateModal() {
