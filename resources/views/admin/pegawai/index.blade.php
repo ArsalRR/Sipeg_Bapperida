@@ -422,17 +422,61 @@
                                 </select>
                             </div>
 
-                            <div>
+                            <div x-data="{ openAccountDropdown: false, accountSearch: '' }">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Akun Terhubung</label>
-                                <select name="user_id" x-model="form.user_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
-                                    <option value="">-- Tidak Ada Akun --</option>
-                                    <template x-if="isEdit && currentAccount">
-                                        <option :value="currentAccount.id" x-text="currentAccount.username + ' (Saat Ini)'" selected></option>
-                                    </template>
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}">{{ $user->username }} ({{ $user->email }})</option>
-                                    @endforeach
-                                </select>
+                                <input type="hidden" name="user_id" :value="form.user_id">
+                                
+                                <div class="relative" @click.outside="openAccountDropdown = false">
+                                    {{-- Selected Display / Trigger Button --}}
+                                    <button type="button" @click="openAccountDropdown = !openAccountDropdown; accountSearch = ''"
+                                        class="w-full px-4 py-2 text-left border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none flex items-center justify-between">
+                                        <span x-text="getSelectedAccountLabel()"></span>
+                                        <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform" :class="openAccountDropdown ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </button>
+
+                                    {{-- Dropdown Menu --}}
+                                    <div x-show="openAccountDropdown" x-transition x-cloak
+                                        class="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 p-2 space-y-1 max-h-60 flex flex-col">
+                                        
+                                        {{-- Search Input inside Dropdown --}}
+                                        <div class="relative shrink-0 p-1">
+                                            <input type="text" x-model="accountSearch" placeholder="Cari username atau email..."
+                                                class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                            <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                        </div>
+
+                                        {{-- Options List --}}
+                                        <div class="overflow-y-auto flex-1 divide-y divide-gray-50 dark:divide-gray-800">
+                                            {{-- Option: Tidak ada akun --}}
+                                            <button type="button" @click="form.user_id = ''; openAccountDropdown = false"
+                                                class="w-full text-left px-3 py-2 text-xs rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                                                :class="form.user_id === '' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                                                <span>-- Tidak Ada Akun --</span>
+                                                <svg x-show="form.user_id === ''" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            </button>
+
+                                            {{-- Option: Saat ini --}}
+                                            <template x-if="isEdit && currentAccount && (accountSearch === '' || currentAccount.username.toLowerCase().includes(accountSearch.toLowerCase()) || (currentAccount.email && currentAccount.email.toLowerCase().includes(accountSearch.toLowerCase())))">
+                                                <button type="button" @click="form.user_id = currentAccount.id; openAccountDropdown = false"
+                                                    class="w-full text-left px-3 py-2 text-xs rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                                                    :class="form.user_id == currentAccount.id ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                                                    <span x-text="currentAccount.username + ' (' + (currentAccount.email || '-') + ') — [Saat Ini]'"></span>
+                                                    <svg x-show="form.user_id == currentAccount.id" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                </button>
+                                            </template>
+
+                                            {{-- List available users A-Z --}}
+                                            <template x-for="u in getFilteredSortedUsers(accountSearch)" :key="u.id">
+                                                <button type="button" @click="form.user_id = u.id; openAccountDropdown = false"
+                                                    class="w-full text-left px-3 py-2 text-xs rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                                                    :class="form.user_id == u.id ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                                                    <span x-text="u.username + ' (' + (u.email || '-') + ')'"></span>
+                                                    <svg x-show="form.user_id == u.id" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -538,12 +582,34 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('pegawaiCrud', () => ({
         allPegawai: @json($pegawais),
         allJabatans: @json($jabatans),
+        allUsers: @json($users),
         search: '',
         perPage: 5,
         currentPage: 1,
         sortCol: 'nama',
         sortAsc: true,
         showColumnDropdown: false,
+
+        getSelectedAccountLabel() {
+            if (!this.form.user_id) return '-- Tidak Ada Akun --';
+            if (this.isEdit && this.currentAccount && this.form.user_id == this.currentAccount.id) {
+                return this.currentAccount.username + ' (' + (this.currentAccount.email || '-') + ') — [Saat Ini]';
+            }
+            const found = this.allUsers.find(u => u.id == this.form.user_id);
+            return found ? (found.username + ' (' + (found.email || '-') + ')') : '-- Tidak Ada Akun --';
+        },
+
+        getFilteredSortedUsers(query) {
+            let list = [...this.allUsers];
+            if (query && query.trim() !== '') {
+                const q = query.toLowerCase();
+                list = list.filter(u =>
+                    (u.username && u.username.toLowerCase().includes(q)) ||
+                    (u.email && u.email.toLowerCase().includes(q))
+                );
+            }
+            return list.sort((a, b) => (a.username || '').localeCompare(b.username || '', undefined, { sensitivity: 'base' }));
+        },
 
         columns: {
             nama: { label: 'Nama', visible: true },

@@ -144,7 +144,7 @@
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
             <div x-show="modalOpen" @click="modalOpen = false" x-transition.opacity class="fixed inset-0 transition-opacity bg-slate-900/50 dark:bg-black/80 backdrop-blur-sm" aria-hidden="true"></div>
 
-            <div x-show="modalOpen" x-transition class="relative inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-[#111111] shadow-xl rounded-2xl border border-gray-100 dark:border-gray-800">
+            <div x-show="modalOpen" x-transition class="relative inline-block w-full max-w-lg p-6 my-8 text-left align-middle transition-all transform bg-white dark:bg-[#111111] shadow-xl rounded-2xl border border-gray-100 dark:border-gray-800">
                 <div class="flex justify-between items-center mb-5">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="isEdit ? 'Edit User' : 'Tambah User'"></h3>
                     <button @click="modalOpen = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
@@ -184,18 +184,61 @@
                             </select>
                         </div>
 
-                        <div>
+                        <div x-data="{ openPegawaiDropdown: false, pegawaiSearch: '' }">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hubungkan Pegawai (Opsional)</label>
-                            <select name="pegawai_id" x-model="form.pegawai_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:outline-none">
-                                <option value="">-- Tidak Dihubungkan --</option>
-                                <template x-if="isEdit && currentPegawai && currentPegawai.id">
-                                    <option :value="currentPegawai.id" x-text="currentPegawai.nama + ' (NIP: ' + (currentPegawai.nip || 'Belum diisi') + ')'" selected></option>
-                                </template>
-                                @foreach($pegawais as $pegawai)
-                                    <option value="{{ $pegawai->id }}">{{ $pegawai->nama }} (NIP: {{ $pegawai->nip ?? 'Belum diisi' }})</option>
-                                @endforeach
-                            </select>
-                        </div>
+                            <input type="hidden" name="pegawai_id" :value="form.pegawai_id">
+                            
+                            <div class="relative" @click.outside="openPegawaiDropdown = false">
+                                {{-- Trigger Button --}}
+                                <button type="button" @click="openPegawaiDropdown = !openPegawaiDropdown; pegawaiSearch = ''"
+                                    class="w-full px-4 py-2 text-left border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none flex items-center justify-between">
+                                    <span x-text="getSelectedPegawaiLabel()"></span>
+                                    <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform" :class="openPegawaiDropdown ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+
+                                {{-- Dropdown Menu --}}
+                                <div x-show="openPegawaiDropdown" x-transition x-cloak
+                                    class="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 p-2 space-y-1 max-h-60 flex flex-col">
+                                    
+                                    {{-- Search Box --}}
+                                    <div class="relative shrink-0 p-1">
+                                        <input type="text" x-model="pegawaiSearch" placeholder="Cari nama pegawai atau NIP..."
+                                            class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                        <svg class="w-3.5 h-3.5 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    </div>
+
+                                    {{-- Options List --}}
+                                    <div class="overflow-y-auto flex-1 divide-y divide-gray-50 dark:divide-gray-800">
+                                        {{-- Option: Tidak dihubungkan --}}
+                                        <button type="button" @click="form.pegawai_id = ''; openPegawaiDropdown = false"
+                                            class="w-full text-left px-3 py-2 text-xs rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                                            :class="form.pegawai_id === '' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                                            <span>-- Tidak Dihubungkan --</span>
+                                            <svg x-show="form.pegawai_id === ''" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        </button>
+
+                                        {{-- Option: saat ini --}}
+                                        <template x-if="isEdit && currentPegawai && currentPegawai.id && (pegawaiSearch === '' || currentPegawai.nama.toLowerCase().includes(pegawaiSearch.toLowerCase()) || (currentPegawai.nip && currentPegawai.nip.toLowerCase().includes(pegawaiSearch.toLowerCase())))">
+                                            <button type="button" @click="form.pegawai_id = currentPegawai.id; openPegawaiDropdown = false"
+                                                class="w-full text-left px-3 py-2 text-xs rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                                                :class="form.pegawai_id == currentPegawai.id ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                                                <span x-text="currentPegawai.nama + ' (NIP: ' + (currentPegawai.nip || 'Belum diisi') + ') — [Saat Ini]'"></span>
+                                                <svg x-show="form.pegawai_id == currentPegawai.id" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            </button>
+                                        </template>
+
+                                        {{-- List available pegawais A-Z --}}
+                                        <template x-for="p in getFilteredSortedPegawais(pegawaiSearch)" :key="p.id">
+                                            <button type="button" @click="form.pegawai_id = p.id; openPegawaiDropdown = false"
+                                                class="w-full text-left px-3 py-2 text-xs rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-between"
+                                                :class="form.pegawai_id == p.id ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                                                <span x-text="p.nama + ' (NIP: ' + (p.nip || 'Belum diisi') + ')'"></span>
+                                                <svg x-show="form.pegawai_id == p.id" class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
 
                     <div class="mt-6 flex justify-end gap-3">
@@ -220,11 +263,33 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('userCrud', () => ({
         allUsers: @json($users),
+        allPegawais: @json($pegawais),
         search: '',
         perPage: 5,
         currentPage: 1,
         sortCol: 'username',
         sortAsc: true,
+
+        getSelectedPegawaiLabel() {
+            if (!this.form.pegawai_id) return '-- Tidak Dihubungkan --';
+            if (this.isEdit && this.currentPegawai && this.form.pegawai_id == this.currentPegawai.id) {
+                return this.currentPegawai.nama + ' (NIP: ' + (this.currentPegawai.nip || 'Belum diisi') + ') — [Saat Ini]';
+            }
+            const found = this.allPegawais.find(p => p.id == this.form.pegawai_id);
+            return found ? (found.nama + ' (NIP: ' + (found.nip || 'Belum diisi') + ')') : '-- Tidak Dihubungkan --';
+        },
+
+        getFilteredSortedPegawais(query) {
+            let list = [...this.allPegawais];
+            if (query && query.trim() !== '') {
+                const q = query.toLowerCase();
+                list = list.filter(p =>
+                    (p.nama && p.nama.toLowerCase().includes(q)) ||
+                    (p.nip && p.nip.toLowerCase().includes(q))
+                );
+            }
+            return list.sort((a, b) => (a.nama || '').localeCompare(b.nama || '', undefined, { sensitivity: 'base' }));
+        },
         
         modalOpen: false,
         isEdit: false,
