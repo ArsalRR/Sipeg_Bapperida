@@ -47,6 +47,7 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')-
 });
 
 Route::middleware(['auth', 'role:admin,superadmin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('peta-jabatan', [JabatanController::class, 'peta'])->name('jabatans.peta');
     Route::resource('pegawais', PegawaiController::class)->except(['create', 'show', 'edit']);
     Route::resource('jabatans', JabatanController::class)->except(['create', 'show', 'edit']);
 });

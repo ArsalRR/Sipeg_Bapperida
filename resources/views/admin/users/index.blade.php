@@ -455,14 +455,11 @@ document.addEventListener('alpine:init', () => {
             let rows = '';
             this.filteredUsers.forEach(function(u, idx) {
                 let pegawai = u.pegawai ? u.pegawai.nama : '-';
-                let role = u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : '-';
-                let status = u.is_active ? 'Aktif' : 'Menunggu';
                 rows += `<tr>
                     <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${idx + 1}</td>
                     <td style="border: 1px solid #000000; mso-number-format:'\\@'; vertical-align: middle;">${u.username || '-'}</td>
                     <td style="border: 1px solid #000000; vertical-align: middle;">${u.email || '-'}</td>
-                    <td style="border: 1px solid #000000; vertical-align: middle;">${role}</td>
-                    <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${status}</td>
+                    <td style="border: 1px solid #000000; text-transform: capitalize; vertical-align: middle;">${u.role || '-'}</td>
                     <td style="border: 1px solid #000000; vertical-align: middle;">${pegawai}</td>
                 </tr>`;
             });
@@ -494,7 +491,6 @@ document.addEventListener('alpine:init', () => {
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Username</th>
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Email</th>
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Role</th>
-                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Status</th>
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Nama Pegawai Terhubung</th>
                             </tr>
                         </thead>
@@ -515,56 +511,23 @@ document.addEventListener('alpine:init', () => {
         },
 
         printPdf() {
-            let rows = '';
-            this.filteredUsers.forEach((u, idx) => {
-                let pegawai = u.pegawai ? u.pegawai.nama : '-';
-                let role = u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : '-';
-                let status = u.is_active ? 'Aktif' : 'Menunggu';
-                rows += `
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 8px; text-align: center;">${idx + 1}</td>
-                        <td style="padding: 8px; font-weight: bold;">${u.username || '-'}</td>
-                        <td style="padding: 8px;">${u.email || '-'}</td>
-                        <td style="padding: 8px;">${role}</td>
-                        <td style="padding: 8px;">${status}</td>
-                        <td style="padding: 8px;">${pegawai}</td>
-                    </tr>
-                `;
-            });
-
-            const printTemplate = `
-                <div style="font-family: sans-serif; padding: 20px;">
-                    <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 16px; text-align: center;">Laporan Data User SIMPEG</h2>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
-                        <thead>
-                            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
-                                <th style="padding: 8px; text-align: center; width: 40px;">No</th>
-                                <th style="padding: 8px;">Username</th>
-                                <th style="padding: 8px;">Email</th>
-                                <th style="padding: 8px;">Role</th>
-                                <th style="padding: 8px;">Status</th>
-                                <th style="padding: 8px;">Nama Pegawai</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
+            const printContent = document.getElementById('printable-area').innerHTML;
+            const originalContent = document.body.innerHTML;
+            
+            // Simpan state CSS untuk print
             const style = document.createElement('style');
             style.innerHTML = `
                 @media print {
-                    body > *:not(#print-section) { display: none !important; }
-                    #print-section { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+                    body { visibility: hidden; }
+                    #print-section { visibility: visible; position: absolute; left: 0; top: 0; width: 100%; }
+                    .print\\:hidden { display: none !important; }
                 }
             `;
             document.head.appendChild(style);
 
             const printSection = document.createElement('div');
             printSection.id = 'print-section';
-            printSection.innerHTML = printTemplate;
+            printSection.innerHTML = '<h2 style="font-size:24px; font-weight:bold; margin-bottom: 20px;">Laporan Data User SIMPEG</h2>' + printContent;
             document.body.appendChild(printSection);
 
             window.print();
