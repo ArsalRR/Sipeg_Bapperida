@@ -66,7 +66,7 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-x-auto" id="printable-area">
+        <div class="hidden sm:block overflow-x-auto" id="printable-area">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
@@ -81,6 +81,9 @@
                         </th>
                         <th x-show="columns.status.visible" @click="sortBy('status_kepegawaian')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">Status <span x-html="sortIcon('status_kepegawaian')"></span></div>
+                        </th>
+                        <th x-show="columns.status_kerja.visible" @click="sortBy('status_kerja')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
+                            <div class="flex items-center gap-1">Keaktifan <span x-html="sortIcon('status_kerja')"></span></div>
                         </th>
                         <th x-show="columns.golongan.visible" @click="sortBy('golongan')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">Golongan <span x-html="sortIcon('golongan')"></span></div>
@@ -130,8 +133,8 @@
                             {{-- Kolom NIP --}}
                             <td x-show="columns.nip.visible" class="px-6 py-3 text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="p.nip"></td>
                             <td x-show="columns.jabatan.visible" class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="p.jabatan ? p.jabatan.nama_jabatan : '-'"></td>
-                            <td x-show="columns.status.visible" class="px-6 py-3 text-sm">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                             <td x-show="columns.status.visible" class="px-6 py-3 text-sm">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                                     :class="{
                                         'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': p.status_kepegawaian === 'PNS',
                                         'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': p.status_kepegawaian === 'PPPK',
@@ -139,6 +142,14 @@
                                         'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400': p.status_kepegawaian === 'PPPK Paruh Waktu',
                                         'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400': p.status_kepegawaian === 'Non ASN'
                                     }" x-text="p.status_kepegawaian">
+                                </span>
+                            </td>
+                            <td x-show="columns.status_kerja.visible" class="px-6 py-3 text-sm">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
+                                    :class="{
+                                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': (p.status_kerja || 'Aktif') === 'Aktif',
+                                        'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400': p.status_kerja === 'Tidak Aktif'
+                                    }" x-text="p.status_kerja || 'Aktif'">
                                 </span>
                             </td>
                             <td x-show="columns.golongan.visible" class="px-6 py-3 text-sm text-slate-700 dark:text-gray-300 whitespace-nowrap"
@@ -177,6 +188,112 @@
                     </template>
                 </tbody>
             </table>
+        </div>
+
+        {{-- LAYAR MOBILE: CARD ACCORDION LIST (sm ke bawah) --}}
+        <div class="block sm:hidden p-3 space-y-3">
+            <template x-for="p in paginatedPegawai" :key="p.id">
+                <div class="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden transition-all shadow-sm">
+                    
+                    {{-- Card Header (Click to Expand) --}}
+                    <button @click="expandedId = (expandedId === p.id ? null : p.id)" type="button" class="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            {{-- Avatar --}}
+                            <div class="shrink-0 w-11 h-11 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
+                                <img x-show="p.foto" :src="p.foto ? '/storage/' + p.foto : ''" class="w-full h-full object-cover" :alt="p.nama">
+                                <svg x-show="!p.foto" class="w-6 h-6 text-gray-400 dark:text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                                </svg>
+                            </div>
+
+                            {{-- Nama & Status Ringkas --}}
+                            <div class="min-w-0 flex-1">
+                                <h3 x-show="columns.nama.visible" class="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight"
+                                    x-text="(p.gelar_depan ? p.gelar_depan + ' ' : '') + p.nama + (p.gelar_belakang ? ', ' + p.gelar_belakang : '')"></h3>
+                                <p x-show="columns.nip.visible" class="text-xs font-mono text-gray-500 dark:text-gray-400 mt-0.5" x-text="'NIP. ' + (p.nip || '-')"></p>
+                                <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                    <span x-show="columns.status.visible" class="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
+                                        :class="{
+                                            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': p.status_kepegawaian === 'PNS',
+                                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': p.status_kepegawaian === 'PPPK',
+                                            'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400': p.status_kepegawaian === 'CPNS',
+                                            'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400': p.status_kepegawaian === 'PPPK Paruh Waktu',
+                                            'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400': p.status_kepegawaian === 'Non ASN'
+                                        }" x-text="p.status_kepegawaian">
+                                    </span>
+                                    <span x-show="columns.status_kerja.visible" class="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
+                                        :class="{
+                                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': (p.status_kerja || 'Aktif') === 'Aktif',
+                                            'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400': p.status_kerja === 'Tidak Aktif'
+                                        }" x-text="p.status_kerja || 'Aktif'">
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Chevron Indicator --}}
+                        <div class="ml-2 shrink-0 p-1 text-gray-400">
+                            <svg class="w-5 h-5 transition-transform duration-200" :class="expandedId === p.id ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </button>
+
+                    {{-- Card Expanded Detail Body --}}
+                    <div x-show="expandedId === p.id" x-collapse class="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-gray-800/80 space-y-3">
+                        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                            <div x-show="columns.jabatan.visible" class="col-span-2 bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Jabatan</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="p.jabatan ? p.jabatan.nama_jabatan : '-'"></span>
+                            </div>
+                            <div x-show="columns.golongan.visible" class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Golongan</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="p.golongan ? getGolonganLabel(p.golongan) + ' (' + getGolonganDisplay(p.golongan) + ')' : '-'"></span>
+                            </div>
+                            <div x-show="columns.nik.visible" class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">NIK</span>
+                                <span class="font-mono font-medium text-slate-800 dark:text-slate-200" x-text="p.nik || '-'"></span>
+                            </div>
+                            <div x-show="columns.ttl.visible" class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Tempat, Tgl Lahir</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="(p.tempat_lahir || '-') + ', ' + (p.tanggal_lahir ? new Date(p.tanggal_lahir).toLocaleDateString('id-ID', {day:'numeric',month:'short',year:'numeric'}) : '-')"></span>
+                            </div>
+                            <div x-show="columns.jk.visible" class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Jenis Kelamin</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="p.jenis_kelamin || '-'"></span>
+                            </div>
+                            <div x-show="columns.agama.visible" class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Agama</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="p.agama || '-'"></span>
+                            </div>
+                            <div x-show="columns.pernikahan.visible" class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Status Nikah</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="p.status_pernikahan || '-'"></span>
+                            </div>
+                            <div x-show="columns.alamat.visible" class="col-span-2 bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Alamat Lengkap</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="p.alamat || '-'"></span>
+                            </div>
+                        </div>
+
+                        {{-- Tombol Aksi Mobile --}}
+                        <div class="flex items-center gap-2 pt-2">
+                            <button @click="openEditModal(p)" type="button" class="flex-1 py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                Edit Data
+                            </button>
+                            <button @click="confirmDelete('{{ url('/admin/pegawais') }}/' + p.id)" type="button" class="flex-1 py-2.5 px-3 bg-red-50 hover:bg-red-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/30 text-red-600 dark:text-rose-400 border border-red-200 dark:border-rose-900/40 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="paginatedPegawai.length === 0">
+                <div class="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">Tidak ada data yang ditemukan.</div>
+            </template>
         </div>
 
 
@@ -343,15 +460,24 @@
                                 Detail Kepegawaian
                             </h4>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Status Kepegawaian <span class="text-red-500">*</span></label>
-                                <select name="status_kepegawaian" x-model="form.status_kepegawaian" required @change="form.golongan = ''" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
-                                    <option value="PNS">PNS</option>
-                                    <option value="PPPK">PPPK</option>
-                                    <option value="CPNS">CPNS</option>
-                                    <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
-                                    <option value="Non ASN">Non ASN</option>
-                                </select>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Status Kepegawaian <span class="text-red-500">*</span></label>
+                                    <select name="status_kepegawaian" x-model="form.status_kepegawaian" required @change="form.golongan = ''" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                        <option value="PNS">PNS</option>
+                                        <option value="PPPK">PPPK</option>
+                                        <option value="CPNS">CPNS</option>
+                                        <option value="PPPK Paruh Waktu">PPPK Paruh Waktu</option>
+                                        <option value="Non ASN">Non ASN</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Status Keaktifan <span class="text-red-500">*</span></label>
+                                    <select name="status_kerja" x-model="form.status_kerja" required class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                        <option value="Aktif">Aktif</option>
+                                        <option value="Tidak Aktif">Tidak Aktif</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div>
@@ -359,20 +485,20 @@
                                     Golongan
                                     <span x-show="form.status_kepegawaian === 'Non ASN'" class="text-gray-400 font-normal">(tidak berlaku)</span>
                                 </label>
-                                <select x-show="['PNS','CPNS'].includes(form.status_kepegawaian)" :disabled="!['PNS','CPNS'].includes(form.status_kepegawaian)" name="golongan" x-model="form.golongan" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                <select x-show="['PNS','CPNS'].includes(form.status_kepegawaian)" :disabled="!['PNS','CPNS'].includes(form.status_kepegawaian)" name="golongan" x-model="form.golongan" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
                                     <option value="">-- Pilih Golongan --</option>
                                     <option value="I/a">I/a</option><option value="I/b">I/b</option><option value="I/c">I/c</option><option value="I/d">I/d</option>
                                     <option value="II/a">II/a</option><option value="II/b">II/b</option><option value="II/c">II/c</option><option value="II/d">II/d</option>
                                     <option value="III/a">III/a</option><option value="III/b">III/b</option><option value="III/c">III/c</option><option value="III/d">III/d</option>
                                     <option value="IV/a">IV/a</option><option value="IV/b">IV/b</option><option value="IV/c">IV/c</option><option value="IV/d">IV/d</option><option value="IV/e">IV/e</option>
                                 </select>
-                                <select x-show="['PPPK','PPPK Paruh Waktu'].includes(form.status_kepegawaian)" :disabled="!['PPPK','PPPK Paruh Waktu'].includes(form.status_kepegawaian)" name="golongan" x-model="form.golongan" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                <select x-show="['PPPK','PPPK Paruh Waktu'].includes(form.status_kepegawaian)" :disabled="!['PPPK','PPPK Paruh Waktu'].includes(form.status_kepegawaian)" name="golongan" x-model="form.golongan" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
                                     <option value="">-- Pilih Golongan --</option>
                                     <template x-for="g in ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII']" :key="g">
                                         <option :value="g" x-text="g"></option>
                                     </template>
                                 </select>
-                                <input x-show="form.status_kepegawaian === 'Non ASN'" type="text" disabled value="-" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-400">
+                                <input x-show="form.status_kepegawaian === 'Non ASN'" type="text" disabled value="-" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-400">
                             </div>
 
                             <div x-data="{ jabatanOpen: false }" class="relative">
@@ -515,6 +641,7 @@
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Jabatan</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Gol</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Status</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Keaktifan</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Pernikahan</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Alamat</th>
                                 </tr>
@@ -536,6 +663,7 @@
                                             x-text="h.jabatan ? h.jabatan.nama_jabatan + ' (' + h.jabatan.jenis_jabatan + ')' : '-'"></td>
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.golongan || '-'"></td>
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.status_kepegawaian || '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.status_kerja || 'Aktif'"></td>
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.status_pernikahan || '-'"></td>
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400" style="min-width:160px;" x-text="h.alamat || '-'"></td>
                                     </tr>
@@ -616,6 +744,7 @@ document.addEventListener('alpine:init', () => {
             nip: { label: 'NIP', visible: true },
             jabatan: { label: 'Jabatan', visible: true },
             status: { label: 'Status Kepegawaian', visible: true },
+            status_kerja: { label: 'Status Keaktifan', visible: true },
             golongan: { label: 'Golongan', visible: true },
             ttl: { label: 'Tempat, Tgl Lahir', visible: false },
             jk: { label: 'Jenis Kelamin', visible: false },
@@ -645,6 +774,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         modalOpen: false,
+        expandedId: null,
         isEdit: false,
         activeTab: 'data',
         submitting: false,
@@ -664,6 +794,7 @@ document.addEventListener('alpine:init', () => {
             jenis_kelamin: 'Laki-laki',
             agama: '',
             status_kepegawaian: 'PNS',
+            status_kerja: 'Aktif',
             jabatan_id: '',
             golongan: '',
             status_pernikahan: 'Lajang',
@@ -672,8 +803,28 @@ document.addEventListener('alpine:init', () => {
         },
 
         init() {
-            this.$watch('search', () => { this.currentPage = 1; });
-            this.$watch('perPage', () => { this.currentPage = 1; });
+            // Restore pagination state from sessionStorage
+            const savedPage = sessionStorage.getItem('sipeg_pegawai_page');
+            const savedPerPage = sessionStorage.getItem('sipeg_pegawai_per_page');
+            const savedSearch = sessionStorage.getItem('sipeg_pegawai_search');
+
+            if (savedPerPage) this.perPage = savedPerPage;
+            if (savedSearch) this.search = savedSearch;
+            if (savedPage) this.currentPage = parseInt(savedPage);
+
+            this.$watch('search', (val) => {
+                sessionStorage.setItem('sipeg_pegawai_search', val);
+                this.currentPage = 1;
+                sessionStorage.setItem('sipeg_pegawai_page', 1);
+            });
+            this.$watch('perPage', (val) => {
+                sessionStorage.setItem('sipeg_pegawai_per_page', val);
+                this.currentPage = 1;
+                sessionStorage.setItem('sipeg_pegawai_page', 1);
+            });
+            this.$watch('currentPage', (val) => {
+                sessionStorage.setItem('sipeg_pegawai_page', val);
+            });
 
             // Load saved column preferences
             const savedCols = localStorage.getItem('sipeg_pegawai_columns');
@@ -685,6 +836,9 @@ document.addEventListener('alpine:init', () => {
                             this.columns[k].visible = parsed[k];
                         }
                     });
+                    if (parsed.status_kerja === undefined) {
+                        this.columns.status_kerja.visible = true;
+                    }
                 } catch (e) {}
             }
 
@@ -933,7 +1087,7 @@ document.addEventListener('alpine:init', () => {
             this.form = {
                 nama: '', gelar_depan: '', gelar_belakang: '', nip: '', nik: '', alamat: '',
                 tempat_lahir: '', tanggal_lahir: '', jenis_kelamin: 'Laki-laki', agama: '',
-                status_kepegawaian: 'PNS', jabatan_id: '', golongan: '', status_pernikahan: 'Lajang',
+                status_kepegawaian: 'PNS', status_kerja: 'Aktif', jabatan_id: '', golongan: '', status_pernikahan: 'Lajang',
                 tanggal_berlaku: new Date().toISOString().split('T')[0], user_id: ''
             };
             this.currentAccount = null;
@@ -951,6 +1105,7 @@ document.addEventListener('alpine:init', () => {
                 nip: p.nip, nik: p.nik, alamat: p.alamat, tempat_lahir: p.tempat_lahir,
                 tanggal_lahir: p.tanggal_lahir ? p.tanggal_lahir.split('T')[0] : '',
                 jenis_kelamin: p.jenis_kelamin, agama: p.agama, status_kepegawaian: p.status_kepegawaian,
+                status_kerja: p.status_kerja || 'Aktif',
                 jabatan_id: p.jabatan_id, golongan: p.golongan || '', status_pernikahan: p.status_pernikahan,
                 tanggal_berlaku: p.tanggal_berlaku ? p.tanggal_berlaku.split('T')[0] : new Date().toISOString().split('T')[0],
                 user_id: p.user_id || ''

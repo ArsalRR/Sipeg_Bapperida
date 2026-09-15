@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
@@ -62,6 +62,74 @@
                     </template>
                 </tbody>
             </table>
+        </div>
+
+        {{-- LAYAR MOBILE: CARD ACCORDION LIST UNTUK DAFTAR JABATAN --}}
+        <div class="block sm:hidden p-3 space-y-3">
+            <template x-for="j in filteredJabatan" :key="j.id">
+                <div class="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden transition-all shadow-sm">
+                    
+                    {{-- Card Header Mobile --}}
+                    <button @click="expandedId = (expandedId === j.id ? null : j.id)" type="button" class="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            {{-- Icon Jabatan --}}
+                            <div class="shrink-0 w-11 h-11 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center border border-blue-200 dark:border-blue-800/50">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+
+                            {{-- Nama Jabatan & Jenis --}}
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight" x-text="j.nama_jabatan"></h3>
+                                <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 whitespace-nowrap" x-text="j.jenis_jabatan"></span>
+                                    <span :class="j.jumlah !== null && j.pegawais_count >= j.jumlah ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'" class="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap" x-text="'Terisi: ' + j.pegawais_count + (j.jumlah !== null ? '/' + j.jumlah : '')"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Chevron Icon --}}
+                        <div class="ml-2 shrink-0 p-1 text-gray-400">
+                            <svg class="w-5 h-5 transition-transform duration-200" :class="expandedId === j.id ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </button>
+
+                    {{-- Card Expanded Detail Body --}}
+                    <div x-show="expandedId === j.id" x-collapse class="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-gray-800/80 space-y-3">
+                        <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                            <div class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Jenis Jabatan</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="j.jenis_jabatan"></span>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Jumlah Maksimum</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="j.jumlah !== null ? j.jumlah + ' Orang' : 'Tak Terbatas (∞)'"></span>
+                            </div>
+                            <div class="col-span-2 bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Status Kuota</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="j.jumlah !== null ? (j.pegawais_count >= j.jumlah ? 'Penuh (' + j.pegawais_count + '/' + j.jumlah + ')' : 'Tersedia ' + (j.jumlah - j.pegawais_count) + ' Kursi') : 'Tidak dibatasi'"></span>
+                            </div>
+                        </div>
+
+                        {{-- Tombol Aksi Mobile --}}
+                        <div class="flex items-center gap-2 pt-2">
+                            <button @click="openEditModal(j)" type="button" class="flex-1 py-2.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-sm whitespace-nowrap">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                <span>Edit</span>
+                            </button>
+                            <button @click="confirmDelete('{{ url('/admin/jabatans') }}/' + j.id)" type="button" class="flex-1 py-2.5 px-2 bg-red-50 hover:bg-red-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/30 text-red-600 dark:text-rose-400 border border-red-200 dark:border-rose-900/40 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors whitespace-nowrap">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                <span>Hapus</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="filteredJabatan.length === 0">
+                <div class="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">Tidak ada data yang ditemukan.</div>
+            </template>
         </div>
     </div>
     <div x-show="modalOpen" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
@@ -127,6 +195,7 @@ document.addEventListener('alpine:init', () => {
         allJabatan: @json($jabatans),
         search: '',
         modalOpen: false,
+        expandedId: null,
         isEdit: false,
         formAction: '',
         form: {

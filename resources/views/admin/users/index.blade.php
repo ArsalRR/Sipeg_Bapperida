@@ -40,7 +40,7 @@
                 <input type="text" x-model="search" placeholder="Cari data..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
             </div>
         </div>
-        <div class="overflow-x-auto" id="printable-area">
+        <div class="hidden sm:block overflow-x-auto" id="printable-area">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
@@ -66,7 +66,7 @@
                             <td class="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white" x-text="user.username"></td>
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" x-text="user.email"></td>
                             <td class="px-6 py-4 text-sm">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold"
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                                     :class="{
                                         'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400': user.role === 'superadmin',
                                         'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': user.role === 'admin',
@@ -75,23 +75,22 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider whitespace-nowrap"
                                     :class="user.is_active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'">
                                     <span x-text="user.is_active ? 'Aktif' : 'Menunggu'"></span>
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400" x-text="user.pegawai ? user.pegawai.nama : '-'"></td>
-                            <td class="px-6 py-4 text-right space-x-1 print:hidden">
-                                <template x-if="!user.is_active">
-                                    <form :action="'{{ url('/admin/users') }}/' + user.id + '/activate'" method="POST" class="inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="px-2 py-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-colors">
-                                            Setujui
-                                        </button>
-                                    </form>
-                                </template>
+                            <td class="px-6 py-4 text-right print:hidden">
                                 <div class="flex items-center justify-end gap-1">
+                                    <template x-if="!user.is_active">
+                                        <div class="relative group">
+                                            <button type="button" @click="confirmActivate('{{ url('/admin/users') }}/' + user.id + '/activate', user.username)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-emerald-900/30 transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                            </button>
+                                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-0.5 text-[10px] font-medium bg-gray-800 text-white rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Setujui</span>
+                                        </div>
+                                    </template>
                                     <div class="relative group">
                                         <button @click="openEditModal(user, user.pegawai)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/30 transition-colors">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -115,6 +114,86 @@
                     </template>
                 </tbody>
             </table>
+        </div>
+
+        {{-- LAYAR MOBILE: CARD ACCORDION LIST UNTUK MANAJEMEN USER --}}
+        <div class="block sm:hidden p-3 space-y-3">
+            <template x-for="user in paginatedUsers" :key="user.id">
+                <div class="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden transition-all shadow-sm">
+                    
+                    {{-- Card Header Mobile --}}
+                    <button @click="expandedId = (expandedId === user.id ? null : user.id)" type="button" class="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            {{-- User Avatar / Initial --}}
+                            <div class="shrink-0 w-11 h-11 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center text-sm border border-blue-200 dark:border-blue-800/50">
+                                <span x-text="user.username.charAt(0).toUpperCase()"></span>
+                            </div>
+
+                            {{-- Username & Badges --}}
+                            <div class="min-w-0 flex-1">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight" x-text="user.username"></h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate" x-text="user.email"></p>
+                                <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
+                                        :class="{
+                                            'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400': user.role === 'superadmin',
+                                            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400': user.role === 'admin',
+                                            'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400': user.role === 'user'
+                                        }" x-text="user.role.charAt(0).toUpperCase() + user.role.slice(1)">
+                                    </span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider whitespace-nowrap"
+                                        :class="user.is_active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'">
+                                        <span x-text="user.is_active ? 'Aktif' : 'Menunggu'"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Chevron Icon --}}
+                        <div class="ml-2 shrink-0 p-1 text-gray-400">
+                            <svg class="w-5 h-5 transition-transform duration-200" :class="expandedId === user.id ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </button>
+
+                    {{-- Card Expanded Detail Body --}}
+                    <div x-show="expandedId === user.id" x-collapse class="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-gray-800/80 space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+                            <div class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Email</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="user.email || '-'"></span>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Pegawai Terhubung</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="user.pegawai ? user.pegawai.nama : 'Tidak dihubungkan'"></span>
+                            </div>
+                        </div>
+
+                        {{-- Tombol Aksi Mobile --}}
+                        <div class="flex items-center gap-2 pt-2">
+                            <template x-if="!user.is_active">
+                                <button type="button" @click="confirmActivate('{{ url('/admin/users') }}/' + user.id + '/activate', user.username)" class="flex-1 py-2.5 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-sm whitespace-nowrap">
+                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Setujui</span>
+                                </button>
+                            </template>
+                            <button @click="openEditModal(user, user.pegawai)" type="button" class="flex-1 py-2.5 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-sm whitespace-nowrap">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                <span>Edit</span>
+                            </button>
+                            <button @click="confirmDelete('{{ url('/admin/users') }}/' + user.id)" type="button" class="flex-1 py-2.5 px-2 bg-red-50 hover:bg-red-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/30 text-red-600 dark:text-rose-400 border border-red-200 dark:border-rose-900/40 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors whitespace-nowrap">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                <span>Hapus</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="paginatedUsers.length === 0">
+                <div class="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">Tidak ada data yang ditemukan.</div>
+            </template>
         </div>
         <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <span class="text-sm text-gray-500 dark:text-gray-400">
@@ -257,6 +336,10 @@
         @csrf
         @method('DELETE')
     </form>
+    <form id="activate-form" method="POST" style="display: none;">
+        @csrf
+        @method('PATCH')
+    </form>
 </div>
 
 <script>
@@ -269,6 +352,7 @@ document.addEventListener('alpine:init', () => {
         currentPage: 1,
         sortCol: 'username',
         sortAsc: true,
+        expandedId: null,
 
         getSelectedPegawaiLabel() {
             if (!this.form.pegawai_id) return '-- Tidak Dihubungkan --';
@@ -471,6 +555,24 @@ document.addEventListener('alpine:init', () => {
             };
             this.currentPegawai = pegawai;
             this.modalOpen = true;
+        },
+        confirmActivate(url, username) {
+            Swal.fire({
+                title: 'Konfirmasi Persetujuan',
+                text: `Apakah Anda yakin ingin menyetujui akun "${username}"? Akun akan langsung aktif dan pengguna dapat login.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Setujui!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let form = document.getElementById('activate-form');
+                    form.action = url;
+                    form.submit();
+                }
+            })
         },
         confirmDelete(url) {
             Swal.fire({

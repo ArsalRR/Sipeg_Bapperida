@@ -58,6 +58,7 @@ class Pegawai extends Model
                 'golongan'           => $pegawai->golongan,
                 'jabatan_id'         => $pegawai->jabatan_id,
                 'status_pernikahan'  => $pegawai->status_pernikahan,
+                'status_kerja'       => $pegawai->status_kerja ?? 'Aktif',
                 'tanggal_berlaku'    => $tanggalBerlaku,
             ]);
         });
@@ -79,6 +80,7 @@ class Pegawai extends Model
         'jabatan_id',
         'golongan',
         'status_pernikahan',
+        'status_kerja',
         'tanggal_berlaku',
         'foto',
     ];

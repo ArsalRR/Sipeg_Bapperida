@@ -41,6 +41,7 @@ class PegawaiController extends Controller
             'jabatan_id' => ['required', 'exists:jabatans,id'],
             'golongan' => ['nullable', 'string', 'max:50'],
             'status_pernikahan' => ['required', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
+            'status_kerja' => ['required', Rule::in(['Aktif', 'Tidak Aktif'])],
             'user_id' => ['nullable', 'exists:users,id', 'unique:pegawais,user_id'],
             'tanggal_berlaku' => ['nullable', 'date'],
             'foto' => ['nullable', 'image', 'max:2048'],
@@ -51,7 +52,7 @@ class PegawaiController extends Controller
         }
 
         if ($request->hasFile('foto')) {
-            $validated['foto'] = $request->file('foto')->storage('pegawai/foto', 'public');
+            $validated['foto'] = $request->file('foto')->store('pegawai/foto', 'public');
         }
 
         // Cek kapasitas jabatan
@@ -84,6 +85,7 @@ class PegawaiController extends Controller
             'jabatan_id' => ['required', 'exists:jabatans,id'],
             'golongan' => ['nullable', 'string', 'max:50'],
             'status_pernikahan' => ['required', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
+            'status_kerja' => ['required', Rule::in(['Aktif', 'Tidak Aktif'])],
             'user_id' => ['nullable', 'exists:users,id', Rule::unique('pegawais')->ignore($pegawai->id)],
             'tanggal_berlaku' => ['nullable', 'date'],
             'foto' => ['nullable', 'image', 'max:2048'],

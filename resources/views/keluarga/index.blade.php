@@ -36,7 +36,8 @@
                     <input type="text" x-model="search" placeholder="Cari NIP atau Nama Pegawai..." class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
                 </div>
             </div>
-            <div class="overflow-x-auto">
+            <!-- Desktop View: Table -->
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
@@ -57,7 +58,7 @@
                                     <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" x-text="(p.keluargas ? p.keluargas.length : 0) + ' Orang'"></span>
                                 </td>
                                 <td class="px-6 py-4 text-right space-x-2">
-                                    <button @click="openDetailModal(p)" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 rounded-lg font-medium text-sm transition-colors inline-flex items-center gap-1.5">
+                                    <button @click="openDetailModal(p)" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 rounded-lg font-medium text-sm transition-colors inline-flex items-center gap-1.5 whitespace-nowrap">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                         Lihat Detail Keluarga
                                     </button>
@@ -72,8 +73,53 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Mobile View: Accordion List -->
+            <div class="block sm:hidden divide-y divide-gray-100 dark:divide-gray-800">
+                <template x-for="p in paginatedPegawai" :key="p.id">
+                    <div class="p-4 space-y-3 bg-white dark:bg-[#111111]">
+                        <div class="flex justify-between items-start cursor-pointer select-none" @click="toggleExpand(p.id)">
+                            <div class="space-y-1 pr-2">
+                                <h4 class="font-bold text-slate-900 dark:text-white text-base" x-text="p.nama"></h4>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs text-gray-500 dark:text-gray-400" x-text="'NIP: ' + p.nip"></span>
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" x-text="(p.keluargas ? p.keluargas.length : 0) + ' Anggota'"></span>
+                                </div>
+                            </div>
+                            <button type="button" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <svg class="w-5 h-5 transition-transform duration-200" :class="expandedId === p.id ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Accordion Detail -->
+                        <div x-show="expandedId === p.id" x-collapse class="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                            <div class="grid grid-cols-1 gap-2 text-xs">
+                                <div>
+                                    <span class="text-gray-500 dark:text-gray-400">Jabatan:</span>
+                                    <span class="font-medium text-slate-900 dark:text-white ml-1" x-text="p.jabatan ? p.jabatan.nama_jabatan : '-'"></span>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 flex items-center justify-end">
+                                <button @click="openDetailModal(p)" class="w-full px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    Lihat Detail Keluarga
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="paginatedPegawai.length === 0">
+                    <div class="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                        Pegawai tidak ditemukan.
+                    </div>
+                </template>
+            </div>
             <div class="p-4 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <span class="text-sm text-gray-500 dark:text-gray-400">
+                <span class="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
                     Menampilkan <span x-text="filteredPegawai.length > 0 ? ((currentPage - 1) * perPage) + 1 : 0"></span>
                     sampai <span x-text="Math.min(currentPage * perPage, filteredPegawai.length)"></span>
                     dari <span x-text="filteredPegawai.length"></span> pegawai
@@ -99,7 +145,8 @@
         @else
 
         <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-            <div class="overflow-x-auto">
+            <!-- Desktop View: Table -->
+            <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
@@ -154,12 +201,75 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Mobile View: Accordion List -->
+            <div class="block sm:hidden divide-y divide-gray-100 dark:divide-gray-800">
+                @forelse($keluargas as $k)
+                    <div class="p-4 space-y-3 bg-white dark:bg-[#111111]">
+                        <div class="flex justify-between items-start cursor-pointer select-none" @click="toggleExpand({{ $k->id }})">
+                            <div class="space-y-1">
+                                <h4 class="font-bold text-slate-900 dark:text-white text-base">{{ $k->nama }}</h4>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                        {{ $k->hubungan }}
+                                    </span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold {{ $k->tunjangan === 'Dapat' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400' }}">
+                                        Tunjangan: {{ $k->tunjangan }}
+                                    </span>
+                                </div>
+                            </div>
+                            <button type="button" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <svg class="w-5 h-5 transition-transform duration-200" :class="expandedId === {{ $k->id }} ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Accordion Detail -->
+                        <div x-show="expandedId === {{ $k->id }}" x-collapse class="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                            <div class="grid grid-cols-1 gap-2 text-xs">
+                                <div>
+                                    <span class="text-gray-500 dark:text-gray-400">TTL:</span>
+                                    <span class="font-medium text-slate-900 dark:text-white ml-1">
+                                        {{ $k->tempat_lahir ?? '-' }}{{ $k->tanggal_lahir ? ', ' . $k->tanggal_lahir->format('d M Y') : '' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 dark:text-gray-400">Tgl Perkawinan:</span>
+                                    <span class="font-medium text-slate-900 dark:text-white ml-1">
+                                        {{ in_array($k->hubungan, ['Suami','Istri']) && $k->tanggal_perkawinan ? $k->tanggal_perkawinan->format('d M Y') : '-' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 dark:text-gray-400">Pekerjaan:</span>
+                                    <span class="font-medium text-slate-900 dark:text-white ml-1">{{ $k->pekerjaan ?? '-' }}</span>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 flex items-center justify-end gap-2">
+                                <button @click="openEditModal({{ json_encode($k) }})" class="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Edit
+                                </button>
+                                <button @click="confirmDelete('{{ url('/keluarga') }}/{{ $k->id }}')" class="px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                        Belum ada data keluarga.
+                    </div>
+                @endforelse
+            </div>
         </div>
         @endif
     </div>
     <template x-teleport="body">
     <div x-show="detailModalOpen"
-         class="flex items-center justify-center p-6 sm:p-10"
+         class="flex items-center justify-center p-3 sm:p-6"
          x-cloak
          style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999;"
          @keydown.escape.window="detailModalOpen = false">
@@ -171,25 +281,31 @@
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100"
              class="relative w-full max-w-4xl flex flex-col bg-white dark:bg-[#111111] shadow-2xl rounded-2xl border border-gray-100 dark:border-gray-800 transition-all transform z-10 overflow-hidden">
-            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
-                <div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Detail Anggota Keluarga</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" x-text="selectedPegawai ? 'Pegawai: ' + selectedPegawai.nama + ' (NIP: ' + selectedPegawai.nip + ')' : ''"></p>
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex justify-between items-start gap-2">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Detail Anggota Keluarga</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 break-words" x-text="selectedPegawai ? 'Pegawai: ' + selectedPegawai.nama + ' (NIP: ' + selectedPegawai.nip + ')' : ''"></p>
+                    </div>
+                    <button @click="detailModalOpen = false" class="sm:hidden text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg p-1 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <a :href="'{{ url('/cetak-kp4') }}?pegawai_id=' + selectedPegawai.id" target="_blank" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1">
+                    <a :href="'{{ url('/cetak-kp4') }}?pegawai_id=' + selectedPegawai.id" target="_blank" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 whitespace-nowrap">
                         🖨️ Cetak KP4
                     </a>
-                    <button @click="openCreateModalForPegawai(selectedPegawai.id)" type="button" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1">
+                    <button @click="openCreateModalForPegawai(selectedPegawai.id)" type="button" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5 whitespace-nowrap">
                         + Tambah Keluarga
                     </button>
-                    <button @click="detailModalOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg p-1">
+                    <button @click="detailModalOpen = false" class="hidden sm:block text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg p-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
             </div>
-            <div class="p-6 overflow-y-auto max-h-[calc(100vh-14rem)]">
-                <div class="overflow-x-auto border border-gray-100 dark:border-gray-800 rounded-xl">
+            <div class="p-4 sm:p-6 overflow-y-auto max-h-[calc(100vh-14rem)] space-y-4">
+                <!-- Desktop View: Table -->
+                <div class="hidden sm:block overflow-x-auto border border-gray-100 dark:border-gray-800 rounded-xl">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
@@ -248,6 +364,46 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Mobile View: Card List -->
+                <div class="block sm:hidden border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-[#111111]">
+                    <template x-if="selectedPegawai && selectedPegawai.keluargas && selectedPegawai.keluargas.length > 0">
+                        <template x-for="k in selectedPegawai.keluargas" :key="k.id">
+                            <div class="p-3.5 space-y-2">
+                                <div class="flex justify-between items-start gap-2">
+                                    <div>
+                                        <h4 class="font-bold text-slate-900 dark:text-white text-sm" x-text="k.nama"></h4>
+                                        <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300" x-text="k.hubungan"></span>
+                                            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                                                :class="k.tunjangan === 'Dapat' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'"
+                                                x-text="'Tunjangan: ' + k.tunjangan">
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button @click="openEditModal(k)" class="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-lg">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <button @click="confirmDelete('{{ url('/keluarga') }}/' + k.id)" class="p-1.5 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-lg">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-1 text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-800">
+                                    <div>TTL: <span class="font-medium text-slate-800 dark:text-gray-200" x-text="(k.tempat_lahir || '-') + (k.tanggal_lahir ? ', ' + formatDate(k.tanggal_lahir) : '')"></span></div>
+                                    <div x-show="['Suami','Istri'].includes(k.hubungan)">Tgl Perkawinan: <span class="font-medium text-slate-800 dark:text-gray-200" x-text="k.tanggal_perkawinan ? formatDate(k.tanggal_perkawinan) : '-'"></span></div>
+                                    <div>Pekerjaan: <span class="font-medium text-slate-800 dark:text-gray-200" x-text="k.pekerjaan || '-'"></span></div>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template x-if="!selectedPegawai || !selectedPegawai.keluargas || selectedPegawai.keluargas.length === 0">
+                        <div class="p-6 text-center text-xs text-gray-500 dark:text-gray-400">
+                            Pegawai ini belum memiliki data anggota keluarga.
+                        </div>
+                    </template>
+                </div>
             </div>
 
             <div class="flex justify-end px-6 py-4 border-t border-gray-100 dark:border-gray-800 shrink-0">
@@ -260,7 +416,7 @@
     </template>
     <template x-teleport="body">
     <div x-show="modalOpen"
-         class="flex items-center justify-center p-6 sm:p-10"
+         class="flex items-center justify-center p-3 sm:p-6"
          x-cloak
          style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 999999;"
          @keydown.escape.window="modalOpen = false">
@@ -364,6 +520,11 @@ document.addEventListener('alpine:init', () => {
         search: '',
         perPage: 10,
         currentPage: 1,
+        expandedId: null,
+
+        toggleExpand(id) {
+            this.expandedId = this.expandedId === id ? null : id;
+        },
 
         detailModalOpen: false,
         selectedPegawai: null,

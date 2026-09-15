@@ -23,6 +23,7 @@ class HistoryPegawai extends Model
         'golongan',
         'jabatan_id',
         'status_pernikahan',
+        'status_kerja',
         'tanggal_berlaku',
     ];
 
