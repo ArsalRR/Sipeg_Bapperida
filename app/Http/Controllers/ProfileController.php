@@ -16,13 +16,23 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
 
+use Illuminate\Support\Facades\Schema;
+use App\Models\Bidang;
+
 class ProfileController extends Controller
 {
     public function index(): View
     {
         $user = Auth::user()->load('pegawai');
-        $jabatans = Jabatan::all();
-        return view('admin.profile.index', compact('user', 'jabatans'));
+        $jabatans = Jabatan::withCount(['pegawais' => function($q) {
+            $q->where('status_kerja', 'Aktif')->orWhereNull('status_kerja');
+        }])->get();
+
+        $bidangs = Schema::hasTable('bidangs') 
+            ? Bidang::orderBy('nama_bidang')->get() 
+            : collect([]);
+
+        return view('admin.profile.index', compact('user', 'jabatans', 'bidangs'));
     }
 
     public function update(Request $request): RedirectResponse
@@ -51,6 +61,7 @@ class ProfileController extends Controller
             'jenis_kelamin' => ['nullable', Rule::in(['Laki-laki', 'Perempuan'])],
             'agama' => ['nullable', 'string', 'max:50'],
             'status_kepegawaian' => ['nullable', Rule::in(['PNS', 'PPPK', 'CPNS', 'PPPK Paruh Waktu', 'Non ASN'])],
+            'bidang_id' => ['nullable', 'exists:bidangs,id'],
             'jabatan_id' => ['nullable', 'exists:jabatans,id'],
             'golongan' => ['nullable', 'string', 'max:50'],
             'status_pernikahan' => ['nullable', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
@@ -87,7 +98,8 @@ class ProfileController extends Controller
                     'jenis_kelamin' => $validated['jenis_kelamin'],
                     'agama' => $validated['agama'],
                     'status_kepegawaian' => $validated['status_kepegawaian'],
-                    'jabatan_id' => $validated['jabatan_id'],
+                    'bidang_id' => $validated['bidang_id'] ?? null,
+                    'jabatan_id' => $validated['jabatan_id'] ?? null,
                     'golongan' => $validated['golongan'],
                     'status_pernikahan' => $validated['status_pernikahan'],
                 ];

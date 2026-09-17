@@ -32,9 +32,10 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #000000; padding-bottom: 12px; color: #000000 !important;">
                 <!-- Left Title -->
                 <div style="width: 48%;">
-                    <h1 style="font-size: 15px; font-weight: bold; margin: 0; line-height: 1.4; color: #000000 !important; font-family: Arial, sans-serif; text-transform: uppercase;">
-                        Peta Jabatan Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah Kota Pekalongan
-                    </h1>
+                    <h1 style="font-size: 13px; font-weight: bold; margin: 0; line-height: 1.4; color: #000000 !important; font-family: Arial, sans-serif; text-transform: uppercase;">
+                        Peta Jabatan Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah
+                    <br>Kota Pekalongan </br>
+                </h1>
                 </div>
 
                 <!-- Right Lampiran & Rekap Table -->

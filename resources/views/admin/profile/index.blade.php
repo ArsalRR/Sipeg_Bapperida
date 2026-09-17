@@ -161,7 +161,36 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+                <div x-data="{
+                    bidangs: {{ Js::from($bidangs) }},
+                    jabatans: {{ Js::from($jabatans) }},
+                    selectedBidangId: '{{ old('bidang_id', $user->pegawai->bidang_id ?? '') }}',
+                    selectedJabatanId: '{{ old('jabatan_id', $user->pegawai->jabatan_id ?? '') }}',
+                    jabatanOpen: false,
+
+                    get availableJabatans() {
+                        if (!this.selectedBidangId) return [];
+                        const b = this.bidangs.find(item => item.id == this.selectedBidangId);
+                        if (!b) return [];
+                        return this.jabatans.filter(j => {
+                            if (!j.unit_kerja) return false;
+                            const u = j.unit_kerja.toLowerCase().trim();
+                            const bNama = b.nama_bidang.toLowerCase().trim();
+                            const bSing = b.singkatan.toLowerCase().trim();
+                            return u === bNama || u === bSing || u.includes(bSing) || bNama.includes(u);
+                        });
+                    },
+
+                    getJabatanNama(id) {
+                        if (!id) return '';
+                        const j = this.jabatans.find(item => item.id == id);
+                        return j ? j.nama_jabatan : '';
+                    },
+
+                    onBidangChange() {
+                        this.selectedJabatanId = '';
+                    }
+                }" class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">Status Kepegawaian</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -173,18 +202,74 @@
                             </select>
                             @error('status_kepegawaian') <p class="text-red-500 text-[10px] font-semibold mt-1">{{ $message }}</p> @enderror
                         </div>
+
+                        {{-- Bidang / Unit Kerja --}}
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Jabatan</label>
-                            <select name="jabatan_id" class="w-full px-4 py-2 border @error('jabatan_id') border-red-500 @else border-gray-300 dark:border-gray-700 @enderror rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
-                                <option value="">-- Pilih Jabatan --</option>
-                                @foreach($jabatans as $jab)
-                                    <option value="{{ $jab->id }}" {{ old('jabatan_id', $user->pegawai->jabatan_id ?? '') == $jab->id ? 'selected' : '' }}>
-                                        {{ $jab->nama_jabatan }}
+                            <label class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Bidang / Unit Kerja</label>
+                            <select name="bidang_id" x-model="selectedBidangId" @change="onBidangChange()" class="w-full px-4 py-2 border @error('bidang_id') border-red-500 @else border-gray-300 dark:border-gray-700 @enderror rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                <option value="">-- Pilih Bidang / Unit Kerja --</option>
+                                @foreach($bidangs as $b)
+                                    <option value="{{ $b->id }}">
+                                        {{ $b->nama_bidang }} ({{ $b->singkatan }})
                                     </option>
                                 @endforeach
                             </select>
+                            @error('bidang_id') <p class="text-red-500 text-[10px] font-semibold mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Jabatan (Menyesuaikan Bidang) --}}
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+                                Jabatan
+                                <span x-show="!selectedBidangId" class="text-xs text-amber-600 dark:text-amber-400 font-normal ml-1">(Pilih Bidang terlebih dahulu)</span>
+                            </label>
+                            <input type="hidden" name="jabatan_id" x-model="selectedJabatanId">
+                            
+                            <button type="button" 
+                                @click="if (selectedBidangId) jabatanOpen = !jabatanOpen" 
+                                @click.outside="jabatanOpen = false"
+                                :disabled="!selectedBidangId"
+                                :class="!selectedBidangId ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-slate-800' : 'bg-gray-50 dark:bg-slate-900'"
+                                class="w-full px-4 py-2 border @error('jabatan_id') border-red-500 @else border-gray-300 dark:border-gray-700 @enderror rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-left flex items-center justify-between transition-colors">
+                                <span x-text="selectedJabatanId ? getJabatanNama(selectedJabatanId) : (selectedBidangId ? '-- Pilih Jabatan --' : '-- Pilih Bidang Terlebih Dahulu --')" :class="!selectedJabatanId ? 'text-gray-400' : ''"></span>
+                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+
+                            <div x-show="jabatanOpen && selectedBidangId" x-transition x-cloak
+                                class="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
+                                <template x-for="jab in availableJabatans" :key="jab.id">
+                                    <button type="button"
+                                        @click="
+                                            const maxCap = jab.kebutuhan || jab.jumlah;
+                                            const isFull = maxCap !== null && maxCap > 0 && jab.pegawais_count >= maxCap && selectedJabatanId != jab.id;
+                                            if (isFull) {
+                                                alert('Formasi Jabatan ' + jab.nama_jabatan + ' sudah terisi penuh (' + jab.pegawais_count + '/' + maxCap + ').');
+                                            } else {
+                                                selectedJabatanId = jab.id;
+                                                jabatanOpen = false;
+                                            }
+                                        "
+                                        :class="
+                                            (jab.kebutuhan || jab.jumlah) !== null && (jab.kebutuhan || jab.jumlah) > 0 && jab.pegawais_count >= (jab.kebutuhan || jab.jumlah) && selectedJabatanId != jab.id
+                                            ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed bg-gray-50 dark:bg-[#111]'
+                                            : (selectedJabatanId == jab.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-semibold' : 'text-slate-900 dark:text-white hover:bg-gray-100 dark:hover:bg-[#222]')
+                                        "
+                                        class="w-full px-4 py-2.5 text-left text-sm flex items-center justify-between border-b border-gray-100 dark:border-gray-800 last:border-0 transition-colors">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="truncate" x-text="jab.nama_jabatan"></span>
+                                            <span class="text-xs opacity-60 shrink-0" x-text="'(' + (jab.jenis_jabatan || '-') + ')'"></span>
+                                        </div>
+                                    </button>
+                                </template>
+                                <template x-if="availableJabatans.length === 0">
+                                    <div class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+                                        Tidak ada jabatan untuk bidang ini.
+                                    </div>
+                                </template>
+                            </div>
                             @error('jabatan_id') <p class="text-red-500 text-[10px] font-semibold mt-1">{{ $message }}</p> @enderror
                         </div>
+
                         <div>
                             <label class="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Golongan</label>
                             <select name="golongan" class="w-full px-4 py-2 border @error('golongan') border-red-500 @else border-gray-300 dark:border-gray-700 @enderror rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">

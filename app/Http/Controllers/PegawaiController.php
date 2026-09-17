@@ -117,8 +117,11 @@ class PegawaiController extends Controller
             $validated['foto'] = $request->file('foto')->store('pegawai/foto', 'public');
         }
 
-        // Cek kapasitas jabatan (kecualikan pegawai ini sendiri)
-        if ($validated['jabatan_id'] != $pegawai->jabatan_id) {
+        // Cek kapasitas jabatan (jika ganti jabatan ATAU mengaktifkan pegawai yang tadinya Tidak Aktif)
+        $isActivating = ($validated['status_kerja'] === 'Aktif' && $pegawai->status_kerja === 'Tidak Aktif');
+        $isChangingJabatan = ($validated['jabatan_id'] != $pegawai->jabatan_id);
+
+        if (($isChangingJabatan || $isActivating) && $validated['status_kerja'] === 'Aktif') {
             $jabatan = Jabatan::find($validated['jabatan_id']);
             if ($jabatan) {
                 $maxCapacity = $jabatan->kebutuhan ?? $jabatan->jumlah;
@@ -128,7 +131,7 @@ class PegawaiController extends Controller
                     })->count();
 
                     if ($currentActiveCount >= $maxCapacity) {
-                        return back()->withInput()->with('error', "Jabatan {$jabatan->nama_jabatan} sudah terisi penuh ({$currentActiveCount}/{$maxCapacity} formasi).");
+                        return back()->withInput()->with('error', "Jabatan {$jabatan->nama_jabatan} sudah terisi penuh oleh pegawai aktif lain ({$currentActiveCount}/{$maxCapacity} formasi). Pegawai tidak dapat diaktifkan pada jabatan ini.");
                     }
                 }
             }
