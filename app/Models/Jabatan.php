@@ -20,6 +20,7 @@ class Jabatan extends Model
         'kelas_jabatan',
         'kebutuhan',
         'kategori_warna',
+        'unit_kerja',
         'jumlah',
     ];
 
@@ -35,7 +36,7 @@ class Jabatan extends Model
 
     public function children(): HasMany
     {
-        return $this->hasMany(Jabatan::class, 'parent_id')->with(['children', 'pegawais']);
+        return $this->hasMany(Jabatan::class, 'parent_id');
     }
 
     public function pegawais(): HasMany
@@ -45,6 +46,16 @@ class Jabatan extends Model
 
     public function getBezettingAttribute(): int
     {
+        if ($this->relationLoaded('pegawais')) {
+            return $this->pegawais->filter(function($p) {
+                return $p->status_kerja === 'Aktif' || is_null($p->status_kerja);
+            })->count();
+        }
+
+        if (isset($this->attributes['pegawais_count'])) {
+            return (int) $this->attributes['pegawais_count'];
+        }
+
         return $this->pegawais()->where(function($q) {
             $q->where('status_kerja', 'Aktif')->orWhereNull('status_kerja');
         })->count();

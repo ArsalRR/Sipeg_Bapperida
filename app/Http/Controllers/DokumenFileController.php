@@ -160,6 +160,18 @@ class DokumenFileController extends Controller
             'file_upload.mimes'    => 'Format file harus berupa PDF.',
         ]);
 
+        // Cegah duplikasi submit berturut-turut dalam jeda 5 detik
+        $recentDuplicate = DokumenFile::where('pegawai_id', $pegawaiId)
+            ->where('jenis_dokumen', $request->jenis_dokumen)
+            ->where('tahun', $request->tahun)
+            ->where('keterangan', $request->keterangan)
+            ->where('created_at', '>=', now()->subSeconds(5))
+            ->first();
+
+        if ($recentDuplicate) {
+            return back()->with('success', 'Dokumen berhasil diunggah.');
+        }
+
         $filePath = null;
         if ($request->hasFile('file_upload')) {
             $file = $request->file('file_upload');

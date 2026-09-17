@@ -79,6 +79,9 @@
                         <th x-show="columns.jabatan.visible" @click="sortBy('jabatan_nama')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">Jabatan <span x-html="sortIcon('jabatan_nama')"></span></div>
                         </th>
+                        <th x-show="columns.bidang.visible" @click="sortBy('bidang_nama')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
+                            <div class="flex items-center gap-1">Bidang / Unit <span x-html="sortIcon('bidang_nama')"></span></div>
+                        </th>
                         <th x-show="columns.status.visible" @click="sortBy('status_kepegawaian')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">Status <span x-html="sortIcon('status_kepegawaian')"></span></div>
                         </th>
@@ -130,9 +133,18 @@
                                     </div>
                                 </div>
                             </td>
-                            {{-- Kolom NIP --}}
                             <td x-show="columns.nip.visible" class="px-6 py-3 text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="p.nip"></td>
                             <td x-show="columns.jabatan.visible" class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="p.jabatan ? p.jabatan.nama_jabatan : '-'"></td>
+                            <td x-show="columns.bidang.visible" class="px-6 py-3 text-sm whitespace-nowrap">
+                                <template x-if="p.bidang">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 uppercase">
+                                        <span x-text="p.bidang.singkatan"></span>
+                                    </span>
+                                </template>
+                                <template x-if="!p.bidang">
+                                    <span class="text-gray-400 dark:text-gray-500 text-xs">-</span>
+                                </template>
+                            </td>
                              <td x-show="columns.status.visible" class="px-6 py-3 text-sm">
                                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                                     :class="{
@@ -501,24 +513,43 @@
                                 <input x-show="form.status_kepegawaian === 'Non ASN'" type="text" disabled value="-" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-400">
                             </div>
 
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Bidang / Unit Kerja <span class="text-red-500">*</span></label>
+                                <select name="bidang_id" x-model="form.bidang_id" @change="onBidangChange()" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                    <option value="">-- Pilih Bidang / Unit Kerja Terlebih Dahulu --</option>
+                                    @foreach($bidangs as $b)
+                                        <option value="{{ $b->id }}">{{ $b->nama_bidang }} ({{ $b->singkatan }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <div x-data="{ jabatanOpen: false }" class="relative">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Jabatan <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                    Jabatan <span class="text-red-500">*</span>
+                                    <span x-show="!form.bidang_id" class="text-xs text-amber-600 dark:text-amber-400 font-normal ml-1">(Pilih Bidang terlebih dahulu)</span>
+                                </label>
                                 <input type="hidden" name="jabatan_id" x-model="form.jabatan_id" required>
-                                <button type="button" @click="jabatanOpen = !jabatanOpen" @click.outside="jabatanOpen = false"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-left flex items-center justify-between">
-                                    <span x-text="form.jabatan_id ? getJabatanNama(form.jabatan_id) : '-- Pilih Jabatan --'" :class="!form.jabatan_id ? 'text-gray-400' : ''"></span>
+                                <button type="button" 
+                                    @click="if (form.bidang_id) jabatanOpen = !jabatanOpen" 
+                                    @click.outside="jabatanOpen = false"
+                                    :disabled="!form.bidang_id"
+                                    :class="!form.bidang_id ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-slate-800' : 'bg-gray-50 dark:bg-slate-900'"
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-left flex items-center justify-between transition-colors">
+                                    <span x-text="form.jabatan_id ? getJabatanNama(form.jabatan_id) : (form.bidang_id ? '-- Pilih Jabatan --' : '-- Pilih Bidang Terlebih Dahulu --')" :class="!form.jabatan_id ? 'text-gray-400' : ''"></span>
                                     <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                 </button>
-                                <div x-show="jabatanOpen" x-transition x-cloak
+                                <div x-show="jabatanOpen && form.bidang_id" x-transition x-cloak
                                     class="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
-                                    <template x-for="jab in allJabatans" :key="jab.id">
+                                    <template x-for="jab in availableJabatansForForm" :key="jab.id">
                                         <button type="button"
                                             @click="
-                                                if (jab.jumlah !== null && jab.pegawais_count >= jab.jumlah && form.jabatan_id != jab.id) {
+                                                const maxCap = jab.kebutuhan || jab.jumlah;
+                                                const isFull = maxCap !== null && maxCap > 0 && jab.pegawais_count >= maxCap && form.jabatan_id != jab.id;
+                                                if (isFull) {
                                                     Swal.fire({
                                                         icon: 'warning',
-                                                        title: 'Jabatan Penuh!',
-                                                        text: 'Jabatan ' + jab.nama_jabatan + ' sudah terisi penuh (' + jab.pegawais_count + '/' + jab.jumlah + ')',
+                                                        title: 'Formasi Jabatan Penuh!',
+                                                        text: 'Jabatan ' + jab.nama_jabatan + ' sudah terisi penuh (' + jab.pegawais_count + '/' + maxCap + ' formasi). Tidak dapat menambah pegawai baru pada posisi ini.',
                                                         confirmButtonColor: '#3085d6'
                                                     });
                                                 } else {
@@ -526,15 +557,22 @@
                                                     jabatanOpen = false;
                                                 }
                                             "
-                                            :class="jab.jumlah !== null && jab.pegawais_count >= jab.jumlah && form.jabatan_id != jab.id
+                                            :class="
+                                                (jab.kebutuhan || jab.jumlah) !== null && (jab.kebutuhan || jab.jumlah) > 0 && jab.pegawais_count >= (jab.kebutuhan || jab.jumlah) && form.jabatan_id != jab.id
                                                 ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed bg-gray-50 dark:bg-[#111]'
-                                                : (form.jabatan_id == jab.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'text-slate-900 dark:text-white hover:bg-gray-100 dark:hover:bg-[#222]')"
+                                                : (form.jabatan_id == jab.id ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-semibold' : 'text-slate-900 dark:text-white hover:bg-gray-100 dark:hover:bg-[#222]')
+                                            "
                                             class="w-full px-4 py-2.5 text-left text-sm flex items-center justify-between border-b border-gray-100 dark:border-gray-800 last:border-0 transition-colors">
-                                            <span>
-                                                <span x-text="jab.nama_jabatan"></span>
-                                                <span class="text-xs ml-1 opacity-60" x-text="'(' + jab.jenis_jabatan + ')'"></span>
-                                            </span>
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="truncate" x-text="jab.nama_jabatan"></span>
+                                                <span class="text-xs opacity-60 shrink-0" x-text="'(' + jab.jenis_jabatan + ')'"></span>
+                                            </div>
                                         </button>
+                                    </template>
+                                    <template x-if="availableJabatansForForm.length === 0">
+                                        <div class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+                                            Tidak ada jabatan untuk bidang ini.
+                                        </div>
                                     </template>
                                 </div>
                             </div>
@@ -638,6 +676,7 @@
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Tempat, Tgl Lahir</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Kelamin</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Agama</th>
+                                    <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Bidang / Unit</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Jabatan</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Gol</th>
                                     <th class="px-3 py-3 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase whitespace-nowrap">Status</th>
@@ -660,6 +699,8 @@
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.jenis_kelamin || '-'"></td>
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.agama || '-'"></td>
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400"
+                                            x-text="h.bidang ? h.bidang.nama_bidang + (h.bidang.singkatan ? ' (' + h.bidang.singkatan + ')' : '') : '-'"></td>
+                                        <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400"
                                             x-text="h.jabatan ? h.jabatan.nama_jabatan + ' (' + h.jabatan.jenis_jabatan + ')' : '-'"></td>
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.golongan || '-'"></td>
                                         <td class="px-3 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="h.status_kepegawaian || '-'"></td>
@@ -670,7 +711,7 @@
                                 </template>
                                 <template x-if="histories.length === 0">
                                     <tr>
-                                        <td colspan="12" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400 italic">Belum ada riwayat perubahan data.</td>
+                                        <td colspan="14" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400 italic">Belum ada riwayat perubahan data.</td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -710,6 +751,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('pegawaiCrud', () => ({
         allPegawai: @json($pegawais),
         allJabatans: @json($jabatans),
+        allBidangs: @json($bidangs),
         allUsers: @json($users),
         search: '',
         perPage: 5,
@@ -717,6 +759,81 @@ document.addEventListener('alpine:init', () => {
         sortCol: 'nama',
         sortAsc: true,
         showColumnDropdown: false,
+
+        get availableJabatansForForm() {
+            if (!this.form.bidang_id) return [];
+
+            const selectedBidang = this.allBidangs.find(b => b.id == this.form.bidang_id);
+            if (!selectedBidang) return [];
+
+            const bSingkatan = (selectedBidang.singkatan || '').toLowerCase().trim();
+            const bNama = (selectedBidang.nama_bidang || '').toLowerCase().trim();
+
+            const unitSpecs = {
+                'umum': ['umum', 'umpeg', 'kepegawaian', 'subbag umum'],
+                'perencanaan_evaluasi': ['perencanaan_evaluasi', 'perencanaan evaluasi', 'keuangan', 'subbag perencanaan'],
+                'ppm': ['ppm', 'pemerintahan', 'pembangunan manusia'],
+                'ekonomi': ['ekonomi', 'perekonomian', 'sda', 'infrastruktur', 'kewilayahan'],
+                'ppepd': ['ppepd', 'pengendalian', 'evaluasi pembangunan'],
+                'litbang': ['litbang', 'riset', 'rida', 'inovasi', 'penelitian'],
+                'sekretariat': ['sekretariat', 'kepala badan', 'sekretaris']
+            };
+
+            let canonicalCode = null;
+            let targetAliases = [];
+            for (const [key, aliases] of Object.entries(unitSpecs)) {
+                if (aliases.some(a => (bSingkatan && (bSingkatan === a || bSingkatan.includes(a) || a.includes(bSingkatan))) || (bNama && bNama.includes(a)))) {
+                    canonicalCode = key;
+                    targetAliases = aliases;
+                    break;
+                }
+            }
+
+            if (!targetAliases.length) {
+                targetAliases = [bSingkatan, bNama].filter(Boolean);
+            }
+
+            // Filter jabatans strictly by unit_kerja matching targetAliases
+            let list = this.allJabatans.filter(j => {
+                const u = (j.unit_kerja || '').toLowerCase().trim();
+                if (!u) return false;
+                return u === canonicalCode || targetAliases.some(a => u === a || u.includes(a));
+            });
+
+            // Sort list to prioritize exact unit match and available capacity
+            list.sort((a, b) => {
+                const uA = (a.unit_kerja || '').toLowerCase().trim();
+                const uB = (b.unit_kerja || '').toLowerCase().trim();
+                const exactA = (uA === canonicalCode || uA === bSingkatan) ? 0 : 1;
+                const exactB = (uB === canonicalCode || uB === bSingkatan) ? 0 : 1;
+                if (exactA !== exactB) return exactA - exactB;
+                return (a.pegawais_count || 0) - (b.pegawais_count || 0);
+            });
+
+            // Deduplicate dropdown list by nama_jabatan
+            const seenNames = new Set();
+            const uniqueList = [];
+            for (const j of list) {
+                const normName = (j.nama_jabatan || '').toLowerCase().trim();
+                if (!seenNames.has(normName)) {
+                    seenNames.add(normName);
+                    uniqueList.push(j);
+                }
+            }
+
+            return uniqueList;
+        },
+
+        onBidangChange() {
+            if (!this.form.bidang_id) {
+                this.form.jabatan_id = '';
+                return;
+            }
+            const avail = this.availableJabatansForForm;
+            if (this.form.jabatan_id && !avail.some(j => j.id == this.form.jabatan_id)) {
+                this.form.jabatan_id = '';
+            }
+        },
 
         getSelectedAccountLabel() {
             if (!this.form.user_id) return '-- Tidak Ada Akun --';
@@ -743,6 +860,7 @@ document.addEventListener('alpine:init', () => {
             nama: { label: 'Nama', visible: true },
             nip: { label: 'NIP', visible: true },
             jabatan: { label: 'Jabatan', visible: true },
+            bidang: { label: 'Bidang / Unit', visible: true },
             status: { label: 'Status Kepegawaian', visible: true },
             status_kerja: { label: 'Status Keaktifan', visible: true },
             golongan: { label: 'Golongan', visible: true },
@@ -870,7 +988,9 @@ document.addEventListener('alpine:init', () => {
                     (p.nama && p.nama.toLowerCase().includes(q)) ||
                     (p.nip && p.nip.toLowerCase().includes(q)) ||
                     (p.nik && p.nik.toLowerCase().includes(q)) ||
-                    (p.jabatan && p.jabatan.nama_jabatan && p.jabatan.nama_jabatan.toLowerCase().includes(q))
+                    (p.jabatan && p.jabatan.nama_jabatan && p.jabatan.nama_jabatan.toLowerCase().includes(q)) ||
+                    (p.bidang && p.bidang.nama_bidang && p.bidang.nama_bidang.toLowerCase().includes(q)) ||
+                    (p.bidang && p.bidang.singkatan && p.bidang.singkatan.toLowerCase().includes(q))
                 );
             }
 
@@ -881,6 +1001,9 @@ document.addEventListener('alpine:init', () => {
                 if (this.sortCol === 'jabatan_nama') {
                     valA = a.jabatan ? a.jabatan.nama_jabatan : '';
                     valB = b.jabatan ? b.jabatan.nama_jabatan : '';
+                } else if (this.sortCol === 'bidang_nama') {
+                    valA = a.bidang ? a.bidang.nama_bidang : '';
+                    valB = b.bidang ? b.bidang.nama_bidang : '';
                 }
 
                 if (typeof valA === 'string') valA = valA.toLowerCase();
@@ -1087,7 +1210,7 @@ document.addEventListener('alpine:init', () => {
             this.form = {
                 nama: '', gelar_depan: '', gelar_belakang: '', nip: '', nik: '', alamat: '',
                 tempat_lahir: '', tanggal_lahir: '', jenis_kelamin: 'Laki-laki', agama: '',
-                status_kepegawaian: 'PNS', status_kerja: 'Aktif', jabatan_id: '', golongan: '', status_pernikahan: 'Lajang',
+                status_kepegawaian: 'PNS', status_kerja: 'Aktif', jabatan_id: '', bidang_id: '', golongan: '', status_pernikahan: 'Lajang',
                 tanggal_berlaku: new Date().toISOString().split('T')[0], user_id: ''
             };
             this.currentAccount = null;
@@ -1100,13 +1223,28 @@ document.addEventListener('alpine:init', () => {
             this.activeTab = 'data';
             this.submitting = false;
             this.formAction = `/admin/pegawais/${p.id}`;
+
+            let bId = p.bidang_id || '';
+            if (!bId && p.jabatan && p.jabatan.unit_kerja) {
+                const u = (p.jabatan.unit_kerja || '').toLowerCase().trim();
+                const matched = this.allBidangs.find(b => {
+                    const bs = (b.singkatan || '').toLowerCase().trim();
+                    const bn = (b.nama_bidang || '').toLowerCase().trim();
+                    return (bs && (u === bs || u.includes(bs) || bs.includes(u))) ||
+                           (bn && (u.includes(bn) || bn.includes(u)));
+                });
+                if (matched) {
+                    bId = matched.id;
+                }
+            }
+
             this.form = {
                 nama: p.nama, gelar_depan: p.gelar_depan || '', gelar_belakang: p.gelar_belakang || '',
                 nip: p.nip, nik: p.nik, alamat: p.alamat, tempat_lahir: p.tempat_lahir,
                 tanggal_lahir: p.tanggal_lahir ? p.tanggal_lahir.split('T')[0] : '',
                 jenis_kelamin: p.jenis_kelamin, agama: p.agama, status_kepegawaian: p.status_kepegawaian,
                 status_kerja: p.status_kerja || 'Aktif',
-                jabatan_id: p.jabatan_id, golongan: p.golongan || '', status_pernikahan: p.status_pernikahan,
+                jabatan_id: p.jabatan_id, bidang_id: bId, golongan: p.golongan || '', status_pernikahan: p.status_pernikahan,
                 tanggal_berlaku: p.tanggal_berlaku ? p.tanggal_berlaku.split('T')[0] : new Date().toISOString().split('T')[0],
                 user_id: p.user_id || ''
             };

@@ -29,12 +29,19 @@ class KeluargaController extends Controller
 
     public function store(Request $request)
     {
+        $this->ensurePekerjaanColumnSafe();
         $user = Auth::user();
+
+        $allowedPekerjaan = [
+            'ASN', 'Swasta', 'BUMN', 'BUMD', 'IRT',
+            'Pelajar / Mahasiswa', 'Tidak Bekerja', 'Ayah', 'Ibu',
+            'Pensiunan', 'Wiraswasta', 'Lainnya'
+        ];
 
         $rules = [
             'nama' => 'required|string|max:255',
             'hubungan' => 'required|string|max:255',
-            'pekerjaan' => 'required|string|max:255',
+            'pekerjaan' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedPekerjaan)],
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date',
             'tanggal_perkawinan' => 'nullable|date',
@@ -66,6 +73,7 @@ class KeluargaController extends Controller
 
     public function update(Request $request, Keluarga $keluarga)
     {
+        $this->ensurePekerjaanColumnSafe();
         $user = Auth::user();
 
         // Otorisasi: jika user biasa, pastikan milik pegawainya sendiri
@@ -75,10 +83,16 @@ class KeluargaController extends Controller
             }
         }
 
+        $allowedPekerjaan = [
+            'ASN', 'Swasta', 'BUMN', 'BUMD', 'IRT',
+            'Pelajar / Mahasiswa', 'Tidak Bekerja', 'Ayah', 'Ibu',
+            'Pensiunan', 'Wiraswasta', 'Lainnya'
+        ];
+
         $rules = [
             'nama' => 'required|string|max:255',
             'hubungan' => 'required|string|max:255',
-            'pekerjaan' => 'required|string|max:255',
+            'pekerjaan' => ['required', 'string', \Illuminate\Validation\Rule::in($allowedPekerjaan)],
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date',
             'tanggal_perkawinan' => 'nullable|date',
@@ -98,6 +112,19 @@ class KeluargaController extends Controller
         $keluarga->update($validated);
 
         return redirect()->route('keluarga.index')->with('success', 'Data keluarga berhasil diperbarui.');
+    }
+
+    private function ensurePekerjaanColumnSafe(): void
+    {
+        static $checked = false;
+        if ($checked) return;
+        $checked = true;
+
+        try {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE keluargas MODIFY COLUMN pekerjaan VARCHAR(255) NULL");
+        } catch (\Throwable $e) {
+            // Ignore if DB alter fails
+        }
     }
 
     public function destroy(Keluarga $keluarga)

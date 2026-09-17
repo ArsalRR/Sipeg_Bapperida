@@ -17,11 +17,21 @@ class PegawaiController extends Controller
 {
     public function index(): View
     {
-        $pegawais = Pegawai::with(['jabatan', 'user', 'histories.jabatan', 'histories.user'])->latest()->get();
-        $jabatans = Jabatan::withCount('pegawais')->get();
+        $historyRelations = ['histories.jabatan', 'histories.user'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('history_pegawais', 'bidang_id')) {
+            $historyRelations[] = 'histories.bidang';
+        }
+
+        $pegawais = Pegawai::with(array_merge(['jabatan', 'bidang', 'user'], $historyRelations))->latest()->get();
+        $jabatans = Jabatan::withCount(['pegawais' => function($q) {
+            $q->where('status_kerja', 'Aktif')->orWhereNull('status_kerja');
+        }])->get();
+        $bidangs = \Illuminate\Support\Facades\Schema::hasTable('bidangs') 
+            ? \App\Models\Bidang::orderBy('id', 'asc')->get() 
+            : collect();
         $users = User::whereDoesntHave('pegawai')->get();
         
-        return view('admin.pegawai.index', compact('pegawais', 'jabatans', 'users'));
+        return view('admin.pegawai.index', compact('pegawais', 'jabatans', 'bidangs', 'users'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -39,6 +49,7 @@ class PegawaiController extends Controller
             'agama' => ['required', 'string', 'max:50'],
             'status_kepegawaian' => ['required', Rule::in(['PNS', 'PPPK', 'CPNS', 'PPPK Paruh Waktu', 'Non ASN'])],
             'jabatan_id' => ['required', 'exists:jabatans,id'],
+            'bidang_id'  => ['required', 'exists:bidangs,id'],
             'golongan' => ['nullable', 'string', 'max:50'],
             'status_pernikahan' => ['required', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
             'status_kerja' => ['required', Rule::in(['Aktif', 'Tidak Aktif'])],
@@ -57,9 +68,16 @@ class PegawaiController extends Controller
 
         // Cek kapasitas jabatan
         $jabatan = Jabatan::find($validated['jabatan_id']);
-        if ($jabatan && $jabatan->jumlah !== null) {
-            if ($jabatan->pegawais()->count() >= $jabatan->jumlah) {
-                return back()->withInput()->with('error', "Jabatan {$jabatan->nama_jabatan} sudah terisi penuh ({$jabatan->jumlah} orang).");
+        if ($jabatan) {
+            $maxCapacity = $jabatan->kebutuhan ?? $jabatan->jumlah;
+            if ($maxCapacity !== null && $maxCapacity > 0) {
+                $currentActiveCount = $jabatan->pegawais()->where(function($q) {
+                    $q->where('status_kerja', 'Aktif')->orWhereNull('status_kerja');
+                })->count();
+
+                if ($currentActiveCount >= $maxCapacity) {
+                    return back()->withInput()->with('error', "Jabatan {$jabatan->nama_jabatan} sudah terisi penuh ({$currentActiveCount}/{$maxCapacity} formasi).");
+                }
             }
         }
 
@@ -83,6 +101,7 @@ class PegawaiController extends Controller
             'agama' => ['required', 'string', 'max:50'],
             'status_kepegawaian' => ['required', Rule::in(['PNS', 'PPPK', 'CPNS', 'PPPK Paruh Waktu', 'Non ASN'])],
             'jabatan_id' => ['required', 'exists:jabatans,id'],
+            'bidang_id'  => ['required', 'exists:bidangs,id'],
             'golongan' => ['nullable', 'string', 'max:50'],
             'status_pernikahan' => ['required', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
             'status_kerja' => ['required', Rule::in(['Aktif', 'Tidak Aktif'])],
@@ -101,9 +120,16 @@ class PegawaiController extends Controller
         // Cek kapasitas jabatan (kecualikan pegawai ini sendiri)
         if ($validated['jabatan_id'] != $pegawai->jabatan_id) {
             $jabatan = Jabatan::find($validated['jabatan_id']);
-            if ($jabatan && $jabatan->jumlah !== null) {
-                if ($jabatan->pegawais()->count() >= $jabatan->jumlah) {
-                    return back()->withInput()->with('error', "Jabatan {$jabatan->nama_jabatan} sudah terisi penuh ({$jabatan->jumlah} orang).");
+            if ($jabatan) {
+                $maxCapacity = $jabatan->kebutuhan ?? $jabatan->jumlah;
+                if ($maxCapacity !== null && $maxCapacity > 0) {
+                    $currentActiveCount = $jabatan->pegawais()->where('id', '!=', $pegawai->id)->where(function($q) {
+                        $q->where('status_kerja', 'Aktif')->orWhereNull('status_kerja');
+                    })->count();
+
+                    if ($currentActiveCount >= $maxCapacity) {
+                        return back()->withInput()->with('error', "Jabatan {$jabatan->nama_jabatan} sudah terisi penuh ({$currentActiveCount}/{$maxCapacity} formasi).");
+                    }
                 }
             }
         }

@@ -41,7 +41,7 @@ class Pegawai extends Model
                 ? ($pegawai->tanggal_berlaku instanceof \Carbon\Carbon ? $pegawai->tanggal_berlaku->format('Y-m-d') : (string)$pegawai->tanggal_berlaku)
                 : now()->toDateString();
 
-            HistoryPegawai::create([
+            $historyData = [
                 'pegawai_id'         => $pegawai->id,
                 'user_id'            => auth()->id() ?? $pegawai->user_id,
                 'nama'               => $pegawai->nama,
@@ -60,7 +60,13 @@ class Pegawai extends Model
                 'status_pernikahan'  => $pegawai->status_pernikahan,
                 'status_kerja'       => $pegawai->status_kerja ?? 'Aktif',
                 'tanggal_berlaku'    => $tanggalBerlaku,
-            ]);
+            ];
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn('history_pegawais', 'bidang_id')) {
+                $historyData['bidang_id'] = $pegawai->bidang_id;
+            }
+
+            HistoryPegawai::create($historyData);
         });
     }
 
@@ -78,6 +84,7 @@ class Pegawai extends Model
         'agama',
         'status_kepegawaian',
         'jabatan_id',
+        'bidang_id',
         'golongan',
         'status_pernikahan',
         'status_kerja',
@@ -98,6 +105,11 @@ class Pegawai extends Model
     public function jabatan(): BelongsTo
     {
         return $this->belongsTo(Jabatan::class);
+    }
+
+    public function bidang(): BelongsTo
+    {
+        return $this->belongsTo(Bidang::class);
     }
 
     public function getNamaLengkapAttribute(): string

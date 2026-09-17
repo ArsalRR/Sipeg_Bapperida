@@ -36,6 +36,7 @@
                 <thead>
                     <tr class="bg-gray-50 dark:bg-[#1a1a1a] border-b border-gray-100 dark:border-gray-800">
                         <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Nama Jabatan</th>
+                        <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Unit / Bidang Kerja</th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Atasan Jabatan</th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Jenis</th>
                         <th class="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 text-center">Kelas</th>
@@ -49,6 +50,9 @@
                     <template x-for="j in filteredJabatan" :key="j.id">
                         <tr class="hover:bg-gray-50/50 dark:hover:bg-[#18181b] transition-colors">
                             <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white" x-text="j.nama_jabatan"></td>
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span x-text="j.unit_kerja || '-'" class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium text-xs"></span>
+                            </td>
                             <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                 <span x-text="j.parent ? j.parent.nama_jabatan : '-'" class="italic"></span>
                             </td>
@@ -185,7 +189,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Atasan Jabatan (Hirarki Peta Jabatan)</label>
-                            <select name="parent_id" x-model="form.parent_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-sm">
+                            <select name="parent_id" x-model="form.parent_id" @change="onParentChange()" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-sm">
                                 <option value="">-- Tanpa Atasan (Top Level / Kepala Badan) --</option>
                                 <template x-for="j in availableParents" :key="j.id">
                                     <option :value="j.id" x-text="j.nama_jabatan + (j.kelas_jabatan ? ' (Kelas ' + j.kelas_jabatan + ')' : '')"></option>
@@ -209,19 +213,21 @@
                             </div>
                         </div>
 
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit / Bidang Kerja (Lokasi Peta)</label>
+                            <select name="unit_kerja" x-model="form.unit_kerja" @change="onUnitChange()" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-sm">
+                                <option value="">-- Bebas / Otomatis --</option>
+                                @foreach($bidangs as $b)
+                                    <option value="{{ $b->singkatan }}">{{ $b->nama_bidang }} ({{ $b->singkatan }})</option>
+                                @endforeach
+                            </select>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pilih lokasi unit/bidang (singkatan) untuk penempatan presisi di Peta Jabatan.</p>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kebutuhan Formasi (K)</label>
                                 <input type="number" name="kebutuhan" x-model="form.kebutuhan" min="0" placeholder="Kebutuhan ideal (K)" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Warna Box (Opsional)</label>
-                                <select name="kategori_warna" x-model="form.kategori_warna" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-sm">
-                                    <option value="">Default (Sesuai Jenis)</option>
-                                    <option value="biru">Biru (Kepala Badan)</option>
-                                    <option value="hijau">Hijau (Bidang / Sekretaris)</option>
-                                    <option value="kuning">Kuning (Subbag)</option>
-                                </select>
                             </div>
                         </div>
                     </div>
@@ -259,6 +265,7 @@ document.addEventListener('alpine:init', () => {
             nama_jabatan: '',
             parent_id: '',
             jenis_jabatan: 'Struktural',
+            unit_kerja: '',
             kelas_jabatan: '',
             kebutuhan: '1',
             kategori_warna: ''
@@ -283,6 +290,7 @@ document.addEventListener('alpine:init', () => {
                 nama_jabatan: '',
                 parent_id: '',
                 jenis_jabatan: 'Struktural',
+                unit_kerja: '',
                 kelas_jabatan: '',
                 kebutuhan: '1',
                 kategori_warna: ''
@@ -298,11 +306,56 @@ document.addEventListener('alpine:init', () => {
                 nama_jabatan: j.nama_jabatan,
                 parent_id: j.parent_id || '',
                 jenis_jabatan: j.jenis_jabatan,
+                unit_kerja: j.unit_kerja || '',
                 kelas_jabatan: j.kelas_jabatan || '',
                 kebutuhan: j.kebutuhan || j.jumlah || '1',
                 kategori_warna: j.kategori_warna || ''
             };
             this.modalOpen = true;
+        },
+
+        onUnitChange() {
+            if (!this.form.unit_kerja) return;
+            const u = this.form.unit_kerja;
+            let match = null;
+            if (u.includes('Subbag Umum')) {
+                match = this.allJabatan.find(j => j.nama_jabatan.includes('Sub Bagian Umum'));
+            } else if (u.includes('Subbag Perencanaan')) {
+                match = this.allJabatan.find(j => j.nama_jabatan.includes('Sub Bagian Perencanaan'));
+            } else if (u.includes('Pemerintahan')) {
+                match = this.allJabatan.find(j => j.nama_jabatan.includes('Kepala Bidang Pemerintahan'));
+            } else if (u.includes('Perekonomian')) {
+                match = this.allJabatan.find(j => j.nama_jabatan.includes('Kepala Bidang Perekonomian'));
+            } else if (u.includes('Perencanaan, Pengendalian')) {
+                match = this.allJabatan.find(j => j.nama_jabatan.includes('Kepala Bidang Perencanaan'));
+            } else if (u.includes('Riset')) {
+                match = this.allJabatan.find(j => j.nama_jabatan.includes('Kepala Bidang Riset'));
+            }
+            if (match) {
+                this.form.parent_id = match.id;
+            }
+        },
+
+        onParentChange() {
+            if (!this.form.parent_id) return;
+            const p = this.allJabatan.find(j => j.id == this.form.parent_id);
+            if (!p) return;
+            const n = p.nama_jabatan;
+            if (n.includes('Sub Bagian Umum')) {
+                this.form.unit_kerja = 'Subbag Umum & Kepegawaian';
+            } else if (n.includes('Sub Bagian Perencanaan')) {
+                this.form.unit_kerja = 'Subbag Perencanaan Evaluasi & Keuangan';
+            } else if (n.includes('Kepala Bidang Pemerintahan')) {
+                this.form.unit_kerja = 'Bidang Pemerintahan & Pembangunan Manusia';
+            } else if (n.includes('Kepala Bidang Perekonomian')) {
+                this.form.unit_kerja = 'Bidang Perekonomian, SDA, Infrastruktur & Kewilayahan';
+            } else if (n.includes('Kepala Bidang Perencanaan')) {
+                this.form.unit_kerja = 'Bidang Perencanaan, Pengendalian & Evaluasi';
+            } else if (n.includes('Kepala Bidang Riset')) {
+                this.form.unit_kerja = 'Bidang Riset & Inovasi Daerah';
+            } else if (p.unit_kerja) {
+                this.form.unit_kerja = p.unit_kerja;
+            }
         },
 
         confirmDelete(url) {

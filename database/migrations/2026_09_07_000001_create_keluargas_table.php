@@ -16,7 +16,20 @@ return new class extends Migration
             $table->foreignId('pegawai_id')->constrained('pegawais')->onDelete('cascade');
             $table->string('nama');
             $table->string('hubungan'); // Suami, Istri, Anak, Ayah, Ibu
-            $table->string('pekerjaan')->nullable();
+            $table->enum('pekerjaan', [
+                'ASN',
+                'Swasta',
+                'BUMN',
+                'BUMD',
+                'IRT',
+                'Pelajar / Mahasiswa',
+                'Tidak Bekerja',
+                'Ayah',
+                'Ibu',
+                'Pensiunan',
+                'Wiraswasta',
+                'Lainnya'
+            ])->nullable();
             $table->string('tempat_lahir')->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->date('tanggal_perkawinan')->nullable();

@@ -165,10 +165,10 @@
                                 <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-white">{{ $k->nama }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $k->hubungan }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ $k->tempat_lahir ?? '-' }}{{ $k->tanggal_lahir ? ', ' . $k->tanggal_lahir->format('d M Y') : '' }}
+                                    {{ $k->tempat_lahir ?? '-' }}{{ $k->tanggal_lahir ? ', ' . $k->tanggal_lahir->translatedFormat('d F Y') : '' }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ in_array($k->hubungan, ['Suami','Istri']) && $k->tanggal_perkawinan ? $k->tanggal_perkawinan->format('d M Y') : '-' }}
+                                    {{ in_array($k->hubungan, ['Suami','Istri']) && $k->tanggal_perkawinan ? $k->tanggal_perkawinan->translatedFormat('d F Y') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $k->pekerjaan ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm">
@@ -231,13 +231,13 @@
                                 <div>
                                     <span class="text-gray-500 dark:text-gray-400">TTL:</span>
                                     <span class="font-medium text-slate-900 dark:text-white ml-1">
-                                        {{ $k->tempat_lahir ?? '-' }}{{ $k->tanggal_lahir ? ', ' . $k->tanggal_lahir->format('d M Y') : '' }}
+                                        {{ $k->tempat_lahir ?? '-' }}{{ $k->tanggal_lahir ? ', ' . $k->tanggal_lahir->translatedFormat('d F Y') : '' }}
                                     </span>
                                 </div>
                                 <div>
                                     <span class="text-gray-500 dark:text-gray-400">Tgl Perkawinan:</span>
                                     <span class="font-medium text-slate-900 dark:text-white ml-1">
-                                        {{ in_array($k->hubungan, ['Suami','Istri']) && $k->tanggal_perkawinan ? $k->tanggal_perkawinan->format('d M Y') : '-' }}
+                                        {{ in_array($k->hubungan, ['Suami','Istri']) && $k->tanggal_perkawinan ? $k->tanggal_perkawinan->translatedFormat('d F Y') : '-' }}
                                     </span>
                                 </div>
                                 <div>
@@ -469,7 +469,21 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Pekerjaan <span class="text-red-500">*</span></label>
-                    <input type="text" name="pekerjaan" x-model="form.pekerjaan" required placeholder="Misal: PNS, Swasta, Pelajar/Mahasiswa" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                    <select name="pekerjaan" x-model="form.pekerjaan" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                        <option value="">-- Pilih Pekerjaan --</option>
+                        <option value="ASN">ASN</option>
+                        <option value="Swasta">Swasta</option>
+                        <option value="BUMN">BUMN</option>
+                        <option value="BUMD">BUMD</option>
+                        <option value="IRT">IRT</option>
+                        <option value="Tidak Bekerja">Tidak Bekerja</option>
+                        <option value="Pelajar / Mahasiswa">Pelajar / Mahasiswa</option>
+                        <option value="Ayah">Ayah</option>
+                        <option value="Ibu">Ibu</option>
+                        <option value="Pensiunan">Pensiunan</option>
+                        <option value="Wiraswasta">Wiraswasta</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -551,8 +565,20 @@ document.addEventListener('alpine:init', () => {
         formatDate(dateStr) {
             if (!dateStr) return '-';
             const cleanDate = dateStr.split('T')[0];
-            const d = new Date(cleanDate);
-            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            const parts = cleanDate.split('-');
+            if (parts.length === 3) {
+                const year = parts[0];
+                const monthIdx = parseInt(parts[1], 10) - 1;
+                const day = parseInt(parts[2], 10);
+                const bulanIndo = [
+                    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                ];
+                if (monthIdx >= 0 && monthIdx < 12) {
+                    return `${day} ${bulanIndo[monthIdx]} ${year}`;
+                }
+            }
+            return dateStr;
         },
 
         get filteredPegawai() {

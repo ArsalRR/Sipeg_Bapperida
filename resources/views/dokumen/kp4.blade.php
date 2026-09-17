@@ -107,7 +107,7 @@
                     <td class="align-top py-0.5">:</td>
                     <td class="align-top py-0.5">
                         {{ $tempatLahir }}, 
-                        {{ $tglLahirObj ? $tglLahirObj->format('d F Y') : '-' }}
+                        {{ $tglLahirObj ? $tglLahirObj->translatedFormat('d F Y') : '-' }}
                     </td>
                 </tr>
                 <tr>

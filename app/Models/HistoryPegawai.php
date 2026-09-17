@@ -22,6 +22,7 @@ class HistoryPegawai extends Model
         'status_kepegawaian',
         'golongan',
         'jabatan_id',
+        'bidang_id',
         'status_pernikahan',
         'status_kerja',
         'tanggal_berlaku',
@@ -45,5 +46,10 @@ class HistoryPegawai extends Model
     public function jabatan()
     {
         return $this->belongsTo(Jabatan::class);
+    }
+
+    public function bidang()
+    {
+        return $this->belongsTo(Bidang::class);
     }
 }
