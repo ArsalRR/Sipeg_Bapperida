@@ -388,6 +388,8 @@
                         <input type="hidden" name="_method" value="PUT">
                     </template>
 
+                    <input type="hidden" name="cropped_foto" :value="croppedFoto">
+
                     <div class="flex items-center gap-4 pb-5 mb-5 border-b border-gray-100 dark:border-gray-800">
                         <div class="relative shrink-0 w-20 h-20">
                             <div class="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden">
@@ -398,12 +400,34 @@
                                     <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                 </template>
                             </div>
-                            <input type="file" name="foto" @change="handlePhotoChange" class="absolute inset-0 w-20 h-20 opacity-0 cursor-pointer rounded-full" accept="image/*">
+                            <input type="file" @change="initAdminCrop($event)" class="absolute inset-0 w-20 h-20 opacity-0 cursor-pointer rounded-full" accept="image/*">
                         </div>
                         <div class="min-w-0">
                             <p class="text-sm font-medium text-slate-900 dark:text-white">Foto Profil</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik lingkaran untuk ganti foto.</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Klik lingkaran untuk ganti & atur posisi foto.</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500">Format JPEG/PNG, maks 2MB.</p>
+                        </div>
+                    </div>
+
+                    <!-- Modal Crop Image untuk Admin Pegawai -->
+                    <div x-show="cropModalOpen" x-transition x-cloak class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                        <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col">
+                            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                                <h3 class="font-bold text-slate-900 dark:text-white text-base">Atur Posisi & Crop Foto Pegawai</h3>
+                                <button type="button" @click="closeAdminCrop()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                <div class="w-full max-h-[360px] bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
+                                    <img x-ref="adminCropImg" class="max-w-full block">
+                                </div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 text-center">Geser foto untuk menyesuaikan posisi & gunakan scroll mouse / pinch untuk zoom in/out.</p>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
+                                <button type="button" @click="closeAdminCrop()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl text-xs hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">Batal</button>
+                                <button type="button" @click="applyAdminCrop()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md shadow-blue-500/20 transition-all">Gunakan Foto Ini</button>
+                            </div>
                         </div>
                     </div>
 
@@ -899,6 +923,9 @@ document.addEventListener('alpine:init', () => {
         formAction: '',
         currentAccount: null,
         photoPreview: null,
+        croppedFoto: '',
+        cropModalOpen: false,
+        adminCropper: null,
         histories: [],
         form: {
             nama: '',
@@ -918,6 +945,62 @@ document.addEventListener('alpine:init', () => {
             status_pernikahan: 'Lajang',
             tanggal_berlaku: '',
             user_id: ''
+        },
+
+        initAdminCrop(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const img = this.$refs.adminCropImg;
+                img.src = evt.target.result;
+                this.cropModalOpen = true;
+
+                this.$nextTick(() => {
+                    if (this.adminCropper) {
+                        this.adminCropper.destroy();
+                    }
+                    this.adminCropper = new Cropper(img, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        dragMode: 'move',
+                        autoCropArea: 0.9,
+                        restore: false,
+                        guides: true,
+                        center: true,
+                        highlight: false,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                    });
+                });
+            };
+            reader.readAsDataURL(file);
+        },
+
+        closeAdminCrop() {
+            this.cropModalOpen = false;
+            if (this.adminCropper) {
+                this.adminCropper.destroy();
+                this.adminCropper = null;
+            }
+        },
+
+        applyAdminCrop() {
+            if (!this.adminCropper) return;
+            const canvas = this.adminCropper.getCroppedCanvas({
+                width: 500,
+                height: 500,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
+            if (canvas) {
+                const base64 = canvas.toDataURL('image/jpeg', 0.9);
+                this.photoPreview = base64;
+                this.croppedFoto = base64;
+                this.closeAdminCrop();
+            }
         },
 
         init() {
@@ -1215,6 +1298,7 @@ document.addEventListener('alpine:init', () => {
             };
             this.currentAccount = null;
             this.photoPreview = null;
+            this.croppedFoto = '';
             this.histories = [];
             this.modalOpen = true;
         },
@@ -1223,6 +1307,7 @@ document.addEventListener('alpine:init', () => {
             this.activeTab = 'data';
             this.submitting = false;
             this.formAction = `/admin/pegawais/${p.id}`;
+            this.croppedFoto = '';
 
             let bId = p.bidang_id || '';
             if (!bId && p.jabatan && p.jabatan.unit_kerja) {

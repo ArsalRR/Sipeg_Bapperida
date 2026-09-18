@@ -8,17 +8,51 @@
         
         <form id="formFilterKp4" method="GET" action="{{ route('dokumen.kp4') }}" class="flex-1 w-full flex flex-col sm:flex-row sm:items-center gap-4">
             @if(in_array(auth()->user()->role, ['admin', 'superadmin']))
-            <div class="w-full sm:w-72 2md:w-[380px] space-y-1.5">
+            <div class="w-full sm:w-72 2md:w-[380px] space-y-1.5" x-data="kp4PegawaiDropdown()">
                 <label class="block text-xs font-bold text-blue-600 dark:text-blue-400">
                     Pilih Pegawai untuk Cetak Form KP4:
                 </label>
-                <select name="pegawai_id" onchange="this.form.submit()" class="w-full px-4 py-2.5 border-2 border-blue-500 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-blue-600 outline-none shadow-sm">
-                    @foreach($allPegawais as $p)
-                        <option value="{{ $p->id }}" {{ optional($pegawai)->id == $p->id ? 'selected' : '' }}>
-                            {{ $p->nama_lengkap ?? $p->nama }}
-                        </option>
-                    @endforeach
-                </select>
+                <input type="hidden" name="pegawai_id" :value="selectedId">
+                
+                <div class="relative">
+                    <!-- Dropdown Trigger Button -->
+                    <button type="button" @click="open = !open; if(open) $nextTick(() => $refs.searchInput.focus())"
+                            class="w-full px-4 py-2.5 border-2 border-blue-500 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-medium flex items-center justify-between shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <span class="truncate font-semibold text-slate-800 dark:text-slate-100" x-text="selectedNama"></span>
+                        <svg class="w-4 h-4 text-blue-500 shrink-0 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu with Search Input -->
+                    <div x-show="open" @click.outside="open = false" x-transition
+                         class="absolute z-50 left-0 right-0 mt-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden p-2">
+                        
+                        <!-- Search Box -->
+                        <div class="relative mb-2">
+                            <input x-ref="searchInput" type="text" x-model="search" placeholder="Cari nama / NIP pegawai..."
+                                   class="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+
+                        <!-- Pegawai List -->
+                        <div class="max-h-60 overflow-y-auto space-y-0.5 custom-scrollbar">
+                            <template x-for="p in filteredPegawais" :key="p.id">
+                                <button type="button" @click="selectPegawai(p)"
+                                        class="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-blue-50 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-between"
+                                        :class="{ 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold': selectedId == p.id }">
+                                    <span x-text="p.nama"></span>
+                                    <span class="text-[10px] text-slate-400 font-normal ml-2" x-text="p.nip ? 'NIP: ' + p.nip : ''"></span>
+                                </button>
+                            </template>
+                            <div x-show="filteredPegawais.length === 0" class="px-3 py-3 text-center text-xs text-slate-400 italic">
+                                Pegawai tidak ditemukan
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             @else
             <div>
@@ -289,6 +323,35 @@ function triggerPrint() {
 
     document.body.removeChild(printArea);
     document.head.removeChild(style);
+}
+
+function kp4PegawaiDropdown() {
+    return {
+        open: false,
+        search: '',
+        selectedId: '{{ optional($pegawai)->id }}',
+        selectedNama: @json(optional($pegawai)->nama_lengkap ?? optional($pegawai)->nama ?? 'Pilih Pegawai...'),
+        pegawais: [
+            @foreach($allPegawais as $p)
+                { id: {{ $p->id }}, nama: @json($p->nama_lengkap ?? $p->nama), nip: @json($p->nip ?? '') },
+            @endforeach
+        ],
+        get filteredPegawais() {
+            if (!this.search.trim()) return this.pegawais;
+            const query = this.search.toLowerCase();
+            return this.pegawais.filter(p => 
+                p.nama.toLowerCase().includes(query) || (p.nip && p.nip.includes(query))
+            );
+        },
+        selectPegawai(p) {
+            this.selectedId = p.id;
+            this.selectedNama = p.nama;
+            this.open = false;
+            this.$nextTick(() => {
+                document.getElementById('formFilterKp4').submit();
+            });
+        }
+    };
 }
 </script>
 @endsection

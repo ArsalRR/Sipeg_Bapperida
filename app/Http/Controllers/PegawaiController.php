@@ -62,7 +62,15 @@ class PegawaiController extends Controller
             $validated['tanggal_berlaku'] = now()->toDateString();
         }
 
-        if ($request->hasFile('foto')) {
+        if ($request->filled('cropped_foto')) {
+            $imageParts = explode(";base64,", $request->input('cropped_foto'));
+            if (count($imageParts) == 2) {
+                $imageDecoded = base64_decode($imageParts[1]);
+                $filename = 'pegawai/foto/' . uniqid() . '.jpg';
+                Storage::disk('public')->put($filename, $imageDecoded);
+                $validated['foto'] = $filename;
+            }
+        } elseif ($request->hasFile('foto')) {
             $validated['foto'] = $request->file('foto')->store('pegawai/foto', 'public');
         }
 
@@ -110,7 +118,18 @@ class PegawaiController extends Controller
             'foto' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        if ($request->hasFile('foto')) {
+        if ($request->filled('cropped_foto')) {
+            if ($pegawai->foto) {
+                Storage::disk('public')->delete($pegawai->foto);
+            }
+            $imageParts = explode(";base64,", $request->input('cropped_foto'));
+            if (count($imageParts) == 2) {
+                $imageDecoded = base64_decode($imageParts[1]);
+                $filename = 'pegawai/foto/' . uniqid() . '.jpg';
+                Storage::disk('public')->put($filename, $imageDecoded);
+                $validated['foto'] = $filename;
+            }
+        } elseif ($request->hasFile('foto')) {
             if ($pegawai->foto) {
                 Storage::disk('public')->delete($pegawai->foto);
             }

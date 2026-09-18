@@ -19,6 +19,9 @@
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Cropper.js for Profile Photo Positioner & Cropper -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 </head>
 <body class="bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-800 dark:text-slate-200 font-sans antialiased flex h-screen overflow-hidden transition-colors duration-300 isolate">
     <aside class="w-64 bg-white dark:bg-[#111111] border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-300 shrink-0 absolute z-30 h-full -translate-x-full md:relative md:translate-x-0" id="sidebar">

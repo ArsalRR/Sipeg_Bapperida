@@ -21,6 +21,16 @@ class DokumenController extends Controller
             $pegawai = $user->pegawai ? $user->pegawai->load(['jabatan', 'keluargas', 'histories.jabatan']) : null;
         }
 
+        if ($pegawai && $pegawai->keluargas) {
+            $pegawai->setRelation('keluargas', $pegawai->keluargas->sort(function ($a, $b) {
+                $order = ['Suami' => 0, 'Istri' => 0, 'Anak' => 1];
+                $oA = $order[$a->hubungan] ?? 2;
+                $oB = $order[$b->hubungan] ?? 2;
+                if ($oA !== $oB) return $oA - $oB;
+                return strcmp((string)$a->tanggal_lahir, (string)$b->tanggal_lahir);
+            })->values());
+        }
+
         // Tahun berjalan saat ini
         $currentYear = (int) date('Y');
 

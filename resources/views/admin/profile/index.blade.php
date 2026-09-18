@@ -34,9 +34,12 @@
     </div>
     @endif
 
-    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+    <form id="profileForm" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
+
+        <!-- Hidden input for cropped base64/file image -->
+        <input type="hidden" name="cropped_foto" id="cropped_foto">
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1 space-y-8">
@@ -48,11 +51,33 @@
                         </div>
                         <label class="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
                             <span class="text-sm font-medium">Ubah Foto</span>
-                            <input type="file" name="foto" class="hidden" onchange="previewFile(this)">
+                            <input type="file" id="foto-input" accept="image/*" class="hidden" onchange="initCrop(this)">
                         </label>
                     </div>
                     @error('foto') <p class="text-red-500 text-[10px] font-semibold mt-1">{{ $message }}</p> @enderror
-                    <p class="text-xs text-gray-500 mb-4 px-4">Klik pada foto untuk mengganti. Format JPEG/PNG, Max 2MB.</p>
+                    <p class="text-xs text-gray-500 mb-4 px-4">Klik pada foto untuk mengganti & atur posisi. Format JPEG/PNG, Max 2MB.</p>
+                </div>
+
+                <!-- Modal Image Cropper / Positioner -->
+                <div id="cropModal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                    <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col">
+                        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-900 dark:text-white text-base">Atur Posisi & Crop Foto Profil</h3>
+                            <button type="button" onclick="closeCropModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="w-full max-h-[360px] bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
+                                <img id="cropImage" src="" class="max-w-full block">
+                            </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 text-center">Geser foto untuk menyesuaikan posisi & gunakan scroll mouse / pinch untuk zoom in/out.</p>
+                        </div>
+                        <div class="px-6 py-4 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
+                            <button type="button" onclick="closeCropModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl text-xs hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">Batal</button>
+                            <button type="button" onclick="applyCrop()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md shadow-blue-500/20 transition-all">Gunakan Foto Ini</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="bg-white dark:bg-[#111111] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Keamanan Akun</h3>
@@ -309,13 +334,66 @@
 </div>
 
 <script>
-    function previewFile(input) {
+    let cropper = null;
+
+    function initCrop(input) {
         if (input.files && input.files[0]) {
-            var reader = new FileReader();
+            const file = input.files[0];
+            const reader = new FileReader();
+            
             reader.onload = function(e) {
-                document.getElementById('preview-image').src = e.target.result;
-            }
-            reader.readAsDataURL(input.files[0]);
+                const image = document.getElementById('cropImage');
+                image.src = e.target.result;
+                
+                document.getElementById('cropModal').classList.remove('hidden');
+
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                cropper = new Cropper(image, {
+                    aspectRatio: 1, // Square aspect ratio 1:1
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.9,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            };
+
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function closeCropModal() {
+        document.getElementById('cropModal').classList.add('hidden');
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        document.getElementById('foto-input').value = '';
+    }
+
+    function applyCrop() {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 500,
+            height: 500,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+        });
+
+        if (canvas) {
+            const base64Image = canvas.toDataURL('image/jpeg', 0.9);
+            document.getElementById('preview-image').src = base64Image;
+            document.getElementById('cropped_foto').value = base64Image;
+            closeCropModal();
         }
     }
 </script>

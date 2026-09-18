@@ -16,11 +16,27 @@ class KeluargaController extends Controller
         if (in_array($user->role, ['admin', 'superadmin'])) {
             // Ambil pegawai beserta data keluarganya
             $pegawais = Pegawai::with(['keluargas', 'jabatan'])->orderBy('nama', 'asc')->get();
+            // Sort keluargas: Suami/Istri first, then Anak by tanggal_lahir ASC (oldest first)
+            $pegawais->each(function ($p) {
+                $p->setRelation('keluargas', $p->keluargas->sort(function ($a, $b) {
+                    $order = ['Suami' => 0, 'Istri' => 0, 'Anak' => 1];
+                    $oA = $order[$a->hubungan] ?? 2;
+                    $oB = $order[$b->hubungan] ?? 2;
+                    if ($oA !== $oB) return $oA - $oB;
+                    // Both same type – sort Anak by tanggal_lahir ASC (oldest first)
+                    return strcmp((string)$a->tanggal_lahir, (string)$b->tanggal_lahir);
+                })->values());
+            });
             $keluargas = Keluarga::with('pegawai')->latest()->get();
         } else {
             // User biasa hanya melihat & mengelola data keluarganya sendiri
             $pegawai = $user->pegawai ? $user->pegawai->load(['keluargas', 'jabatan']) : null;
-            $keluargas = $pegawai ? $pegawai->keluargas()->with('pegawai')->latest()->get() : collect();
+            $keluargas = $pegawai
+                ? $pegawai->keluargas()->with('pegawai')
+                    ->orderByRaw("FIELD(hubungan, 'Suami', 'Istri', 'Anak')")
+                    ->orderBy('tanggal_lahir', 'asc')
+                    ->get()
+                : collect();
             $pegawais = $pegawai ? collect([$pegawai]) : collect();
         }
 
@@ -34,7 +50,8 @@ class KeluargaController extends Controller
 
         $allowedPekerjaan = [
             'ASN', 'Swasta', 'BUMN', 'BUMD', 'IRT',
-            'Pelajar / Mahasiswa', 'Tidak Bekerja', 'Ayah', 'Ibu',
+            'Pelajar / Mahasiswa', 'Tidak Bekerja', 'Belum/Tidak Bekerja',
+            'SD', 'SMP', 'SMA/SMK', 'Mahasiswa',
             'Pensiunan', 'Wiraswasta', 'Lainnya'
         ];
 
@@ -85,7 +102,8 @@ class KeluargaController extends Controller
 
         $allowedPekerjaan = [
             'ASN', 'Swasta', 'BUMN', 'BUMD', 'IRT',
-            'Pelajar / Mahasiswa', 'Tidak Bekerja', 'Ayah', 'Ibu',
+            'Pelajar / Mahasiswa', 'Tidak Bekerja', 'Belum/Tidak Bekerja',
+            'SD', 'SMP', 'SMA/SMK', 'Mahasiswa',
             'Pensiunan', 'Wiraswasta', 'Lainnya'
         ];
 

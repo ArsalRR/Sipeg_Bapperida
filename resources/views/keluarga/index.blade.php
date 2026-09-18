@@ -8,7 +8,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Data Keluarga</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Kelola data anggota keluarga pegawai (Suami/Istri/Anak/Orang Tua)</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Kelola data anggota keluarga pegawai (Suami/Istri/Anak)</p>
             </div>
             <button @click="openCreateModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
@@ -320,7 +320,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             <template x-if="selectedPegawai && selectedPegawai.keluargas && selectedPegawai.keluargas.length > 0">
-                                <template x-for="k in selectedPegawai.keluargas" :key="k.id">
+                                <template x-for="k in sortedKeluargas" :key="k.id">
                                     <tr class="hover:bg-gray-50/50 dark:hover:bg-[#18181b] transition-colors">
                                         <td class="px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white" x-text="k.nama"></td>
                                         <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="k.hubungan"></td>
@@ -368,7 +368,7 @@
                 <!-- Mobile View: Card List -->
                 <div class="block sm:hidden border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-[#111111]">
                     <template x-if="selectedPegawai && selectedPegawai.keluargas && selectedPegawai.keluargas.length > 0">
-                        <template x-for="k in selectedPegawai.keluargas" :key="k.id">
+                        <template x-for="k in sortedKeluargas" :key="k.id">
                             <div class="p-3.5 space-y-2">
                                 <div class="flex justify-between items-start gap-2">
                                     <div>
@@ -457,33 +457,28 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Hubungan Keluarga <span class="text-red-500">*</span></label>
-                    <select name="hubungan" x-model="form.hubungan" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                    <select name="hubungan" x-model="form.hubungan" @change="onHubunganChange()" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
                         <option value="">-- Pilih Hubungan --</option>
                         <option value="Suami">Suami</option>
                         <option value="Istri">Istri</option>
                         <option value="Anak">Anak</option>
-                        <option value="Ayah">Ayah</option>
-                        <option value="Ibu">Ibu</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Pekerjaan <span class="text-red-500">*</span></label>
-                    <select name="pekerjaan" x-model="form.pekerjaan" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                        Pekerjaan <span class="text-red-500">*</span>
+                        <span x-show="!form.hubungan" class="text-xs text-amber-600 dark:text-amber-400 font-normal ml-1">(Pilih hubungan terlebih dahulu)</span>
+                    </label>
+                    <select name="pekerjaan" x-model="form.pekerjaan" required :disabled="!form.hubungan"
+                        :class="!form.hubungan ? 'opacity-60 cursor-not-allowed' : ''"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
                         <option value="">-- Pilih Pekerjaan --</option>
-                        <option value="ASN">ASN</option>
-                        <option value="Swasta">Swasta</option>
-                        <option value="BUMN">BUMN</option>
-                        <option value="BUMD">BUMD</option>
-                        <option value="IRT">IRT</option>
-                        <option value="Tidak Bekerja">Tidak Bekerja</option>
-                        <option value="Pelajar / Mahasiswa">Pelajar / Mahasiswa</option>
-                        <option value="Ayah">Ayah</option>
-                        <option value="Ibu">Ibu</option>
-                        <option value="Pensiunan">Pensiunan</option>
-                        <option value="Wiraswasta">Wiraswasta</option>
-                        <option value="Lainnya">Lainnya</option>
+                        <template x-for="p in pekerjaanOptions" :key="p">
+                            <option :value="p" x-text="p"></option>
+                        </template>
                     </select>
+                    <p x-show="form.hubungan === 'Anak'" class="text-xs text-gray-500 mt-1">Untuk hubungan Anak, pekerjaan otomatis Pelajar / Mahasiswa.</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -600,6 +595,48 @@ document.addEventListener('alpine:init', () => {
 
         get totalPages() {
             return Math.ceil(this.filteredPegawai.length / this.perPage);
+        },
+
+        // Pekerjaan options based on hubungan
+        get pekerjaanOptions() {
+            if (this.form.hubungan === 'Anak') {
+                return ['Belum/Tidak Bekerja','SD','SMP','SMA/SMK','Mahasiswa'];
+            }
+            if (['Suami', 'Istri'].includes(this.form.hubungan)) {
+                return ['ASN', 'Swasta', 'BUMN', 'BUMD', 'IRT', 'Tidak Bekerja', 'Wiraswasta', 'Pensiunan'];
+            }
+            return [];
+        },
+
+        onHubunganChange() {
+            // Auto-set pekerjaan for Anak
+            if (this.form.hubungan === 'Anak') {
+                if (!this.pekerjaanOptions.includes(this.form.pekerjaan)) {
+                    this.form.pekerjaan = 'Belum/Tidak Bekerja';
+                }
+            } else {
+                // Reset pekerjaan when switching hubungan
+                this.form.pekerjaan = '';
+            }
+            // Clear tanggal_perkawinan if not Suami/Istri
+            if (!['Suami', 'Istri'].includes(this.form.hubungan)) {
+                this.form.tanggal_perkawinan = '';
+            }
+        },
+
+        // Sorted keluargas: Pasangan (Suami/Istri) first, then Anak sorted by tanggal_lahir ASC (oldest first)
+        get sortedKeluargas() {
+            if (!this.selectedPegawai || !this.selectedPegawai.keluargas) return [];
+            return [...this.selectedPegawai.keluargas].sort((a, b) => {
+                const order = { 'Suami': 0, 'Istri': 0, 'Anak': 1 };
+                const oA = order[a.hubungan] ?? 2;
+                const oB = order[b.hubungan] ?? 2;
+                if (oA !== oB) return oA - oB;
+                // Same type - sort by tanggal_lahir ASC (oldest first)
+                const dateA = (a.tanggal_lahir || '').split('T')[0];
+                const dateB = (b.tanggal_lahir || '').split('T')[0];
+                return dateA.localeCompare(dateB);
+            });
         },
 
         openDetailModal(p) {
