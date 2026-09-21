@@ -76,6 +76,9 @@
                         <th x-show="columns.nip.visible" @click="sortBy('nip')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">NIP <span x-html="sortIcon('nip')"></span></div>
                         </th>
+                        <th x-show="columns.mkg.visible" @click="sortBy('mkg_total_months')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
+                            <div class="flex items-center gap-1">MKG <span x-html="sortIcon('mkg_total_months')"></span></div>
+                        </th>
                         <th x-show="columns.jabatan.visible" @click="sortBy('jabatan_nama')" class="cursor-pointer px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-blue-600 select-none">
                             <div class="flex items-center gap-1">Jabatan <span x-html="sortIcon('jabatan_nama')"></span></div>
                         </th>
@@ -134,6 +137,7 @@
                                 </div>
                             </td>
                             <td x-show="columns.nip.visible" class="px-6 py-3 text-sm font-mono text-gray-600 dark:text-gray-400 whitespace-nowrap" x-text="p.nip"></td>
+                            <td x-show="columns.mkg.visible" class="px-6 py-3 text-sm text-slate-700 dark:text-gray-300 whitespace-nowrap font-medium" x-text="getMkgDisplay(p)"></td>
                             <td x-show="columns.jabatan.visible" class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="p.jabatan ? p.jabatan.nama_jabatan : '-'"></td>
                             <td x-show="columns.bidang.visible" class="px-6 py-3 text-sm whitespace-nowrap">
                                 <template x-if="p.bidang">
@@ -257,6 +261,10 @@
                             <div x-show="columns.jabatan.visible" class="col-span-2 bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
                                 <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Jabatan</span>
                                 <span class="font-medium text-slate-800 dark:text-slate-200" x-text="p.jabatan ? p.jabatan.nama_jabatan : '-'"></span>
+                            </div>
+                            <div x-show="columns.mkg.visible" class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">MKG (Masa Kerja Golongan)</span>
+                                <span class="font-medium text-slate-800 dark:text-slate-200" x-text="getMkgDisplay(p)"></span>
                             </div>
                             <div x-show="columns.golongan.visible" class="bg-gray-50 dark:bg-[#111111] p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
                                 <span class="text-gray-400 dark:text-gray-500 block text-[10px] uppercase font-semibold">Golongan</span>
@@ -883,6 +891,7 @@ document.addEventListener('alpine:init', () => {
         columns: {
             nama: { label: 'Nama', visible: true },
             nip: { label: 'NIP', visible: true },
+            mkg: { label: 'MKG', visible: true },
             jabatan: { label: 'Jabatan', visible: true },
             bidang: { label: 'Bidang / Unit', visible: true },
             status: { label: 'Status Kepegawaian', visible: true },
@@ -1003,6 +1012,48 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        getMkgDisplay(p) {
+            const targetDate = new Date();
+
+            let tmtYear = null;
+            let tmtMonth = null;
+
+            // 1. Coba dari NIP
+            if (p && p.nip && String(p.nip).length >= 14) {
+                const nipStr = String(p.nip);
+                const y = parseInt(nipStr.substring(8, 12));
+                const m = parseInt(nipStr.substring(12, 14));
+                if (y >= 1950 && y <= targetDate.getFullYear() && m >= 1 && m <= 12) {
+                    tmtYear = y;
+                    tmtMonth = m;
+                }
+            }
+
+            // 2. Coba dari tanggal_berlaku jika NIP tidak terbaca
+            if (tmtYear === null && p && p.tanggal_berlaku) {
+                const tb = new Date(p.tanggal_berlaku);
+                if (!isNaN(tb.getTime())) {
+                    tmtYear = tb.getFullYear();
+                    tmtMonth = tb.getMonth() + 1;
+                }
+            }
+
+            if (tmtYear === null || tmtMonth === null) return '-';
+
+            const tmtDate = new Date(tmtYear, tmtMonth - 1, 1);
+            if (tmtDate > targetDate) return '0 Tahun 0 Bulan';
+
+            let years = targetDate.getFullYear() - tmtDate.getFullYear();
+            let months = targetDate.getMonth() - tmtDate.getMonth();
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            return `${years} Tahun ${months} Bulan`;
+        },
+
         init() {
             // Restore pagination state from sessionStorage
             const savedPage = sessionStorage.getItem('sipeg_pegawai_page');
@@ -1062,6 +1113,46 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        getMkgTotalMonths(p) {
+            const targetDate = new Date();
+
+            let tmtYear = null;
+            let tmtMonth = null;
+
+            if (p && p.nip && String(p.nip).length >= 14) {
+                const nipStr = String(p.nip);
+                const y = parseInt(nipStr.substring(8, 12));
+                const m = parseInt(nipStr.substring(12, 14));
+                if (y >= 1950 && y <= targetDate.getFullYear() && m >= 1 && m <= 12) {
+                    tmtYear = y;
+                    tmtMonth = m;
+                }
+            }
+
+            if (tmtYear === null && p && p.tanggal_berlaku) {
+                const tb = new Date(p.tanggal_berlaku);
+                if (!isNaN(tb.getTime())) {
+                    tmtYear = tb.getFullYear();
+                    tmtMonth = tb.getMonth() + 1;
+                }
+            }
+
+            if (tmtYear === null || tmtMonth === null) return -1;
+
+            const tmtDate = new Date(tmtYear, tmtMonth - 1, 1);
+            if (tmtDate > targetDate) return 0;
+
+            let years = targetDate.getFullYear() - tmtDate.getFullYear();
+            let months = targetDate.getMonth() - tmtDate.getMonth();
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            return (years * 12) + months;
+        },
+
         get filteredPegawai() {
             let result = this.allPegawai;
 
@@ -1081,7 +1172,10 @@ document.addEventListener('alpine:init', () => {
                 let valA = a[this.sortCol] || '';
                 let valB = b[this.sortCol] || '';
 
-                if (this.sortCol === 'jabatan_nama') {
+                if (this.sortCol === 'mkg_total_months') {
+                    valA = this.getMkgTotalMonths(a);
+                    valB = this.getMkgTotalMonths(b);
+                } else if (this.sortCol === 'jabatan_nama') {
                     valA = a.jabatan ? a.jabatan.nama_jabatan : '';
                     valB = b.jabatan ? b.jabatan.nama_jabatan : '';
                 } else if (this.sortCol === 'bidang_nama') {
@@ -1164,6 +1258,7 @@ document.addEventListener('alpine:init', () => {
                     <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${idx + 1}</td>
                     <td style="border: 1px solid #000000; mso-number-format:'\\@'; vertical-align: middle;">${p.nip || '-'}</td>
                     <td style="border: 1px solid #000000; vertical-align: middle;">${namaLengkap}</td>
+                    <td style="border: 1px solid #000000; mso-number-format:'\\@'; vertical-align: middle;">${self.getMkgDisplay(p)}</td>
                     <td style="border: 1px solid #000000; mso-number-format:'\\@'; vertical-align: middle;">${p.nik || '-'}</td>
                     <td style="border: 1px solid #000000; vertical-align: middle;">${p.tempat_lahir || '-'}</td>
                     <td style="border: 1px solid #000000; text-align: center; vertical-align: middle;">${tglLahir}</td>
@@ -1205,6 +1300,7 @@ document.addEventListener('alpine:init', () => {
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">No</th>
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">NIP</th>
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Nama Lengkap</th>
+                                <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">MKG</th>
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">NIK</th>
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Tempat Lahir</th>
                                 <th style="border: 1px solid #000000; padding: 8px; text-align: center; background-color: #000000; color: #ffffff;">Tanggal Lahir</th>
@@ -1248,6 +1344,7 @@ document.addEventListener('alpine:init', () => {
                     <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${idx + 1}</td>
                     <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px;font-family:monospace">${p.nip}</td>
                     <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${namaLengkap}</td>
+                    <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${self.getMkgDisplay(p)}</td>
                     <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${jab}</td>
                     <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${p.status_kepegawaian}</td>
                     <td style="border:1px solid #e5e7eb;padding:6px 8px;font-size:10px">${golDisplay}</td>
@@ -1271,7 +1368,7 @@ document.addEventListener('alpine:init', () => {
                 <p class="sub">Dicetak pada: ${new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'})} | Total: ${self.allPegawai.length} pegawai</p>
                 <table>
                     <thead><tr>
-                        <th>No</th><th>NIP</th><th>Nama Lengkap</th><th>Jabatan</th><th>Status</th><th>Golongan / Pangkat</th>
+                        <th>No</th><th>NIP</th><th>Nama Lengkap</th><th>MKG</th><th>Jabatan</th><th>Status</th><th>Golongan / Pangkat</th>
                     </tr></thead>
                     <tbody>${rows}</tbody>
                 </table>

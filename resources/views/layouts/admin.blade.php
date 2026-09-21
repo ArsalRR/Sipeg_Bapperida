@@ -116,14 +116,131 @@
                 </div>
             </div>
 
+            @php
+                $currentUser = auth()->user();
+                $notifications = collect();
+                $tomorrow = \Carbon\Carbon::tomorrow();
+
+                if (in_array($currentUser->role, ['admin', 'superadmin'])) {
+                    // Admin melihat semua pegawai yang H-2 bulan KGB
+                    $allP = \App\Models\Pegawai::all();
+                    foreach ($allP as $p) {
+                        $info = $p->kgb_info;
+                        if ($info['is_due_soon']) {
+                            $notifications->push([
+                                'type'      => 'kgb',
+                                'nama'      => $p->nama_lengkap,
+                                'due_date'  => $info['due_date'],
+                                'days_left' => $info['days_left'],
+                                'message'   => "KGB Pegawai {$p->nama_lengkap} pada {$info['due_date']} ({$info['days_left']} hari lagi)."
+                            ]);
+                        }
+
+                        // Notifikasi H-1 ulang tahun pegawai (admin melihat semua)
+                        if ($p->tanggal_lahir &&
+                            $p->tanggal_lahir->month === $tomorrow->month &&
+                            $p->tanggal_lahir->day   === $tomorrow->day) {
+                            $usia = $tomorrow->year - $p->tanggal_lahir->year;
+                            $notifications->push([
+                                'type'    => 'birthday',
+                                'nama'    => $p->nama_lengkap,
+                                'message' => "Pegawai {$p->nama_lengkap} akan berulang tahun ke-{$usia} besok."
+                            ]);
+                        }
+                    }
+                } else {
+                    // User biasa hanya melihat KGB dirinya sendiri
+                    if ($currentUser->pegawai) {
+                        $info = $currentUser->pegawai->kgb_info;
+                        if ($info['is_due_soon']) {
+                            $notifications->push([
+                                'type'      => 'kgb',
+                                'nama'      => 'Anda',
+                                'due_date'  => $info['due_date'],
+                                'days_left' => $info['days_left'],
+                                'message'   => "Jadwal Kenaikan Gaji Berkala (KGB) Anda pada {$info['due_date']} ({$info['days_left']} hari lagi)."
+                            ]);
+                        }
+
+                        // Notifikasi H-1 ulang tahun diri sendiri
+                        $tglLahir = $currentUser->pegawai->tanggal_lahir;
+                        if ($tglLahir &&
+                            $tglLahir->month === $tomorrow->month &&
+                            $tglLahir->day   === $tomorrow->day) {
+                            $usia = $tomorrow->year - $tglLahir->year;
+                            $notifications->push([
+                                'type'    => 'birthday',
+                                'nama'    => 'Anda',
+                                'message' => "Selamat! Ulang tahun Anda ke-{$usia} adalah besok."
+                            ]);
+                        }
+                    }
+                }
+            @endphp
+
             <div class="flex items-center gap-3 sm:gap-6 shrink-0">
                 <div class="bg-white dark:bg-[#111111] p-1 rounded-full border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-center h-10 w-10 shrink-0">
                     <x-theme-toggle />
                 </div>
-                <button class="relative shrink-0 p-2 text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-white dark:bg-[#111111] border border-gray-200 dark:border-gray-800 rounded-full h-10 w-10 flex items-center justify-center shadow-sm">
-                    <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-[#111111]"></span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                </button>
+
+                <!-- Notifikasi Bell Dropdown -->
+                <div class="relative" x-data="{ notifOpen: false }">
+                    <button @click="notifOpen = !notifOpen" @click.outside="notifOpen = false"
+                            class="relative shrink-0 p-2 text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-white dark:bg-[#111111] border border-gray-200 dark:border-gray-800 rounded-full h-10 w-10 flex items-center justify-center shadow-sm focus:outline-none">
+                        @if($notifications->count() > 0)
+                            <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-[#111111] animate-pulse"></span>
+                        @endif
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    </button>
+
+                    <!-- Popover Dropdown Notifikasi -->
+                    <div x-show="notifOpen" x-transition x-cloak
+                         class="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#111111] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                            <h4 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>Pemberitahuan</span>
+                                @if($notifications->count() > 0)
+                                    <span class="px-2 py-0.5 text-[10px] bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 font-bold rounded-full">{{ $notifications->count() }}</span>
+                                @endif
+                            </h4>
+                            <span class="text-[10px] text-gray-400">KGB & Ulang Tahun</span>
+                        </div>
+
+                        <div class="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+                            @forelse($notifications as $notif)
+                                @if(($notif['type'] ?? 'kgb') === 'birthday')
+                                    {{-- Notifikasi Ulang Tahun --}}
+                                    <div class="p-3.5 hover:bg-pink-50/50 dark:hover:bg-pink-900/10 transition-colors flex items-start gap-3">
+                                        <div class="p-2 bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400 rounded-xl shrink-0 mt-0.5">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z"></path></svg>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-xs font-bold text-slate-800 dark:text-slate-100"> Ada Yang Ulang Tahun Besok!</p>
+                                            <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">{{ $notif['message'] }}</p>
+                                            <span class="inline-block mt-1 text-[10px] font-semibold text-pink-600 dark:text-pink-400">H-1 Besok</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    {{-- Notifikasi KGB --}}
+                                    <div class="p-3.5 hover:bg-amber-50/50 dark:hover:bg-amber-900/10 transition-colors flex items-start gap-3">
+                                        <div class="p-2 bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 rounded-xl shrink-0 mt-0.5">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-xs font-bold text-slate-800 dark:text-slate-100">Kenaikan Gaji Berkala (KGB)</p>
+                                            <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">{{ $notif['message'] }}</p>
+                                            <span class="inline-block mt-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">H-{{ $notif['days_left'] }} Hari Lagi</span>
+                                        </div>
+                                    </div>
+                                @endif
+                            @empty
+                                <div class="p-6 text-center text-xs text-gray-400 italic">
+                                    Tidak ada pemberitahuan saat ini.
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
                 <div class="flex items-center gap-3 pl-2 sm:pl-4 border-l border-gray-200 dark:border-gray-800 shrink-0">
                     <div class="text-right hidden sm:block">
                         <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight">

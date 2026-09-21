@@ -184,7 +184,7 @@
                     <td class="align-top py-0.5">10.</td>
                     <td class="align-top py-0.5">Masa Kerja Golongan</td>
                     <td class="align-top py-0.5">:</td>
-                    <td class="align-top py-0.5">-</td>
+                    <td class="align-top py-0.5">{{ $pegawai ? $pegawai->mkg : '-' }}</td>
                 </tr>
                 <tr>
                     <td class="align-top py-0.5">11.</td>

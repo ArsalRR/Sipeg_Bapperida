@@ -97,6 +97,12 @@ class Pegawai extends Model
         'tanggal_berlaku' => 'date',
     ];
 
+    protected $appends = [
+        'nama_lengkap',
+        'mkg',
+        'kgb_info',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -118,6 +124,142 @@ class Pegawai extends Model
         $gelarBelakang = $this->gelar_belakang ? ', ' . $this->gelar_belakang : '';
         
         return $gelarDepan . $this->nama . $gelarBelakang;
+    }
+
+    public function calculateMkg($targetDate = null): string
+    {
+        $now = $targetDate ? \Carbon\Carbon::parse($targetDate) : \Carbon\Carbon::now();
+
+        // 1. Coba ekstrak TMT dari NIP (18 digit atau minimal 14 digit)
+        $tmtDate = null;
+        if ($this->nip && strlen((string)$this->nip) >= 14) {
+            $nipStr = (string)$this->nip;
+            $tmtYear = (int)substr($nipStr, 8, 4);
+            $tmtMonth = (int)substr($nipStr, 12, 2);
+
+            if ($tmtYear >= 1950 && $tmtYear <= (int)$now->format('Y') && $tmtMonth >= 1 && $tmtMonth <= 12) {
+                try {
+                    $tmtDate = \Carbon\Carbon::createFromDate($tmtYear, $tmtMonth, 1);
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        // 2. Jika NIP tidak valid / Non-ASN, coba gunakan tanggal_berlaku
+        if (!$tmtDate && $this->tanggal_berlaku) {
+            try {
+                $tmtDate = \Carbon\Carbon::parse($this->tanggal_berlaku)->startOfMonth();
+            } catch (\Throwable $e) {}
+        }
+
+        if (!$tmtDate) {
+            return '-';
+        }
+
+        if ($tmtDate->gt($now)) {
+            return '0 Tahun 0 Bulan';
+        }
+
+        $diff = $tmtDate->diff($now);
+        return "{$diff->y} Tahun {$diff->m} Bulan";
+    }
+
+    public function getMkgAttribute(): string
+    {
+        return $this->calculateMkg();
+    }
+
+    /**
+     * Ambil Tanggal TMT Pengangkatan Awal
+     */
+    public function getTmtPengangkatanAttribute()
+    {
+        if ($this->nip && strlen((string)$this->nip) >= 14) {
+            $nipStr = (string)$this->nip;
+            $tmtYear = (int)substr($nipStr, 8, 4);
+            $tmtMonth = (int)substr($nipStr, 12, 2);
+
+            if ($tmtYear >= 1950 && $tmtMonth >= 1 && $tmtMonth <= 12) {
+                try {
+                    return \Carbon\Carbon::createFromDate($tmtYear, $tmtMonth, 1);
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        if ($this->tanggal_berlaku) {
+            try {
+                return \Carbon\Carbon::parse($this->tanggal_berlaku)->startOfMonth();
+            } catch (\Throwable $e) {}
+        }
+
+        return null;
+    }
+
+    /**
+     * Hitung Tanggal Kenaikan Gaji Berkala (KGB) Berikutnya:
+     * - Golongan I, III, IV: Kenaikan pada tahun GENAP (tiap 2 tahun dari TMT pengangkatan: +2, +4, +6, ...)
+     * - Golongan II: Kenaikan pada tahun GANJIL (tiap 2 tahun dari TMT pengangkatan: +1, +3, +5, ...)
+     */
+    public function getKgbNextDateAttribute()
+    {
+        $tmt = $this->tmt_pengangkatan;
+        if (!$tmt) return null;
+
+        $now = \Carbon\Carbon::now()->startOfMonth();
+
+        // Cek apakah Golongan II (II/a, II/b, II/c, II/d, II, atau 2)
+        $gol = (string)($this->golongan ?? '');
+        $isGolongan2 = (strpos($gol, 'II') === 0 || strpos($gol, '2') === 0);
+
+        $mkgDiffMonths = $tmt->diffInMonths($now);
+        $mkgYears = (int)floor($mkgDiffMonths / 12);
+
+        if ($isGolongan2) {
+            // Golongan 2: kenaikan pada tahun ganjil (Masa Kerja 1, 3, 5, 7, ...)
+            $targetMkgYears = ($mkgYears % 2 === 1) ? $mkgYears : ($mkgYears + 1);
+        } else {
+            // Golongan 1, 3, 4: kenaikan pada tahun genap (Masa Kerja 2, 4, 6, 8, ...)
+            $targetMkgYears = ($mkgYears % 2 === 0 && $mkgYears > 0) ? $mkgYears : (ceil(($mkgYears + 0.1) / 2) * 2);
+        }
+
+        // Tanggal KGB berikutnya
+        $kgbDate = $tmt->copy()->addYears((int)$targetMkgYears);
+        if ($kgbDate->lt($now)) {
+            $kgbDate->addYears(2);
+        }
+
+        return $kgbDate;
+    }
+
+    /**
+     * Informasi Status KGB & Peringatan H-2 Bulan
+     */
+    public function getKgbInfoAttribute(): array
+    {
+        $nextDate = $this->kgb_next_date;
+        if (!$nextDate) {
+            return [
+                'is_due_soon' => false,
+                'due_date' => null,
+                'days_left' => null,
+                'months_left' => null,
+                'message' => '-'
+            ];
+        }
+
+        $now = \Carbon\Carbon::now();
+        $monthsLeft = (int)$now->diffInMonths($nextDate, false);
+        $daysLeft = (int)round($now->diffInDays($nextDate, false));
+
+        // Notifikasi aktif jika sisa waktu <= 2 bulan (kira-kira <= 62 hari) dan belum lewat
+        $isDueSoon = ($daysLeft >= 0 && $daysLeft <= 62);
+
+        return [
+            'is_due_soon' => $isDueSoon,
+            'due_date' => $nextDate->format('d/m/Y'),
+            'days_left' => $daysLeft,
+            'months_left' => $monthsLeft,
+            'message' => "KGB Pegawai {$this->nama_lengkap} pada " . $nextDate->format('d/m/Y') . " (" . max(0, $daysLeft) . " hari lagi)."
+        ];
     }
 
     public function getDataAtDate($date)
