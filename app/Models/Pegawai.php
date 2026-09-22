@@ -101,6 +101,7 @@ class Pegawai extends Model
         'nama_lengkap',
         'mkg',
         'kgb_info',
+        'golongan_pangkat',
     ];
 
     public function user(): BelongsTo
@@ -196,38 +197,44 @@ class Pegawai extends Model
 
     /**
      * Hitung Tanggal Kenaikan Gaji Berkala (KGB) Berikutnya:
-     * - Golongan I, III, IV: Kenaikan pada tahun GENAP (tiap 2 tahun dari TMT pengangkatan: +2, +4, +6, ...)
-     * - Golongan II: Kenaikan pada tahun GANJIL (tiap 2 tahun dari TMT pengangkatan: +1, +3, +5, ...)
+     * - Golongan I, III, IV: Kenaikan pada tahun GENAP masa kerja (2, 4, 6, 8, ...)
+     * - Golongan II: Kenaikan pada tahun GANJIL masa kerja (1, 3, 5, 7, ...)
      */
     public function getKgbNextDateAttribute()
     {
         $tmt = $this->tmt_pengangkatan;
         if (!$tmt) return null;
 
-        $now = \Carbon\Carbon::now()->startOfMonth();
+        $now = \Carbon\Carbon::now();
 
         // Cek apakah Golongan II (II/a, II/b, II/c, II/d, II, atau 2)
         $gol = (string)($this->golongan ?? '');
         $isGolongan2 = (strpos($gol, 'II') === 0 || strpos($gol, '2') === 0);
 
-        $mkgDiffMonths = $tmt->diffInMonths($now);
-        $mkgYears = (int)floor($mkgDiffMonths / 12);
+        // Ambil kandidat tanggal KGB pada tahun berjalan
+        $candidateThisYear = $tmt->copy()->year($now->year);
 
-        if ($isGolongan2) {
-            // Golongan 2: kenaikan pada tahun ganjil (Masa Kerja 1, 3, 5, 7, ...)
-            $targetMkgYears = ($mkgYears % 2 === 1) ? $mkgYears : ($mkgYears + 1);
-        } else {
-            // Golongan 1, 3, 4: kenaikan pada tahun genap (Masa Kerja 2, 4, 6, 8, ...)
-            $targetMkgYears = ($mkgYears % 2 === 0 && $mkgYears > 0) ? $mkgYears : (ceil(($mkgYears + 0.1) / 2) * 2);
+        // Cek selisih tahun dari TMT pengangkatan jika diambil kandidat tahun berjalan ini
+        $yearsDiff = $candidateThisYear->year - $tmt->year;
+
+        // Tentukan apakah tahun ini memenuhi syarat KGB (Golongan II = Ganjil, Lainnya = Genap)
+        $isValidYear = $isGolongan2 ? ($yearsDiff % 2 === 1) : ($yearsDiff % 2 === 0 && $yearsDiff > 0);
+
+        // Jika kandidat tahun ini sudah lewat lebih dari 1 bulan atau tidak valid secara siklus ganjil/genap
+        if (!$isValidYear || $candidateThisYear->copy()->addMonth()->lt($now)) {
+            // Cari tahun berikutnya yang valid
+            for ($add = 1; $add <= 3; $add++) {
+                $candidateNext = $tmt->copy()->year($now->year + $add);
+                $nextYearsDiff = $candidateNext->year - $tmt->year;
+                $isNextValid = $isGolongan2 ? ($nextYearsDiff % 2 === 1) : ($nextYearsDiff % 2 === 0 && $nextYearsDiff > 0);
+
+                if ($isNextValid && $candidateNext->gte($now->copy()->startOfMonth())) {
+                    return $candidateNext;
+                }
+            }
         }
 
-        // Tanggal KGB berikutnya
-        $kgbDate = $tmt->copy()->addYears((int)$targetMkgYears);
-        if ($kgbDate->lt($now)) {
-            $kgbDate->addYears(2);
-        }
-
-        return $kgbDate;
+        return $candidateThisYear;
     }
 
     /**
@@ -274,5 +281,51 @@ class Pegawai extends Model
         }
 
         return $this;
+    }
+
+    public function getGolonganPangkatAttribute(): string
+    {
+        $gol = $this->golongan;
+        if (!$gol || $gol === '-') {
+            return '-';
+        }
+
+        if (strpos($gol, '(') !== false || preg_match('/(Pembina|Penata|Pengatur|Juru)/i', $gol)) {
+            return $gol;
+        }
+
+        $clean = strtoupper(trim(str_replace(' ', '/', $gol)));
+        if (strpos($clean, '/') === false) {
+            $clean = preg_replace('/^(I{1,3}|IV|V)([A-E])$/', '$1/$2', $clean);
+        }
+
+        $map = [
+            'I/A' => 'Juru Muda',
+            'I/B' => 'Juru Muda Tingkat I',
+            'I/C' => 'Juru',
+            'I/D' => 'Juru Tingkat I',
+            'II/A' => 'Pengatur Muda',
+            'II/B' => 'Pengatur Muda Tingkat I',
+            'II/C' => 'Pengatur',
+            'II/D' => 'Pengatur Tingkat I',
+            'III/A' => 'Penata Muda',
+            'III/B' => 'Penata Muda Tingkat I',
+            'III/C' => 'Penata',
+            'III/D' => 'Penata Tingkat I',
+            'IV/A' => 'Pembina',
+            'IV/B' => 'Pembina Tingkat I',
+            'IV/C' => 'Pembina Utama Muda',
+            'IV/D' => 'Pembina Utama Madya',
+            'IV/E' => 'Pembina Utama',
+        ];
+
+        if (isset($map[$clean])) {
+            $displayGol = str_replace('/', ' ', $clean);
+            return $map[$clean] . ' (' . $displayGol . ')';
+        }
+
+        return (is_numeric($clean) || in_array($clean, ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI','XVII']))
+            ? 'Golongan ' . $gol
+            : $gol;
     }
 }

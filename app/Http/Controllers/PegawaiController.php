@@ -118,6 +118,10 @@ class PegawaiController extends Controller
             'foto' => ['nullable', 'image', 'max:2048'],
         ]);
 
+        if (empty($validated['tanggal_berlaku'])) {
+            $validated['tanggal_berlaku'] = now()->toDateString();
+        }
+
         if ($request->filled('cropped_foto')) {
             if ($pegawai->foto) {
                 Storage::disk('public')->delete($pegawai->foto);

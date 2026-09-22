@@ -15,6 +15,9 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -46,6 +49,22 @@
             <a href="{{ route('admin.pegawais.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.pegawais.*') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 Data Pegawai
+            </a>
+
+            @php
+                $hasPengajuanTable = \Illuminate\Support\Facades\Schema::hasTable('pengajuan_perubahans');
+                $pendingVerifikasisCount = $hasPengajuanTable ? \App\Models\PengajuanPerubahan::where('status', 'pending')->count() : 0;
+            @endphp
+            <a href="{{ route('admin.verifikasi.index') }}" class="flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.verifikasi.*') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10 font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+                <div class="flex items-center gap-3 min-w-0">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="truncate">Verifikasi Perubahan</span>
+                </div>
+                @if($pendingVerifikasisCount > 0)
+                    <span class="px-2 py-0.5 text-xs font-bold bg-amber-500 text-white rounded-full shrink-0 shadow-sm animate-pulse">
+                        {{ $pendingVerifikasisCount }}
+                    </span>
+                @endif
             </a>
 
             <!-- Group Menu Manajemen Jabatan -->
@@ -122,6 +141,18 @@
                 $tomorrow = \Carbon\Carbon::tomorrow();
 
                 if (in_array($currentUser->role, ['admin', 'superadmin'])) {
+                    // Notifikasi Pengajuan Perubahan Data Pegawai yang Pending
+                    if ($hasPengajuanTable) {
+                        $pendingPengajuans = \App\Models\PengajuanPerubahan::with('pegawai')->where('status', 'pending')->latest()->get();
+                        foreach ($pendingPengajuans as $peng) {
+                            $notifications->push([
+                                'type'    => 'pengajuan_perubahan',
+                                'nama'    => $peng->pegawai->nama_lengkap ?? ($peng->user->username ?? 'Pegawai'),
+                                'message' => "Pegawai " . ($peng->pegawai->nama_lengkap ?? ($peng->user->username ?? '')) . " mengajukan perubahan data profil.",
+                            ]);
+                        }
+                    }
+
                     // Admin melihat semua pegawai yang H-2 bulan KGB
                     $allP = \App\Models\Pegawai::all();
                     foreach ($allP as $p) {
@@ -203,12 +234,23 @@
                                     <span class="px-2 py-0.5 text-[10px] bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 font-bold rounded-full">{{ $notifications->count() }}</span>
                                 @endif
                             </h4>
-                            <span class="text-[10px] text-gray-400">KGB & Ulang Tahun</span>
                         </div>
 
                         <div class="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
                             @forelse($notifications as $notif)
-                                @if(($notif['type'] ?? 'kgb') === 'birthday')
+                                @if(($notif['type'] ?? '') === 'pengajuan_perubahan')
+                                    {{-- Notifikasi Pengajuan Perubahan --}}
+                                    <a href="{{ route('admin.verifikasi.index') }}" class="p-3.5 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors flex items-start gap-3 block">
+                                        <div class="p-2 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-xl shrink-0 mt-0.5">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-xs font-bold text-slate-800 dark:text-slate-100">Pengajuan Perubahan Data</p>
+                                            <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">{{ $notif['message'] }}</p>
+                                            <span class="inline-block mt-1 text-[10px] font-bold text-blue-600 dark:text-blue-400">Klik untuk Tinjau &rarr;</span>
+                                        </div>
+                                    </a>
+                                @elseif(($notif['type'] ?? 'kgb') === 'birthday')
                                     {{-- Notifikasi Ulang Tahun --}}
                                     <div class="p-3.5 hover:bg-pink-50/50 dark:hover:bg-pink-900/10 transition-colors flex items-start gap-3">
                                         <div class="p-2 bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400 rounded-xl shrink-0 mt-0.5">

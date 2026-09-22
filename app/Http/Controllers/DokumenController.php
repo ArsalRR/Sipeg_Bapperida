@@ -51,7 +51,7 @@ class DokumenController extends Controller
 
         $activeHistory = null;
 
-        if ($pegawai && $selectedYear != (int)date('Y')) {
+        if ($pegawai) {
             // Ambil riwayat pegawai yang berlaku tepat pada/sebelum 03 Januari tahun tersebut
             $activeHistory = $pegawai->histories()
                 ->where('tanggal_berlaku', '<=', $dateCutoff)

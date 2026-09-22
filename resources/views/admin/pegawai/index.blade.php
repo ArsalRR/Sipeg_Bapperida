@@ -1427,7 +1427,7 @@ document.addEventListener('alpine:init', () => {
                 jenis_kelamin: p.jenis_kelamin, agama: p.agama, status_kepegawaian: p.status_kepegawaian,
                 status_kerja: p.status_kerja || 'Aktif',
                 jabatan_id: p.jabatan_id, bidang_id: bId, golongan: p.golongan || '', status_pernikahan: p.status_pernikahan,
-                tanggal_berlaku: p.tanggal_berlaku ? p.tanggal_berlaku.split('T')[0] : new Date().toISOString().split('T')[0],
+                tanggal_berlaku: new Date().toLocaleDateString('sv-SE'),
                 user_id: p.user_id || ''
             };
             this.currentAccount = p.user;

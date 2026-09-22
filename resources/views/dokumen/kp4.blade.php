@@ -117,10 +117,8 @@
 
                 $statusKepegawaian = $activeHistory ? ($activeHistory->status_kepegawaian ?? $pegawai->status_kepegawaian) : ($pegawai->status_kepegawaian ?? '-');
                 $jabatanNama = $activeHistory ? ($activeHistory->jabatan->nama_jabatan ?? ($pegawai->jabatan->nama_jabatan ?? '-')) : ($pegawai->jabatan->nama_jabatan ?? '-');
-                $golongan = $activeHistory ? ($activeHistory->golongan ?? $pegawai->golongan) : ($pegawai->golongan ?? '-');
+                $golonganPangkat = $activeHistory ? $activeHistory->golongan_pangkat : ($pegawai ? $pegawai->golongan_pangkat : '-');
             @endphp
-
-
 
             <table class="w-full mb-3 text-[11pt] border-collapse">
                 <tr>
@@ -172,7 +170,7 @@
                     <td class="align-top py-0.5">8.</td>
                     <td class="align-top py-0.5">Pangkat / Golongan</td>
                     <td class="align-top py-0.5">:</td>
-                    <td class="align-top py-0.5">{{ $golongan }}</td>
+                    <td class="align-top py-0.5">{{ $golonganPangkat }}</td>
                 </tr>
                 <tr>
                     <td class="align-top py-0.5">9.</td>

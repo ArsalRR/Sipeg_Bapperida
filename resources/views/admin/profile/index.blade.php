@@ -12,6 +12,45 @@
             <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Pengaturan Profil Mandiri</h2>
         </div>
     </div>
+    @php
+        $hasPengajuanTable = \Illuminate\Support\Facades\Schema::hasTable('pengajuan_perubahans');
+        $pendingPengajuan = ($hasPengajuanTable && $user->pegawai) ? \App\Models\PengajuanPerubahan::where('pegawai_id', $user->pegawai->id)->where('status', 'pending')->first() : null;
+        $latestRejectedPengajuan = ($hasPengajuanTable && $user->pegawai) ? \App\Models\PengajuanPerubahan::where('pegawai_id', $user->pegawai->id)->where('status', 'ditolak')->latest()->first() : null;
+    @endphp
+
+    @if($pendingPengajuan)
+    <div class="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 p-4 mb-6 rounded-xl shadow-sm flex items-start justify-between">
+        <div class="flex items-start gap-3">
+            <div class="p-2 bg-amber-500 text-white rounded-lg shrink-0 mt-0.5 animate-pulse">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-amber-900 dark:text-amber-200">Pengajuan Perubahan Data Dalam Proses Verifikasi</p>
+                <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5 leading-relaxed">
+                    Anda telah mengirimkan pengajuan perubahan data profil pada <strong>{{ $pendingPengajuan->created_at->translatedFormat('d F Y, H:i') }}</strong>. Data akan diperbarui setelah mendapat persetujuan dari Admin.
+                </p>
+            </div>
+        </div>
+    </div>
+    @elseif($latestRejectedPengajuan && $latestRejectedPengajuan->created_at->diffInDays(now()) <= 7)
+    <div x-data="{ openAlert: true }" x-show="openAlert" class="bg-rose-50 dark:bg-rose-900/20 border-l-4 border-rose-500 p-4 mb-6 rounded-xl shadow-sm flex items-start justify-between">
+        <div class="flex items-start gap-3">
+            <div class="p-2 bg-rose-500 text-white rounded-lg shrink-0 mt-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-rose-900 dark:text-rose-200">Pengajuan Perubahan Data Sebelumnya Ditolak Admin</p>
+                <p class="text-xs text-rose-700 dark:text-rose-300 mt-0.5 leading-relaxed">
+                    Catatan Admin: <em class="font-semibold">"{{ $latestRejectedPengajuan->catatan_admin ?: 'Pengajuan belum memenuhi syarat.' }}"</em>. Anda dapat memperbaiki data dan mengirimkan ulang.
+                </p>
+            </div>
+        </div>
+        <button type="button" @click="openAlert = false" class="text-rose-400 hover:text-rose-600 dark:hover:text-rose-200 transition-colors p-1 rounded-lg shrink-0 ml-3 hover:bg-rose-100 dark:hover:bg-rose-900/40" title="Tutup Notifikasi">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+    @endif
+
     @if ($errors->any())
     <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-lg shadow-sm dark:bg-red-900/20 dark:border-red-500">
         <div class="flex">
@@ -320,6 +359,18 @@
                                 @endforeach
                             </select>
                             @error('status_pernikahan') <p class="text-red-500 text-[10px] font-semibold mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="md:col-span-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                            <div class="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <div>
+                                    <label class="block text-sm font-bold text-blue-600 dark:text-blue-400">Tanggal Berlaku Perubahan Data <span class="text-red-500">*</span></label>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kapan perubahan data di atas mulai berlaku (default hari ini, dapat disesuaikan).</p>
+                                </div>
+                                <div class="w-full sm:w-56 shrink-0">
+                                    <input type="date" name="tanggal_berlaku" value="{{ old('tanggal_berlaku', date('Y-m-d')) }}" required class="w-full px-4 py-2 border-2 border-blue-500 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-600 outline-none shadow-sm">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -65,43 +65,123 @@ class ProfileController extends Controller
             'jabatan_id' => ['nullable', 'exists:jabatans,id'],
             'golongan' => ['nullable', 'string', 'max:50'],
             'status_pernikahan' => ['nullable', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
+            'tanggal_berlaku' => ['nullable', 'date'],
             'foto' => ['nullable', 'image', 'max:2048'],
         ], [
             'username.regex' => 'Username tidak boleh mengandung spasi.',
             'current_password.required_with' => 'Password lama wajib diisi jika ingin mengubah password.'
         ]);
 
-        DB::transaction(function () use ($request, $user, $pegawai, $validated) {
-            // Update User
-            $userData = [
-                'username' => $validated['username'],
-                'email' => $validated['email'],
+        // Password update is always applied directly for security
+        if (!empty($validated['password'])) {
+            $user->update([
+                'password' => Hash::make($validated['password']),
+            ]);
+        }
+
+        // Check if user is regular 'user' (pegawai) vs 'admin' / 'superadmin'
+        if ($user->role === 'user' && $pegawai) {
+            // Process photo for submission if provided
+            $fotoTempPath = null;
+            if ($request->filled('cropped_foto')) {
+                $imageParts = explode(";base64,", $request->input('cropped_foto'));
+                if (count($imageParts) == 2) {
+                    $imageDecoded = base64_decode($imageParts[1]);
+                    $filename = 'pegawai/pengajuan/' . uniqid() . '.jpg';
+                    Storage::disk('public')->put($filename, $imageDecoded);
+                    $fotoTempPath = $filename;
+                }
+            } elseif ($request->hasFile('foto')) {
+                $fotoTempPath = $request->file('foto')->store('pegawai/pengajuan', 'public');
+            }
+
+            $dataLama = [
+                'username'           => $user->username,
+                'email'              => $user->email,
+                'nama'               => $pegawai->nama,
+                'gelar_depan'        => $pegawai->gelar_depan,
+                'gelar_belakang'     => $pegawai->gelar_belakang,
+                'nip'                => $pegawai->nip,
+                'nik'                => $pegawai->nik,
+                'alamat'             => $pegawai->alamat,
+                'tempat_lahir'       => $pegawai->tempat_lahir,
+                'tanggal_lahir'      => $pegawai->tanggal_lahir ? \Carbon\Carbon::parse($pegawai->tanggal_lahir)->format('Y-m-d') : null,
+                'jenis_kelamin'      => $pegawai->jenis_kelamin,
+                'agama'              => $pegawai->agama,
+                'status_kepegawaian' => $pegawai->status_kepegawaian,
+                'bidang_id'          => $pegawai->bidang_id,
+                'jabatan_id'         => $pegawai->jabatan_id,
+                'golongan'           => $pegawai->golongan,
+                'status_pernikahan'  => $pegawai->status_pernikahan,
+                'foto'               => $pegawai->foto,
             ];
 
-            if (!empty($validated['password'])) {
-                $userData['password'] = Hash::make($validated['password']);
-            }
+            $dataBaru = [
+                'username'           => $validated['username'],
+                'email'              => $validated['email'],
+                'nama'               => $validated['nama'],
+                'gelar_depan'        => $validated['gelar_depan'] ?? null,
+                'gelar_belakang'     => $validated['gelar_belakang'] ?? null,
+                'nip'                => $validated['nip'] ?? null,
+                'nik'                => $validated['nik'] ?? null,
+                'alamat'             => $validated['alamat'] ?? null,
+                'tempat_lahir'       => $validated['tempat_lahir'] ?? null,
+                'tanggal_lahir'      => $validated['tanggal_lahir'] ?? null,
+                'jenis_kelamin'      => $validated['jenis_kelamin'] ?? null,
+                'agama'              => $validated['agama'] ?? null,
+                'status_kepegawaian' => $validated['status_kepegawaian'] ?? null,
+                'bidang_id'          => $validated['bidang_id'] ?? null,
+                'jabatan_id'         => $validated['jabatan_id'] ?? null,
+                'golongan'           => $validated['golongan'] ?? null,
+                'status_pernikahan'  => $validated['status_pernikahan'] ?? null,
+                'tanggal_berlaku'    => $validated['tanggal_berlaku'] ?? now()->toDateString(),
+                'foto_temp'          => $fotoTempPath,
+            ];
+
+            // Hapus pengajuan pending sebelumnya jika ada
+            \App\Models\PengajuanPerubahan::where('pegawai_id', $pegawai->id)
+                ->where('status', 'pending')
+                ->delete();
+
+            // Buat pengajuan perubahan baru
+            \App\Models\PengajuanPerubahan::create([
+                'pegawai_id' => $pegawai->id,
+                'user_id'    => $user->id,
+                'data_lama'  => $dataLama,
+                'data_baru'  => $dataBaru,
+                'status'     => 'pending',
+            ]);
+
+            return redirect()->back()->with('success', 'Pengajuan perubahan data profil berhasil dikirim! Mohon menunggu persetujuan Admin.');
+        }
+
+        // Untuk Admin & Super Admin: Perbarui langsung
+        DB::transaction(function () use ($request, $user, $pegawai, $validated) {
+            $userData = [
+                'username' => $validated['username'],
+                'email'    => $validated['email'],
+            ];
 
             $user->update($userData);
 
-            // Update Pegawai
             if ($pegawai) {
                 $pegawaiData = [
-                    'nama' => $validated['nama'],
-                    'gelar_depan' => $validated['gelar_depan'],
-                    'gelar_belakang' => $validated['gelar_belakang'],
-                    'nip' => $validated['nip'],
-                    'nik' => $validated['nik'],
-                    'alamat' => $validated['alamat'],
-                    'tempat_lahir' => $validated['tempat_lahir'],
-                    'tanggal_lahir' => $validated['tanggal_lahir'],
-                    'jenis_kelamin' => $validated['jenis_kelamin'],
-                    'agama' => $validated['agama'],
+                    'nama'               => $validated['nama'],
+                    'gelar_depan'        => $validated['gelar_depan'],
+                    'gelar_belakang'     => $validated['gelar_belakang'],
+                    'nip'                => $validated['nip'],
+                    'nik'                => $validated['nik'],
+                    'alamat'             => $validated['alamat'],
+                    'tempat_lahir'       => $validated['tempat_lahir'],
+                    'tanggal_lahir'      => $validated['tanggal_lahir'],
+                    'jenis_kelamin'      => $validated['jenis_kelamin'],
+                    'agama'              => $validated['agama'],
                     'status_kepegawaian' => $validated['status_kepegawaian'],
-                    'bidang_id' => $validated['bidang_id'] ?? null,
-                    'jabatan_id' => $validated['jabatan_id'] ?? null,
-                    'golongan' => $validated['golongan'],
-                    'status_pernikahan' => $validated['status_pernikahan'],
+                    'bidang_id'          => $validated['bidang_id'] ?? null,
+                    'jabatan_id'         => $validated['jabatan_id'] ?? null,
+                    'golongan'           => $validated['golongan'],
+                    'status_pernikahan'  => $validated['status_pernikahan'],
+                    'tanggal_berlaku'    => $validated['tanggal_berlaku'] ?? now()->toDateString(),
                 ];
 
                 if ($request->filled('cropped_foto')) {

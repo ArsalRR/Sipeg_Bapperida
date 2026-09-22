@@ -51,4 +51,9 @@ Route::middleware(['auth', 'role:admin,superadmin'])->prefix('admin')->name('adm
     Route::resource('pegawais', PegawaiController::class)->except(['create', 'show', 'edit']);
     Route::resource('jabatans', JabatanController::class)->except(['create', 'show', 'edit']);
     Route::resource('bidangs', \App\Http\Controllers\BidangController::class)->except(['create', 'show', 'edit']);
+
+    // Verifikasi Perubahan Data Pegawai
+    Route::get('verifikasi-perubahan', [\App\Http\Controllers\VerifikasiPerubahanController::class, 'index'])->name('verifikasi.index');
+    Route::post('verifikasi-perubahan/{id}/setujui', [\App\Http\Controllers\VerifikasiPerubahanController::class, 'setujui'])->name('verifikasi.setujui');
+    Route::post('verifikasi-perubahan/{id}/tolak', [\App\Http\Controllers\VerifikasiPerubahanController::class, 'tolak'])->name('verifikasi.tolak');
 });
