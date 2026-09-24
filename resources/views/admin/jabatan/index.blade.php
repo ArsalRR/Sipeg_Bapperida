@@ -186,7 +186,6 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Jabatan <span class="text-red-500">*</span></label>
                             <input type="text" name="nama_jabatan" x-model="form.nama_jabatan" required placeholder="Misal: Kepala Badan Perencanaan Pembangunan..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-sm">
                         </div>
-
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Atasan Jabatan (Hirarki Peta Jabatan)</label>
                             <select name="parent_id" x-model="form.parent_id" @change="onParentChange()" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-sm">
@@ -197,7 +196,6 @@
                             </select>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pilih jabatan atasan langsung tempat posisi ini bernaung.</p>
                         </div>
-
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jenis Jabatan <span class="text-red-500">*</span></label>
@@ -278,8 +276,19 @@ document.addEventListener('alpine:init', () => {
         },
 
         get availableParents() {
-            if (!this.isEdit) return this.allJabatan;
-            return this.allJabatan.filter(j => j.id !== this.currentId);
+            let list = this.allJabatan.filter(j => j.jenis_jabatan === 'Struktural');
+            if (this.isEdit) {
+                list = list.filter(j => j.id !== this.currentId);
+            }
+            return list.slice().sort((a, b) => {
+                const kA = parseInt(a.kelas_jabatan) || 0;
+                const kB = parseInt(b.kelas_jabatan) || 0;
+                if (kB !== kA) return kB - kA;
+                const uA = (a.unit_kerja || '').toLowerCase();
+                const uB = (b.unit_kerja || '').toLowerCase();
+                if (uA !== uB) return uA.localeCompare(uB);
+                return (a.nama_jabatan || '').localeCompare(b.nama_jabatan || '');
+            });
         },
 
         openCreateModal() {

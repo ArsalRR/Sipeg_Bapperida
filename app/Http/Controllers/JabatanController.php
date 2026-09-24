@@ -15,7 +15,15 @@ class JabatanController extends Controller
     public function index(): View
     {
         $this->ensureDefaultJabatansSeeded();
-        $jabatans = Jabatan::with(['parent', 'pegawais'])->withCount('pegawais')->get();
+        $jabatans = Jabatan::with(['parent', 'pegawais'])
+            ->withCount(['pegawais' => function ($query) {
+                $query->where(function($q) {
+                    $q->where('status_kerja', 'Aktif')->orWhereNull('status_kerja');
+                });
+            }])
+            ->orderBy('kelas_jabatan', 'desc')
+            ->orderBy('nama_jabatan', 'asc')
+            ->get();
         $bidangs = \Illuminate\Support\Facades\Schema::hasTable('bidangs') 
             ? \App\Models\Bidang::orderBy('id', 'asc')->get() 
             : collect();
@@ -45,48 +53,85 @@ class JabatanController extends Controller
 
         // Helper map to normalize short codes to search terms
         $unitCodeMap = [
-            'umum' => ['umum', 'subbag umum', 'kepegawaian'],
-            'perencanaan_evaluasi' => ['perencanaan evaluasi', 'subbag perencanaan', 'keuangan'],
+            'umum' => ['umum', 'subbag umum', 'kepegawaian', 'umpeg'],
+            'perencanaan_evaluasi' => ['perencanaan evaluasi', 'subbag perencanaan', 'keuangan', 'renvalkeu'],
             'ppm' => ['pemerintahan', 'pembangunan manusia', 'ppm'],
-            'ekonomi' => ['perekonomian', 'ekonomi', 'sda', 'infrastruktur'],
+            'ekonomi' => ['perekonomian', 'ekonomi', 'sda', 'infrastruktur', 'psdaiw'],
             'ppepd' => ['pengendalian', 'evaluasi', 'ppepd', 'perencanaan pengendalian'],
-            'litbang' => ['riset', 'inovasi', 'litbang', 'penelitian'],
+            'litbang' => ['riset', 'inovasi', 'litbang', 'penelitian', 'rida'],
             'sekretariat' => ['sekretariat', 'kepala badan', 'sekretaris'],
         ];
 
+        $normalize = function (string $str): string {
+            $s = strtolower(trim($str));
+            $s = str_replace('&', 'dan', $s);
+            $s = preg_replace('/[^a-z0-9\s_]/', ' ', $s);
+            return preg_replace('/\s+/', ' ', $s);
+        };
+
+        $resolveCode = function (?string $rawValue) use ($unitCodeMap, $normalize) {
+            if (empty($rawValue)) return null;
+            $valNorm = $normalize($rawValue);
+            foreach ($unitCodeMap as $code => $keywords) {
+                if ($valNorm === $normalize($code)) return $code;
+                foreach ($keywords as $kw) {
+                    if ($valNorm === $normalize($kw)) return $code;
+                }
+            }
+            foreach ($unitCodeMap as $code => $keywords) {
+                foreach ($keywords as $kw) {
+                    if (str_contains($valNorm, $normalize($kw))) return $code;
+                }
+            }
+            return null;
+        };
+
         // Dynamic lookup helper function for view (with unit_kerja sensitivity)
-        $getJData = function(string $nama, int $defaultB, int $defaultK, ?int $defaultKelas = null, ?string $unitKerja = null) use ($allJabatans, $unitCodeMap) {
-            $found = $allJabatans->first(function($item) use ($nama, $unitKerja, $unitCodeMap) {
-                $dbName = strtolower(trim($item->nama_jabatan));
-                $searchName = strtolower(trim($nama));
-                $matchName = ($dbName === $searchName);
+        $getJData = function(string $nama, int $defaultB, int $defaultK, ?int $defaultKelas = null, ?string $unitKerja = null) use ($allJabatans, $unitCodeMap, $normalize, $resolveCode) {
+            $targetCode = $resolveCode($unitKerja) ?? $resolveCode($nama);
+            $searchNameNorm = $normalize($nama);
 
-                if (!$matchName) return false;
+            // 1. Try finding structural head for the target unit code first
+            $found = null;
+            if ($targetCode !== null) {
+                $found = $allJabatans->first(function($item) use ($targetCode, $searchNameNorm, $resolveCode, $normalize) {
+                    $itemCode = $resolveCode($item->unit_kerja);
+                    if ($itemCode !== $targetCode) return false;
 
-                if ($unitKerja !== null) {
-                    $itemUnit = strtolower(trim($item->unit_kerja ?? ''));
-                    $searchUnit = strtolower(trim($unitKerja));
+                    $dbNameNorm = $normalize($item->nama_jabatan);
 
-                    if ($itemUnit === $searchUnit) return true;
-
-                    // Match against map keywords
-                    foreach ($unitCodeMap as $code => $keywords) {
-                        $matchSearch = in_array($searchUnit, $keywords) || str_contains($searchUnit, $code);
-                        $matchItem = in_array($itemUnit, $keywords) || $itemUnit === $code;
-                        if ($matchSearch && $matchItem) return true;
+                    if (str_contains($searchNameNorm, 'kepala badan') && !str_contains($dbNameNorm, 'kepala badan')) {
+                        return false;
+                    }
+                    if (str_contains($searchNameNorm, 'sekretaris') && !str_contains($dbNameNorm, 'sekretaris')) {
+                        return false;
                     }
 
-                    return str_contains($itemUnit, $searchUnit) || str_contains($searchUnit, $itemUnit);
-                }
+                    return ($item->jenis_jabatan === 'Struktural' || str_starts_with($dbNameNorm, 'kepala ') || str_starts_with($dbNameNorm, 'sekretaris '));
+                });
+            }
 
-                return true;
-            });
+            // 2. Fallback: match by name
+            if (!$found) {
+                $matches = $allJabatans->filter(function($item) use ($searchNameNorm, $normalize) {
+                    $dbNameNorm = $normalize($item->nama_jabatan);
+                    return $dbNameNorm === $searchNameNorm || str_contains($dbNameNorm, $searchNameNorm) || str_contains($searchNameNorm, $dbNameNorm);
+                });
+
+                if ($matches->count() > 0) {
+                    // Prioritaskan jabatan yang memiliki pegawai (bezetting terbesar) jika ada duplikat
+                    $found = $matches->sortByDesc(function($j) {
+                        return $j->bezetting;
+                    })->first();
+                }
+            }
 
             if ($found) {
                 $k = $found->kebutuhan ?? $found->jumlah ?? 0;
                 $b = $found->bezetting;
                 return [
                     'id' => $found->id,
+                    'nama' => $found->nama_jabatan,
                     'B' => $b,
                     'K' => $k,
                     'selisih' => $b - $k,
@@ -96,6 +141,7 @@ class JabatanController extends Controller
 
             return [
                 'id' => null,
+                'nama' => $nama,
                 'B' => $defaultB,
                 'K' => $defaultK,
                 'selisih' => $defaultB - $defaultK,
@@ -103,92 +149,75 @@ class JabatanController extends Controller
             ];
         };
 
-        // Get dynamic child jabatans from database based on unit_kerja or parent_id
-        $getChildrenData = function(string $unitOrParentKey, array $defaultRows) use ($allJabatans, $unitCodeMap) {
-            $normalize = function(string $str): string {
-                $s = strtolower(trim($str));
-                $s = str_replace('&', 'dan', $s);
-                $s = preg_replace('/[^a-z0-9\s_]/', ' ', $s);
-                return preg_replace('/\s+/', ' ', $s);
-            };
+        // Get dynamic child jabatans purely from database (no hardcoded default rows needed)
+        // 2. Fetch standalone Fungsionals dynamically
+        $fungsionalSekretariat = $allJabatans->where('jenis_jabatan', 'Fungsional')->filter(fn($j) => $resolveCode($j->unit_kerja) === 'sekretariat')->sortByDesc('bezetting');
+        $fungsionalPerencanaan = $allJabatans->where('jenis_jabatan', 'Fungsional')->filter(fn($j) => $resolveCode($j->unit_kerja) === 'perencanaan_evaluasi')->sortByDesc('bezetting');
 
+        $standaloneIds = [];
+        foreach ($fungsionalSekretariat as $fs) $standaloneIds[] = $fs->id;
+        foreach ($fungsionalPerencanaan as $fp) $standaloneIds[] = $fp->id;
+
+        $getChildrenData = function (string $unitOrParentKey) use ($allJabatans, $unitCodeMap, $resolveCode, $normalize, $standaloneIds) {
             $uKeyNorm = $normalize($unitOrParentKey);
+            $resolvedCode = $resolveCode($unitOrParentKey);
 
-            // Find parent
-            $parent = $allJabatans->first(function($item) use ($uKeyNorm, $normalize) {
+            // Fallback: find a parent jabatan by name match (used only if unit_kerja code can't resolve)
+            $parent = $allJabatans->first(function ($item) use ($uKeyNorm, $normalize) {
                 $dbNameNorm = $normalize($item->nama_jabatan);
                 return str_contains($dbNameNorm, $uKeyNorm) || str_contains($uKeyNorm, $dbNameNorm);
             });
 
-            // Get children linked via unit_kerja (priority) or parent_id (fallback)
-            $dbChildren = $allJabatans->filter(function($j) use ($parent, $uKeyNorm, $normalize, $unitOrParentKey, $unitCodeMap) {
-                $jUnit = strtolower(trim($j->unit_kerja ?? ''));
+            // Get children: prefer canonical unit_kerja code match, fallback to parent_id
+            $dbChildren = $allJabatans->filter(function ($j) use ($parent, $resolvedCode, $resolveCode) {
+                $childCode = $resolveCode($j->unit_kerja);
 
-                if (!empty($jUnit)) {
-                    // Direct match with short code or keyword
-                    foreach ($unitCodeMap as $code => $keywords) {
-                        $matchesKey = str_contains($uKeyNorm, $code) || array_filter($keywords, fn($kw) => str_contains($uKeyNorm, $kw));
-                        if ($matchesKey && ($jUnit === $code || in_array($jUnit, $keywords))) {
-                            return true;
-                        }
-                    }
-
-                    $jUnitNorm = $normalize($jUnit);
-                    if (str_contains($jUnitNorm, $uKeyNorm) || str_contains($uKeyNorm, $jUnitNorm)) {
-                        return true;
-                    }
-
-                    return false;
+                if ($resolvedCode !== null && $childCode !== null) {
+                    return $childCode === $resolvedCode;
                 }
 
-                if ($parent && $j->parent_id == $parent->id) {
-                    return true;
+                if ($parent) {
+                    return $j->parent_id == $parent->id;
                 }
 
                 return false;
             });
 
-            $results = $defaultRows;
+            // Exclude structural heads (already rendered as colored header boxes) and standalone boxes
+            $dbChildren = $dbChildren->filter(function ($c) use ($parent, $resolvedCode, $standaloneIds) {
+                $cNameLower = strtolower(trim($c->nama_jabatan));
 
-            foreach ($results as $idx => $r) {
-                $rNameLower = strtolower(trim($r['nama']));
-                // Find matching child specifically in this unit/parent scope
-                $matchedChild = $dbChildren->first(function($c) use ($rNameLower) {
-                    return strtolower(trim($c->nama_jabatan)) === $rNameLower;
-                });
-
-                if ($matchedChild) {
-                    $results[$idx]['b'] = $matchedChild->bezetting;
-                    $results[$idx]['k'] = $matchedChild->kebutuhan ?? $matchedChild->jumlah ?? 0;
-                    if ($matchedChild->kelas_jabatan) {
-                        $results[$idx]['kls'] = $matchedChild->kelas_jabatan;
-                    }
+                if ($parent && $c->id === $parent->id) {
+                    return false;
                 }
-            }
+                if ($c->jenis_jabatan === 'Struktural') {
+                    return false;
+                }
+                if (str_starts_with($cNameLower, 'kepala ') || str_starts_with($cNameLower, 'sekretaris ')) {
+                    return false;
+                }
+                if (in_array($c->id, $standaloneIds)) {
+                    return false;
+                }
 
-            // Append extra dynamic custom DB rows created by user in this unit (excluding structural heads)
-            $existingNames = array_map(fn($r) => strtolower(trim($r['nama'])), $results);
+                return true;
+            });
+
+            $results = [];
             foreach ($dbChildren as $child) {
-                $cNameLower = strtolower(trim($child->nama_jabatan));
+                $b = $child->bezetting ?? 0;
+                $k = $child->kebutuhan ?? $child->jumlah ?? 0;
 
-                // Exclude Structural Heads (already rendered as coloured Box Headers)
-                if ($child->jenis_jabatan === 'Struktural' || 
-                    str_starts_with($cNameLower, 'kepala ') ||
-                    str_starts_with($cNameLower, 'sekretaris ')) {
-                    continue;
-                }
-
-                if (!in_array($cNameLower, $existingNames)) {
-                    $results[] = [
-                        'nama' => $child->nama_jabatan,
-                        'b' => $child->bezetting,
-                        'k' => $child->kebutuhan ?? $child->jumlah ?? 0,
-                        'kls' => $child->kelas_jabatan ?? 7,
-                        'is_db' => true,
-                    ];
-                    $existingNames[] = $cNameLower;
-                }
+                $results[] = [
+                    'nama'    => $child->nama_jabatan,
+                    'kelas'   => $child->kelas_jabatan,
+                    'B'       => $b,
+                    'K'       => $k,
+                    'selisih' => $b - $k,
+                ];
             }
+
+            usort($results, fn ($a, $b) => strcmp($a['nama'], $b['nama']));
 
             return $results;
         };
@@ -223,7 +252,7 @@ class JabatanController extends Controller
             }
         }
 
-        return view('admin.jabatan.peta', compact('allJabatans', 'treeJabatans', 'totalAsn', 'totalPns', 'totalPppk', 'rekapJenis', 'getJData', 'getChildrenData'));
+        return view('admin.jabatan.peta', compact('allJabatans', 'treeJabatans', 'totalAsn', 'totalPns', 'totalPppk', 'rekapJenis', 'getJData', 'getChildrenData', 'fungsionalSekretariat', 'fungsionalPerencanaan'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -233,6 +262,7 @@ class JabatanController extends Controller
             'jenis_jabatan' => ['required', Rule::in(['Struktural', 'Fungsional', 'Pelaksana'])],
             'parent_id' => ['nullable', 'exists:jabatans,id'],
             'unit_kerja' => ['nullable', 'string', 'max:255'],
+            'bidang_id' => ['nullable', 'exists:bidangs,id'],
             'kelas_jabatan' => ['nullable', 'integer', 'min:1', 'max:15'],
             'kebutuhan' => ['nullable', 'integer', 'min:0'],
             'kategori_warna' => ['nullable', 'string', 'max:50'],
@@ -257,6 +287,7 @@ class JabatanController extends Controller
             'jenis_jabatan' => ['required', Rule::in(['Struktural', 'Fungsional', 'Pelaksana'])],
             'parent_id' => ['nullable', 'exists:jabatans,id'],
             'unit_kerja' => ['nullable', 'string', 'max:255'],
+            'bidang_id' => ['nullable', 'exists:bidangs,id'],
             'kelas_jabatan' => ['nullable', 'integer', 'min:1', 'max:15'],
             'kebutuhan' => ['nullable', 'integer', 'min:0'],
             'kategori_warna' => ['nullable', 'string', 'max:50'],
@@ -322,6 +353,14 @@ class JabatanController extends Controller
                 } elseif (!empty($parent->unit_kerja)) {
                     $validated['unit_kerja'] = $parent->unit_kerja;
                 }
+            }
+        }
+
+        // 3. Auto-fill bidang_id from unit_kerja (match singkatan in bidangs table)
+        if (!empty($validated['unit_kerja']) && empty($validated['bidang_id'])) {
+            $bidang = \App\Models\Bidang::where('singkatan', $validated['unit_kerja'])->first();
+            if ($bidang) {
+                $validated['bidang_id'] = $bidang->id;
             }
         }
     }

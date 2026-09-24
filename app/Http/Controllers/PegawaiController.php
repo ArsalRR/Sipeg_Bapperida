@@ -25,7 +25,7 @@ class PegawaiController extends Controller
         $pegawais = Pegawai::with(array_merge(['jabatan', 'bidang', 'user'], $historyRelations))->latest()->get();
         $jabatans = Jabatan::withCount(['pegawais' => function($q) {
             $q->where('status_kerja', 'Aktif')->orWhereNull('status_kerja');
-        }])->get();
+        }])->get(['id', 'nama_jabatan', 'jenis_jabatan', 'kelas_jabatan', 'unit_kerja', 'bidang_id', 'parent_id', 'kebutuhan', 'jumlah']);
         $bidangs = \Illuminate\Support\Facades\Schema::hasTable('bidangs') 
             ? \App\Models\Bidang::orderBy('id', 'asc')->get() 
             : collect();

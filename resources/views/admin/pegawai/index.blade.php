@@ -795,65 +795,20 @@ document.addEventListener('alpine:init', () => {
         get availableJabatansForForm() {
             if (!this.form.bidang_id) return [];
 
-            const selectedBidang = this.allBidangs.find(b => b.id == this.form.bidang_id);
-            if (!selectedBidang) return [];
+            const bidangId = parseInt(this.form.bidang_id);
 
-            const bSingkatan = (selectedBidang.singkatan || '').toLowerCase().trim();
-            const bNama = (selectedBidang.nama_bidang || '').toLowerCase().trim();
+            // Filter jabatan murni berdasarkan bidang_id (relasi ID langsung, tidak pakai string matching)
+            let list = this.allJabatans.filter(j => j.bidang_id === bidangId);
 
-            const unitSpecs = {
-                'umum': ['umum', 'umpeg', 'kepegawaian', 'subbag umum'],
-                'perencanaan_evaluasi': ['perencanaan_evaluasi', 'perencanaan evaluasi', 'keuangan', 'subbag perencanaan'],
-                'ppm': ['ppm', 'pemerintahan', 'pembangunan manusia'],
-                'ekonomi': ['ekonomi', 'perekonomian', 'sda', 'infrastruktur', 'kewilayahan'],
-                'ppepd': ['ppepd', 'pengendalian', 'evaluasi pembangunan'],
-                'litbang': ['litbang', 'riset', 'rida', 'inovasi', 'penelitian'],
-                'sekretariat': ['sekretariat', 'kepala badan', 'sekretaris']
-            };
-
-            let canonicalCode = null;
-            let targetAliases = [];
-            for (const [key, aliases] of Object.entries(unitSpecs)) {
-                if (aliases.some(a => (bSingkatan && (bSingkatan === a || bSingkatan.includes(a) || a.includes(bSingkatan))) || (bNama && bNama.includes(a)))) {
-                    canonicalCode = key;
-                    targetAliases = aliases;
-                    break;
-                }
-            }
-
-            if (!targetAliases.length) {
-                targetAliases = [bSingkatan, bNama].filter(Boolean);
-            }
-
-            // Filter jabatans strictly by unit_kerja matching targetAliases
-            let list = this.allJabatans.filter(j => {
-                const u = (j.unit_kerja || '').toLowerCase().trim();
-                if (!u) return false;
-                return u === canonicalCode || targetAliases.some(a => u === a || u.includes(a));
-            });
-
-            // Sort list to prioritize exact unit match and available capacity
+            // Sort: jabatan struktural/kepala di atas, lalu berdasarkan kelas jabatan tertinggi
             list.sort((a, b) => {
-                const uA = (a.unit_kerja || '').toLowerCase().trim();
-                const uB = (b.unit_kerja || '').toLowerCase().trim();
-                const exactA = (uA === canonicalCode || uA === bSingkatan) ? 0 : 1;
-                const exactB = (uB === canonicalCode || uB === bSingkatan) ? 0 : 1;
-                if (exactA !== exactB) return exactA - exactB;
-                return (a.pegawais_count || 0) - (b.pegawais_count || 0);
+                const kA = parseInt(a.kelas_jabatan) || 0;
+                const kB = parseInt(b.kelas_jabatan) || 0;
+                if (kB !== kA) return kB - kA;
+                return (a.nama_jabatan || '').localeCompare(b.nama_jabatan || '');
             });
 
-            // Deduplicate dropdown list by nama_jabatan
-            const seenNames = new Set();
-            const uniqueList = [];
-            for (const j of list) {
-                const normName = (j.nama_jabatan || '').toLowerCase().trim();
-                if (!seenNames.has(normName)) {
-                    seenNames.add(normName);
-                    uniqueList.push(j);
-                }
-            }
-
-            return uniqueList;
+            return list;
         },
 
         onBidangChange() {

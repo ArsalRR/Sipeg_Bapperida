@@ -113,7 +113,7 @@
                 @php $dKepala = $getJData('Kepala Badan', 1, 1, 14); @endphp
                 <div style="width: 100%; display: flex; flex-direction: column; align-items: flex-start; padding-left: 140px; box-sizing: border-box;">
                     <div style="width: 320px; background-color: #00a8e8 !important; color: #ffffff !important; border: 1.5px solid #000000; padding: 6px 10px; text-align: center; box-sizing: border-box;">
-                        <div style="font-weight: bold; font-size: 10px; text-transform: uppercase; line-height: 1.3; color: #ffffff !important;">Kepala Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah</div>
+                        <div style="font-weight: bold; font-size: 10px; text-transform: uppercase; line-height: 1.3; color: #ffffff !important;">{{ $dKepala['nama'] ?? 'Kepala Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah' }}</div>
                         <div style="font-size: 8.5px; margin-top: 2px; color: #ffffff !important;">Kelas : {{ $dKepala['kelas'] ?? 14 }}</div>
                     </div>
                 </div>
@@ -146,7 +146,7 @@
                     <!-- Sekretaris Box (spans X = 430px to X = 760px) -->
                     @php $dSekretaris = $getJData('Sekretaris Badan', 1, 1, 12); @endphp
                     <div style="position: absolute; left: 430px; top: 5px; width: 330px; background-color: #008040 !important; color: #ffffff !important; border: 1.5px solid #000000; padding: 6px 10px; text-align: center; box-sizing: border-box; z-index: 5;">
-                        <div style="font-weight: bold; font-size: 10px; text-transform: uppercase; line-height: 1.3; color: #ffffff !important;">Sekretaris Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah</div>
+                        <div style="font-weight: bold; font-size: 10px; text-transform: uppercase; line-height: 1.3; color: #ffffff !important;">{{ $dSekretaris['nama'] ?? 'Sekretaris Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah' }}</div>
                         <div style="font-size: 8.5px; margin-top: 2px; color: #ffffff !important;">Kelas : {{ $dSekretaris['kelas'] ?? 12 }}</div>
                     </div>
 
@@ -160,7 +160,7 @@
                         <!-- SUBBAG 1 (Umum & Kepegawaian, width 240px) -->
                         <div style="width: 240px; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                             <div style="background-color: #ffd700 !important; color: #000000 !important; font-weight: bold; text-align: center; padding: 5px 4px; border-bottom: 1.5px solid #000000; font-size: 8.5px; line-height: 1.2;">
-                                <div>Kepala Sub Bagian Umum dan Kepegawaian</div>
+                                <div>{{ $dSubbag1['nama'] ?? 'Kepala Sub Bagian Umum dan Kepegawaian' }}</div>
                                 <div style="font-size: 8px; margin-top: 1px; color: #000000 !important;">Kelas : {{ $dSubbag1['kelas'] ?? 9 }}</div>
                             </div>
                             <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
@@ -174,21 +174,15 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($getChildrenData('Umum dan Kepegawaian', [
-                                        ['nama' => 'JF Arsiparis Pelaksana', 'b' => 0, 'k' => 1, 'kls' => 6],
-                                        ['nama' => 'Penelaah Teknis Kebijakan', 'b' => 0, 'k' => 2, 'kls' => 7],
-                                        ['nama' => 'Pengolah Data dan Informasi', 'b' => 1, 'k' => 1, 'kls' => 6],
-                                        ['nama' => 'Pengadministrasi Perkantoran', 'b' => 1, 'k' => 1, 'kls' => 5],
-                                    ]) as $row)
-                                        @php $r = $getJData($row['nama'], $row['b'], $row['k'], $row['kls'], 'Umum'); @endphp
-                                        <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
-                                            <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $row['nama'] }}</td>
-                                            <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
-                                            <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
-                                            <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
-                                            <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
-                                        </tr>
-                                    @endforeach
+                                    @foreach($getChildrenData('Umum dan Kepegawaian') as $r)
+    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
+        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
+    </tr>
+@endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -197,7 +191,7 @@
                         <div style="width: 255px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;">
                             <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                 <div style="background-color: #ffd700 !important; color: #000000 !important; font-weight: bold; text-align: center; padding: 5px 4px; border-bottom: 1.5px solid #000000; font-size: 8.5px; line-height: 1.2;">
-                                    <div>Kepala Sub Bagian Perencanaan Evaluasi dan Keuangan</div>
+                                    <div>{{ $dSubbag2['nama'] ?? 'Kepala Sub Bagian Perencanaan Evaluasi dan Keuangan' }}</div>
                                     <div style="font-size: 8px; margin-top: 1px; color: #000000 !important;">Kelas : {{ $dSubbag2['kelas'] ?? 9 }}</div>
                                 </div>
                                 <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
@@ -211,26 +205,20 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($getChildrenData('Perencanaan Evaluasi dan Keuangan', [
-                                            ['nama' => 'JF Pranata Komputer Pertama', 'b' => 1, 'k' => 1, 'kls' => 8],
-                                            ['nama' => 'Penelaah Teknis Kebijakan', 'b' => 0, 'k' => 2, 'kls' => 7],
-                                            ['nama' => 'Pengolah Data dan Informasi', 'b' => 1, 'k' => 2, 'kls' => 6],
-                                        ]) as $row)
-                                            @php $r = $getJData($row['nama'], $row['b'], $row['k'], $row['kls']); @endphp
-                                            <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
-                                                <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $row['nama'] }}</td>
-                                                <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
-                                                <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
-                                                <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
-                                                <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
-                                            </tr>
-                                        @endforeach
+                                        @foreach($getChildrenData('Perencanaan Evaluasi dan Keuangan') as $r)
+    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
+        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
+    </tr>
+@endforeach
                                     </tbody>
                                 </table>
                             </div>
 
-                            <!-- Connected Box below Subbag 2 (JF Pranata Komputer Muda) -->
-                            @php $dPrakomMuda = $getJData('JF Pranata Komputer Muda', 0, 1, 9); @endphp
+                            <!-- Connected Box below Subbag 2 -->
                             <div style="width: 1.5px; height: 10px; background-color: #000000 !important;"></div>
                             <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                 <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
@@ -244,13 +232,25 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr style="text-align: center; color: #000000 !important;">
-                                            <td style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">JF Pranata Komputer Muda</td>
-                                            <td style="padding: 4px 2px; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $dPrakomMuda['kelas'] }}</td>
-                                            <td style="padding: 4px 2px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $dPrakomMuda['B'] }}</td>
-                                            <td style="padding: 4px 2px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $dPrakomMuda['K'] }}</td>
-                                            <td style="padding: 4px 2px; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $dPrakomMuda['selisih'] > 0 ? '+'.$dPrakomMuda['selisih'] : $dPrakomMuda['selisih'] }}</td>
+                                        @foreach($fungsionalPerencanaan as $fungsional)
+                                        @php
+                                            $b = $fungsional->bezetting;
+                                            $k = $fungsional->kebutuhan ?? $fungsional->jumlah ?? 0;
+                                            $selisih = $b - $k;
+                                        @endphp
+                                        <tr style="text-align: center; color: #000000 !important; border-bottom: 1.5px solid #000000;">
+                                            <td style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $fungsional->nama_jabatan }}</td>
+                                            <td style="padding: 4px 2px; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $fungsional->kelas_jabatan }}</td>
+                                            <td style="padding: 4px 2px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $b }}</td>
+                                            <td style="padding: 4px 2px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $k }}</td>
+                                            <td style="padding: 4px 2px; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $selisih > 0 ? '+'.$selisih : $selisih }}</td>
                                         </tr>
+                                        @endforeach
+                                        @if($fungsionalPerencanaan->isEmpty())
+                                        <tr style="text-align: center;">
+                                            <td colspan="5" style="padding: 4px; font-size: 8px; color: #9ca3af;">Tidak ada</td>
+                                        </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -258,8 +258,7 @@
 
                     </div>
 
-                    <!-- 2. JF PERENCANA AHLI MADYA (Branch to the left at Y = 82px) -->
-                    @php $dPerencanaMadya = $getJData('JF Perencana Ahli Madya', 2, 2, 11); @endphp
+                    <!-- 2. JF STANDALONE (Branch to the left at Y = 82px) -->
                     <!-- Table Box (spans X = 25px to X = 265px at top Y = 82px) -->
                     <div style="position: absolute; left: 25px; top: 82px; width: 240px; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; z-index: 5; box-sizing: border-box;">
                         <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
@@ -273,13 +272,25 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr style="text-align: center; color: #000000 !important;">
-                                    <td style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">JF Perencana Ahli Madya</td>
-                                    <td style="padding: 4px 2px; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $dPerencanaMadya['kelas'] }}</td>
-                                    <td style="padding: 4px 2px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $dPerencanaMadya['B'] }}</td>
-                                    <td style="padding: 4px 2px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $dPerencanaMadya['K'] }}</td>
-                                    <td style="padding: 4px 2px; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $dPerencanaMadya['selisih'] > 0 ? '+'.$dPerencanaMadya['selisih'] : $dPerencanaMadya['selisih'] }}</td>
+                                @foreach($fungsionalSekretariat as $fungsional)
+                                @php
+                                    $b = $fungsional->bezetting;
+                                    $k = $fungsional->kebutuhan ?? $fungsional->jumlah ?? 0;
+                                    $selisih = $b - $k;
+                                @endphp
+                                <tr style="text-align: center; color: #000000 !important; border-bottom: 1.5px solid #000000;">
+                                    <td style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $fungsional->nama_jabatan }}</td>
+                                    <td style="padding: 4px 2px; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $fungsional->kelas_jabatan }}</td>
+                                    <td style="padding: 4px 2px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $b }}</td>
+                                    <td style="padding: 4px 2px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $k }}</td>
+                                    <td style="padding: 4px 2px; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $selisih > 0 ? '+'.$selisih : $selisih }}</td>
                                 </tr>
+                                @endforeach
+                                @if($fungsionalSekretariat->isEmpty())
+                                <tr style="text-align: center;">
+                                    <td colspan="5" style="padding: 4px; font-size: 8px; color: #9ca3af;">Tidak ada</td>
+                                </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -305,12 +316,12 @@
                     <div style="width: 1200px; display: flex; justify-content: space-between; align-items: flex-start; margin-top: 0px;">
                             
                             <!-- BIDANG 1 (Center X = 135px) -->
-                            @php $dBidang1 = $getJData('Pemerintahan dan Pembangunan Manusia', 1, 1, 11); @endphp
+                            @php $dBidang1 = $getJData('Pemerintahan dan Pembangunan Manusia', 1, 1, 11, 'ppm'); @endphp
                             <div style="width: 270px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;">
                                 <div style="width: 1px; height: 25px; opacity: 0;"></div>
                                 <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                     <div style="background-color: #4caf50 !important; color: #ffffff !important; font-weight: bold; text-align: center; padding: 5px 4px; border-bottom: 1.5px solid #000000; font-size: 8.5px; line-height: 1.2; height: 44px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;">
-                                        <div>Kepala Bidang Pemerintahan dan Pembangunan Manusia</div>
+                                        <div>{{ $dBidang1['nama'] ?? 'Kepala Bidang Pemerintahan dan Pembangunan Manusia' }}</div>
                                         <div style="font-size: 8px; margin-top: 2px; color: #ffffff !important;">Kelas : {{ $dBidang1['kelas'] ?? 11 }}</div>
                                     </div>
                                     <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
@@ -324,35 +335,27 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($getChildrenData('Pemerintahan dan Pembangunan Manusia', [
-                                                ['nama' => 'JF Perencana Ahli Muda', 'b' => 1, 'k' => 2, 'kls' => 10],
-                                                ['nama' => 'JF Perencana Ahli Pertama', 'b' => 0, 'k' => 1, 'kls' => 8],
-                                                ['nama' => 'JF Pranata Komputer Muda', 'b' => 0, 'k' => 1, 'kls' => 9],
-                                                ['nama' => 'JF Pranata Komputer Pertama', 'b' => 1, 'k' => 1, 'kls' => 8],
-                                                ['nama' => 'Penelaah Teknis Kebijakan', 'b' => 1, 'k' => 2, 'kls' => 7],
-                                                ['nama' => 'Pengolah Data dan Informasi', 'b' => 0, 'k' => 1, 'kls' => 6],
-                                            ]) as $row)
-                                                @php $r = $getJData($row['nama'], $row['b'], $row['k'], $row['kls'], 'Pemerintahan'); @endphp
-                                                <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
-                                                    <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $row['nama'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
-                                                </tr>
-                                            @endforeach
+                                           @foreach($getChildrenData('Pemerintahan dan Pembangunan Manusia') as $r)
+    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
+        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
+    </tr>
+@endforeach
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
 
                             <!-- BIDANG 2 (Center X = 435px) -->
-                            @php $dBidang2 = $getJData('Perekonomian', 1, 1, 11); @endphp
+                            @php $dBidang2 = $getJData('Perekonomian', 1, 1, 11, 'ekonomi'); @endphp
                             <div style="width: 270px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;">
                                 <div style="width: 1px; height: 25px; opacity: 0;"></div>
                                 <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                     <div style="background-color: #4caf50 !important; color: #ffffff !important; font-weight: bold; text-align: center; padding: 5px 4px; border-bottom: 1.5px solid #000000; font-size: 8.5px; line-height: 1.2; height: 44px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;">
-                                        <div>Kepala Bidang Perekonomian, SDA, Infrastruktur & Kewilayahan</div>
+                                        <div>{{ $dBidang2['nama'] ?? 'Kepala Bidang Perekonomian, SDA, Infrastruktur & Kewilayahan' }}</div>
                                         <div style="font-size: 8px; margin-top: 2px; color: #ffffff !important;">Kelas : {{ $dBidang2['kelas'] ?? 11 }}</div>
                                     </div>
                                     <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
@@ -366,35 +369,27 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($getChildrenData('Perekonomian', [
-                                                ['nama' => 'JF Perencana Ahli Muda', 'b' => 2, 'k' => 2, 'kls' => 10],
-                                                ['nama' => 'JF Perencana Ahli Pertama', 'b' => 1, 'k' => 2, 'kls' => 8],
-                                                ['nama' => 'JF Pranata Komputer Muda', 'b' => 0, 'k' => 1, 'kls' => 9],
-                                                ['nama' => 'JF Pranata Komputer Pertama', 'b' => 0, 'k' => 1, 'kls' => 8],
-                                                ['nama' => 'Penelaah Teknis Kebijakan', 'b' => 2, 'k' => 2, 'kls' => 7],
-                                                ['nama' => 'Pengolah Data dan Informasi', 'b' => 0, 'k' => 1, 'kls' => 6],
-                                            ]) as $row)
-                                                @php $r = $getJData($row['nama'], $row['b'], $row['k'], $row['kls'], 'Perekonomian'); @endphp
-                                                <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
-                                                    <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $row['nama'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
-                                                </tr>
-                                            @endforeach
+                                            @foreach($getChildrenData('Perekonomian') as $r)
+    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
+        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
+    </tr>
+@endforeach
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
 
                             <!-- BIDANG 3 (Center X = 735px) -->
-                            @php $dBidang3 = $getJData('Pengendalian dan Evaluasi', 1, 1, 11); @endphp
+                            @php $dBidang3 = $getJData('Pengendalian dan Evaluasi', 1, 1, 11, 'ppepd'); @endphp
                             <div style="width: 270px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;">
                                 <div style="width: 1px; height: 25px; opacity: 0;"></div>
                                 <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                     <div style="background-color: #4caf50 !important; color: #ffffff !important; font-weight: bold; text-align: center; padding: 5px 4px; border-bottom: 1.5px solid #000000; font-size: 8.5px; line-height: 1.2; height: 44px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;">
-                                        <div>Kepala Bidang Perencanaan, Pengendalian & Evaluasi</div>
+                                        <div>{{ $dBidang3['nama'] ?? 'Kepala Bidang Perencanaan, Pengendalian & Evaluasi' }}</div>
                                         <div style="font-size: 8px; margin-top: 2px; color: #ffffff !important;">Kelas : {{ $dBidang3['kelas'] ?? 11 }}</div>
                                     </div>
                                     <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
@@ -408,35 +403,27 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($getChildrenData('Pengendalian dan Evaluasi', [
-                                                ['nama' => 'JF Perencana Ahli Muda', 'b' => 0, 'k' => 1, 'kls' => 10],
-                                                ['nama' => 'JF Perencana Ahli Pertama', 'b' => 1, 'k' => 1, 'kls' => 8],
-                                                ['nama' => 'JF Pranata Komputer Ahli Muda', 'b' => 0, 'k' => 1, 'kls' => 9],
-                                                ['nama' => 'JF Pranata Komputer Ahli Pertama', 'b' => 2, 'k' => 2, 'kls' => 8],
-                                                ['nama' => 'Penelaah Teknis Kebijakan', 'b' => 2, 'k' => 2, 'kls' => 7],
-                                                ['nama' => 'Pengolah Data dan Informasi', 'b' => 1, 'k' => 1, 'kls' => 6],
-                                            ]) as $row)
-                                                @php $r = $getJData($row['nama'], $row['b'], $row['k'], $row['kls'], 'Pengendalian'); @endphp
-                                                <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
-                                                    <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $row['nama'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
-                                                </tr>
-                                            @endforeach
+                                            @foreach($getChildrenData('Pengendalian dan Evaluasi') as $r)
+    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
+        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
+    </tr>
+@endforeach
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
 
                             <!-- BIDANG 4 (Center X = 1035px) -->
-                            @php $dBidang4 = $getJData('Riset dan Inovasi', 1, 1, 11); @endphp
+                            @php $dBidang4 = $getJData('Riset dan Inovasi', 1, 1, 11, 'litbang'); @endphp
                             <div style="width: 270px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;">
                                 <div style="width: 1px; height: 25px; opacity: 0;"></div>
                                 <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                     <div style="background-color: #4caf50 !important; color: #ffffff !important; font-weight: bold; text-align: center; padding: 5px 4px; border-bottom: 1.5px solid #000000; font-size: 8.5px; line-height: 1.2; height: 44px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;">
-                                        <div>Kepala Bidang Riset dan Inovasi Daerah</div>
+                                        <div>{{ $dBidang4['nama'] ?? 'Kepala Bidang Riset dan Inovasi Daerah' }}</div>
                                         <div style="font-size: 8px; margin-top: 2px; color: #ffffff !important;">Kelas : {{ $dBidang4['kelas'] ?? 11 }}</div>
                                     </div>
                                     <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
@@ -450,24 +437,15 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($getChildrenData('Riset dan Inovasi', [
-                                                ['nama' => 'JF Peneliti Ahli Muda', 'b' => 0, 'k' => 2, 'kls' => 9],
-                                                ['nama' => 'JF Peneliti Ahli Pertama', 'b' => 2, 'k' => 2, 'kls' => 8],
-                                                ['nama' => 'JF Pranata Komputer Ahli Muda', 'b' => 0, 'k' => 1, 'kls' => 9],
-                                                ['nama' => 'JF Pranata Komputer Ahli Pertama', 'b' => 1, 'k' => 1, 'kls' => 8],
-                                                ['nama' => 'JF Analis Data Ilmiah Ahli Pertama', 'b' => 0, 'k' => 1, 'kls' => 8],
-                                                ['nama' => 'JF Penata Penerbitan Ilmiah Ahli Pertama', 'b' => 0, 'k' => 1, 'kls' => 8],
-                                                ['nama' => 'Pengolah Data dan Informasi', 'b' => 0, 'k' => 1, 'kls' => 6],
-                                            ]) as $row)
-                                                @php $r = $getJData($row['nama'], $row['b'], $row['k'], $row['kls'], 'Riset'); @endphp
-                                                <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
-                                                    <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $row['nama'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
-                                                    <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
-                                                </tr>
-                                            @endforeach
+                                            @foreach($getChildrenData('Riset dan Inovasi') as $r)
+    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
+        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
+        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
+    </tr>
+@endforeach
                                         </tbody>
                                     </table>
                                 </div>

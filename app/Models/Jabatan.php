@@ -21,6 +21,7 @@ class Jabatan extends Model
         'kebutuhan',
         'kategori_warna',
         'unit_kerja',
+        'bidang_id',
         'jumlah',
     ];
 
@@ -37,6 +38,11 @@ class Jabatan extends Model
     public function children(): HasMany
     {
         return $this->hasMany(Jabatan::class, 'parent_id');
+    }
+
+    public function bidang(): BelongsTo
+    {
+        return $this->belongsTo(Bidang::class);
     }
 
     public function pegawais(): HasMany
