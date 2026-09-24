@@ -149,14 +149,39 @@ class JabatanController extends Controller
             ];
         };
 
-        // Get dynamic child jabatans purely from database (no hardcoded default rows needed)
-        // 2. Fetch standalone Fungsionals dynamically
-        $fungsionalSekretariat = $allJabatans->where('jenis_jabatan', 'Fungsional')->filter(fn($j) => $resolveCode($j->unit_kerja) === 'sekretariat')->sortByDesc('bezetting');
-        $fungsionalPerencanaan = $allJabatans->where('jenis_jabatan', 'Fungsional')->filter(fn($j) => $resolveCode($j->unit_kerja) === 'perencanaan_evaluasi')->sortByDesc('bezetting');
+        // 2. Fetch standalone Fungsionals — semua Jabatan Fungsional di lingkungan Sekretariat
+        $sekretarisJabatan = $allJabatans->first(function($j) use ($normalize) {
+            $name = $normalize($j->nama_jabatan);
+            return str_starts_with($name, 'sekretaris ') && $j->jenis_jabatan === 'Struktural';
+        });
 
-        $standaloneIds = [];
-        foreach ($fungsionalSekretariat as $fs) $standaloneIds[] = $fs->id;
-        foreach ($fungsionalPerencanaan as $fp) $standaloneIds[] = $fp->id;
+        $allFungsionalSekretaris = $allJabatans
+            ->filter(function($j) use ($sekretarisJabatan, $resolveCode) {
+                if ($j->jenis_jabatan !== 'Fungsional') return false;
+                
+                if ($sekretarisJabatan && $j->parent_id == $sekretarisJabatan->id) return true;
+
+                $code = $resolveCode($j->unit_kerja);
+                return in_array($code, ['sekretariat', 'umum_kepegawaian', 'perencanaan_evaluasi']);
+            })
+            ->sortBy('nama_jabatan')
+            ->values();
+
+        $fungsionalPerencanaan = $allFungsionalSekretaris->filter(function($j) use ($resolveCode) {
+            return $resolveCode($j->unit_kerja) === 'perencanaan_evaluasi';
+        })->values();
+
+        $fungsionalSekretariat = $allFungsionalSekretaris->reject(function($j) use ($resolveCode) {
+            return $resolveCode($j->unit_kerja) === 'perencanaan_evaluasi';
+        })->values();
+
+        if ($fungsionalPerencanaan->isEmpty() && $allFungsionalSekretaris->count() > 1) {
+            $halfCount = (int) ceil($allFungsionalSekretaris->count() / 2);
+            $fungsionalSekretariat = $allFungsionalSekretaris->take($halfCount);
+            $fungsionalPerencanaan = $allFungsionalSekretaris->slice($halfCount)->values();
+        }
+
+        $standaloneIds = $allFungsionalSekretaris->pluck('id')->all();
 
         $getChildrenData = function (string $unitOrParentKey) use ($allJabatans, $unitCodeMap, $resolveCode, $normalize, $standaloneIds) {
             $uKeyNorm = $normalize($unitOrParentKey);

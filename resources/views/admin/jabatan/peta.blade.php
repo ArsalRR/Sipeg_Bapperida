@@ -129,15 +129,18 @@
                         <!-- Horizontal branch to Sekretaris Badan (X=300 to X=430 at Y=25) -->
                         <line x1="300" y1="25" x2="430" y2="25" stroke="#000000" stroke-width="1.5" />
 
-                        <!-- Vertical stem from Sekretaris center (X=595, Y=45) down to Subbag bus bar (Y=65) -->
-                        <line x1="595" y1="45" x2="595" y2="65" stroke="#000000" stroke-width="1.5" />
+                        <!-- Vertical stem from Sekretaris center (X=595, Y=45) down between Subbags to Fungsional table (Y=215) -->
+                        <line x1="595" y1="45" x2="595" y2="215" stroke="#000000" stroke-width="1.5" />
 
-                        <!-- Subbag Bus Bar (Horizontal line from Subbag 1 center X=495 to Subbag 2 center X=765 at Y=65) -->
-                        <line x1="495" y1="65" x2="765" y2="65" stroke="#000000" stroke-width="1.5" />
+                        <!-- Subbag Bus Bar (Horizontal T-junction from Subbag 1 center X=455 to Subbag 2 center X=767 at Y=65) -->
+                        <line x1="455" y1="65" x2="767" y2="65" stroke="#000000" stroke-width="1.5" />
 
-                        <!-- Vertical stems down to Subbag 1 (X=495) & Subbag 2 (X=765) from Y=65 to Y=78 -->
-                        <line x1="495" y1="65" x2="495" y2="78" stroke="#000000" stroke-width="1.5" />
-                        <line x1="765" y1="65" x2="765" y2="78" stroke="#000000" stroke-width="1.5" />
+                        <!-- Vertical stems down to Subbag 1 (X=455) & Subbag 2 (X=767) from Y=65 to Y=78 -->
+                        <line x1="455" y1="65" x2="455" y2="78" stroke="#000000" stroke-width="1.5" />
+                        <line x1="767" y1="65" x2="767" y2="78" stroke="#000000" stroke-width="1.5" />
+
+                        <!-- Horizontal branch from central stem (X=595 at Y=215) to left edge of Fungsional table (X=640) -->
+                        <line x1="595" y1="215" x2="640" y2="215" stroke="#000000" stroke-width="1.5" />
 
                         <!-- Horizontal branch to JF Perencana Ahli Madya (X=265 to X=300 at Y=95) -->
                         <line x1="265" y1="95" x2="300" y2="95" stroke="#000000" stroke-width="1.5" />
@@ -155,7 +158,7 @@
                         $dSubbag1 = $getJData('Umum dan Kepegawaian', 1, 1, 9);
                         $dSubbag2 = $getJData('Perencanaan Evaluasi', 1, 1, 9);
                     @endphp
-                    <div style="position: absolute; left: 375px; top: 82px; width: 520px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 5;">
+                    <div style="position: absolute; left: 335px; top: 82px; width: 560px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 5;">
                         
                         <!-- SUBBAG 1 (Umum & Kepegawaian, width 240px) -->
                         <div style="width: 240px; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
@@ -167,10 +170,10 @@
                                 <thead>
                                     <tr style="border-bottom: 1.5px solid #000000; background-color: #e5e7eb !important; text-align: center; font-weight: bold; color: #000000 !important;">
                                         <th style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; color: #000000 !important; width: 140px; font-size: 8px;">Jabatan</th>
-                                        <th style="padding: 4px 2px; width: 22px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">Kls</th>
+                                        <th style="padding: 4px 2px; width: 22px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">Kelas</th>
                                         <th style="padding: 4px 2px; width: 16px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">B</th>
                                         <th style="padding: 4px 2px; width: 16px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">K</th>
-                                        <th style="padding: 4px 2px; width: 22px; color: #000000 !important; font-size: 8px;">+ / -</th>
+                                        <th style="padding: 4px 2px; width: 22px; color: #000000 !important; font-size: 8px;">- / +</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -198,37 +201,37 @@
                                     <thead>
                                         <tr style="border-bottom: 1.5px solid #000000; background-color: #e5e7eb !important; text-align: center; font-weight: bold; color: #000000 !important;">
                                             <th style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; color: #000000 !important; width: 155px; font-size: 8px;">Jabatan</th>
-                                            <th style="padding: 4px 2px; width: 22px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">Kls</th>
+                                            <th style="padding: 4px 2px; width: 22px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">Kelas</th>
                                             <th style="padding: 4px 2px; width: 16px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">B</th>
                                             <th style="padding: 4px 2px; width: 16px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">K</th>
-                                            <th style="padding: 4px 2px; width: 22px; color: #000000 !important; font-size: 8px;">+ / -</th>
+                                            <th style="padding: 4px 2px; width: 22px; color: #000000 !important; font-size: 8px;">- / +</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($getChildrenData('Perencanaan Evaluasi dan Keuangan') as $r)
-    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
-        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
-        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
-        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
-        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
-        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
-    </tr>
-@endforeach
+                                        <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
+                                            <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
+                                            <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
+                                            <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
+                                            <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
+                                            <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
+                                        </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
 
-                            <!-- Connected Box below Subbag 2 -->
-                            <div style="width: 1.5px; height: 10px; background-color: #000000 !important;"></div>
+                            <!-- Standalone Box below Subbag 2 for Fungsional Perencanaan -->
+                            <div style="height: 15px;"></div>
                             <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                 <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
                                     <thead>
                                         <tr style="border-bottom: 1.5px solid #000000; background-color: #e5e7eb !important; text-align: center; font-weight: bold; color: #000000 !important;">
-                                            <th style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; color: #000000 !important; width: 155px; font-size: 8px;">Jabatan</th>
-                                            <th style="padding: 4px 2px; width: 22px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">Kls</th>
+                                            <th style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; color: #000000 !important; width: 155px; font-size: 8px;">Jabatan Fungsional</th>
+                                            <th style="padding: 4px 2px; width: 22px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">Kelas</th>
                                             <th style="padding: 4px 2px; width: 16px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">B</th>
                                             <th style="padding: 4px 2px; width: 16px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">K</th>
-                                            <th style="padding: 4px 2px; width: 22px; color: #000000 !important; font-size: 8px;">+ / -</th>
+                                            <th style="padding: 4px 2px; width: 22px; color: #000000 !important; font-size: 8px;">- / +</th>
                                         </tr>
                                     </thead>
                                     <tbody>
