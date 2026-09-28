@@ -504,7 +504,7 @@ document.addEventListener('alpine:init', () => {
             const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Data_User_SIMPEG_${new Date().toISOString().split('T')[0]}.xls`;
+            link.download = `Data_User_BAPERAN_${new Date().toISOString().split('T')[0]}.xls`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -527,7 +527,7 @@ document.addEventListener('alpine:init', () => {
 
             const printSection = document.createElement('div');
             printSection.id = 'print-section';
-            printSection.innerHTML = '<h2 style="font-size:24px; font-weight:bold; margin-bottom: 20px;">Laporan Data User SIMPEG</h2>' + printContent;
+            printSection.innerHTML = '<h2 style="font-size:24px; font-weight:bold; margin-bottom: 20px;">Laporan Data User BAPERAN</h2>' + printContent;
             document.body.appendChild(printSection);
 
             window.print();

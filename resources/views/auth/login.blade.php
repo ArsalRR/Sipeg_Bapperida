@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - SIMPEG ASN</title>
+    <title>Login - BAPERAN ASN</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,18 +28,18 @@
                 <div class="w-10 h-10 bg-white/20 rounded-md flex items-center justify-center text-white font-bold text-xl backdrop-blur-sm shadow-sm ring-1 ring-white/30">
                     A
                 </div>
-                <span class="font-bold text-2xl tracking-tight">SIMPEG</span>
+                <span class="font-bold text-2xl tracking-tight">BAPERAN</span>
             </div>
 
             <div class="z-10 max-w-lg mt-auto mb-32">
-                <h1 class="text-6xl font-extrabold tracking-tight mb-6">Halo ASN! 👋</h1>
+                <h1 class="text-6xl font-extrabold tracking-tight mb-6">Halo ASN! </h1>
                 <p class="text-lg text-blue-100/90 leading-relaxed font-light">
                     Sistem Informasi Kepegawaian terpadu. Kelola data aparatur negara dengan lebih cepat, aman, dan efisien.
                 </p>
             </div>
 
             <div class="z-10">
-                <p class="text-sm text-blue-200/60">&copy; 2026 SIMPEG ASN. Hak Cipta Dilindungi.</p>
+                <p class="text-sm text-blue-200/60">&copy; 2026 BAPERAN ASN. Hak Cipta Dilindungi.</p>
             </div>
         </div>
         <div class="w-full lg:w-1/2 bg-white dark:bg-slate-950 flex flex-col justify-between transition-colors duration-300 min-h-screen">
@@ -48,7 +48,7 @@
                     <div class="w-8 h-8 bg-blue-700 dark:bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-lg shadow-sm">
                         A
                     </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">SIMPEG</span>
+                    <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">BAPERAN</span>
                 </div>
                 <div class="hidden lg:block"></div>
 
@@ -115,7 +115,7 @@
                     </form>
                     
                     <div class="mt-8 mb-4 text-center lg:hidden">
-                        <p class="text-xs text-gray-500 dark:text-gray-500">&copy; 2026 SIMPEG ASN. Hak Cipta Dilindungi.</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-500">&copy; 2026 BAPERAN ASN. Hak Cipta Dilindungi.</p>
                     </div>
                 </div>
             </div>

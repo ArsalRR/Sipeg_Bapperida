@@ -1248,7 +1248,7 @@ document.addEventListener('alpine:init', () => {
                     <![endif]-->
                 </head>
                 <body>
-                    <h2 style="font-family: Arial, sans-serif; color: #000000;">Data Pegawai SIMPEG BAPPERIDA</h2>
+                    <h2 style="font-family: Arial, sans-serif; color: #000000;">Data Pegawai BAPERAN BAPPERIDA</h2>
                     <table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11px;">
                         <thead>
                             <tr style="background-color: #000000; color: #ffffff;">
@@ -1279,7 +1279,7 @@ document.addEventListener('alpine:init', () => {
             const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Data_Pegawai_SIMPEG_${new Date().toISOString().split('T')[0]}.xls`;
+            link.download = `Data_Pegawai_BAPERAN_${new Date().toISOString().split('T')[0]}.xls`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1308,7 +1308,7 @@ document.addEventListener('alpine:init', () => {
 
             const printHtml = `
                 <html><head>
-                <title>Laporan Data Pegawai SIMPEG</title>
+                <title>Laporan Data Pegawai BAPERAN</title>
                 <style>
                     body { font-family: Arial, sans-serif; margin: 20px; }
                     h2 { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
@@ -1319,7 +1319,7 @@ document.addEventListener('alpine:init', () => {
                     @media print { @page { size: landscape; margin: 12mm; } }
                 </style>
                 </head><body>
-                <h2>Laporan Data Pegawai SIMPEG</h2>
+                <h2>Laporan Data Pegawai BAPERAN</h2>
                 <p class="sub">Dicetak pada: ${new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'})} | Total: ${self.allPegawai.length} pegawai</p>
                 <table>
                     <thead><tr>

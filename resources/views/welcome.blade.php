@@ -29,7 +29,7 @@
                     <div class="w-9 h-9 bg-corporate-blue rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm">
                         A
                     </div>
-                    <span class="font-bold text-xl tracking-tight text-corporate-navy dark:text-white transition-colors duration-300">SIMPEG</span>
+                    <span class="font-bold text-xl tracking-tight text-corporate-navy dark:text-white transition-colors duration-300">BAPERAN</span>
                 </div>
                 <div class="flex space-x-4 sm:space-x-6 items-center">
                     <x-theme-toggle />
