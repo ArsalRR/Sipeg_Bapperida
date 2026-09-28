@@ -31,7 +31,7 @@
         <div class="h-20 flex items-center justify-between px-6 shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
-                    S
+                    B
                 </div>
                 <span class="font-bold text-2xl tracking-tight text-slate-900 dark:text-white">BAPERAN</span>
             </div>

@@ -8,7 +8,12 @@ use App\Models\Pegawai;
 class PegawaiApiController extends Controller
 {
     public function index (){
-        $pegawai = Pegawai::all();
-        return response()->json($pegawai);
+$pegawai = Pegawai::with([
+    'jabatan',
+    'bidang',
+    'user',
+])->latest()->get();
+
+return response()->json($pegawai);
     }
 }
