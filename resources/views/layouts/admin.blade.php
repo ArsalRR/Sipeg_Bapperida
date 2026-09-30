@@ -68,7 +68,14 @@
             </a>
 
             <!-- Group Menu Manajemen Jabatan -->
-            <div x-data="{ open: {{ (request()->routeIs('admin.jabatans.*') || request()->routeIs('admin.bidangs.*')) ? 'true' : 'false' }} }" class="space-y-1">
+            @php $jabatanOpen = (request()->routeIs('admin.jabatans.*') || request()->routeIs('admin.bidangs.*')) ? 'true' : 'false'; @endphp
+            <div x-data="{
+                    open: localStorage.getItem('jabatanMenuOpen') !== null
+                        ? localStorage.getItem('jabatanMenuOpen') === 'true'
+                        : {{ $jabatanOpen }}
+                 }"
+                 x-init="$watch('open', val => localStorage.setItem('jabatanMenuOpen', val))"
+                 class="space-y-1">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg {{ (request()->routeIs('admin.jabatans.*') || request()->routeIs('admin.bidangs.*')) ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10 font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -79,7 +86,7 @@
                     </svg>
                 </button>
 
-                <div x-show="open" class="pl-9 pr-2 space-y-1">
+                <div x-show="open" x-cloak style="display:none" class="pl-9 pr-2 space-y-1">
                     <a href="{{ route('admin.jabatans.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.jabatans.index') ? 'text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-900/30 font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
                         <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('admin.jabatans.index') ? 'bg-blue-600 dark:bg-blue-400' : 'bg-gray-400 dark:bg-gray-600' }}"></span>
                         Data Jabatan
