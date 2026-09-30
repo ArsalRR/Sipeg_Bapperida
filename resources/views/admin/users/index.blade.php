@@ -406,8 +406,13 @@ document.addEventListener('alpine:init', () => {
                 );
             }
             
-            // Sorting
+            // Sorting: user yang butuh konfirmasi (is_active = false) selalu di atas
             result = result.sort((a, b) => {
+                // Prioritas utama: pending (Menunggu) di atas
+                if (!a.is_active && b.is_active) return -1;
+                if (a.is_active && !b.is_active) return 1;
+
+                // Dalam grup yang sama, lanjut sort berdasarkan kolom
                 let valA = a[this.sortCol] || '';
                 let valB = b[this.sortCol] || '';
                 
