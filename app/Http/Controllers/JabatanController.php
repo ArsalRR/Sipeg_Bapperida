@@ -59,7 +59,8 @@ class JabatanController extends Controller
             'ekonomi' => ['perekonomian', 'ekonomi', 'sda', 'infrastruktur', 'psdaiw'],
             'ppepd' => ['pengendalian', 'evaluasi', 'ppepd', 'perencanaan pengendalian'],
             'litbang' => ['riset', 'inovasi', 'litbang', 'penelitian', 'rida'],
-            'sekretariat' => ['sekretariat', 'kepala badan', 'sekretaris'],
+            'sekretariat' => ['sekretariat', 'sekretaris'],
+            'kepala_badan' => ['kepala badan', 'kaban'],
         ];
 
         $normalize = function (string $str): string {
@@ -149,39 +150,59 @@ class JabatanController extends Controller
             ];
         };
 
-        // 2. Fetch standalone Fungsionals — semua Jabatan Fungsional di lingkungan Sekretariat
+        // 2. Fetch structural heads: Kepala Badan & Sekretaris Badan
+        $kepalaBadan = $allJabatans->first(function($j) use ($normalize) {
+            $name = $normalize($j->nama_jabatan);
+            return (str_starts_with($name, 'kepala badan') || str_contains($name, 'kepala bapperida')) && $j->jenis_jabatan === 'Struktural';
+        });
+
         $sekretarisJabatan = $allJabatans->first(function($j) use ($normalize) {
             $name = $normalize($j->nama_jabatan);
             return str_starts_with($name, 'sekretaris ') && $j->jenis_jabatan === 'Struktural';
         });
 
-        $allFungsionalSekretaris = $allJabatans
-            ->filter(function($j) use ($sekretarisJabatan, $resolveCode) {
-                if ($j->jenis_jabatan !== 'Fungsional') return false;
-                
-                if ($sekretarisJabatan && $j->parent_id == $sekretarisJabatan->id) return true;
+        // KOTAK MERAH (Kiri Atas): Jabatan Non-Struktural yang ber-atasan langsung ke KEPALA BADAN
+        $bawahanKepalaBadan = $allJabatans->filter(function($j) use ($kepalaBadan, $resolveCode) {
+            if ($j->jenis_jabatan === 'Struktural') return false;
+            
+            // Prioritaskan relasi atasan langsung ke Kepala Badan
+            if ($kepalaBadan && $j->parent_id == $kepalaBadan->id) {
+                return true;
+            }
 
-                $code = $resolveCode($j->unit_kerja);
-                return in_array($code, ['sekretariat', 'umum_kepegawaian', 'perencanaan_evaluasi']);
-            })
-            ->sortBy('nama_jabatan')
-            ->values();
+            // Fallback: Jika parent_id belum diset, ambil jabatan dengan unit_kerja Kepala Badan
+            $code = $resolveCode($j->unit_kerja);
+            if (empty($j->parent_id) && $code === 'kepala_badan') {
+                return true;
+            }
 
-        $fungsionalPerencanaan = $allFungsionalSekretaris->filter(function($j) use ($resolveCode) {
-            return $resolveCode($j->unit_kerja) === 'perencanaan_evaluasi';
-        })->values();
+            return false;
+        })->sortBy('nama_jabatan')->values();
 
-        $fungsionalSekretariat = $allFungsionalSekretaris->reject(function($j) use ($resolveCode) {
-            return $resolveCode($j->unit_kerja) === 'perencanaan_evaluasi';
-        })->values();
+        // KOTAK HIJAU (Kanan Bawah Renvalkeu): Jabatan Fungsional yang ber-atasan langsung ke SEKRETARIS BADAN
+        $bawahanSekretaris = $allJabatans->filter(function($j) use ($sekretarisJabatan, $resolveCode, $bawahanKepalaBadan) {
+            if ($j->jenis_jabatan !== 'Fungsional') return false;
+            if ($bawahanKepalaBadan->pluck('id')->contains($j->id)) return false;
 
-        if ($fungsionalPerencanaan->isEmpty() && $allFungsionalSekretaris->count() > 1) {
-            $halfCount = (int) ceil($allFungsionalSekretaris->count() / 2);
-            $fungsionalSekretariat = $allFungsionalSekretaris->take($halfCount);
-            $fungsionalPerencanaan = $allFungsionalSekretaris->slice($halfCount)->values();
-        }
+            // Prioritaskan relasi atasan langsung ke Sekretaris Badan
+            if ($sekretarisJabatan && $j->parent_id == $sekretarisJabatan->id) {
+                return true;
+            }
 
-        $standaloneIds = $allFungsionalSekretaris->pluck('id')->all();
+            // Fallback: Jabatan Fungsional yang unit kerjanya murni 'sekretariat' (bukan subbag)
+            $code = $resolveCode($j->unit_kerja);
+            if (empty($j->parent_id) && $code === 'sekretariat') {
+                return true;
+            }
+
+            return false;
+        })->sortBy('nama_jabatan')->values();
+
+        // Mapping ke variabel view agar kompatibel
+        $fungsionalSekretariat = $bawahanKepalaBadan; // Kotak Merah (Atasan: Kepala Badan)
+        $fungsionalPerencanaan = $bawahanSekretaris;   // Kotak Hijau (Atasan: Sekretaris Badan, diletakkan di bawah Renvalkeu)
+
+        $standaloneIds = $fungsionalSekretariat->pluck('id')->merge($fungsionalPerencanaan->pluck('id'))->unique()->all();
 
         $getChildrenData = function (string $unitOrParentKey) use ($allJabatans, $unitCodeMap, $resolveCode, $normalize, $standaloneIds) {
             $uKeyNorm = $normalize($unitOrParentKey);
@@ -362,19 +383,23 @@ class JabatanController extends Controller
         if (!empty($validated['parent_id']) && empty($validated['unit_kerja'])) {
             $parent = Jabatan::find($validated['parent_id']);
             if ($parent) {
-                $pName = $parent->nama_jabatan;
-                if (str_contains($pName, 'Sub Bagian Umum')) {
-                    $validated['unit_kerja'] = 'Subbag Umum & Kepegawaian';
-                } elseif (str_contains($pName, 'Sub Bagian Perencanaan')) {
-                    $validated['unit_kerja'] = 'Subbag Perencanaan Evaluasi & Keuangan';
-                } elseif (str_contains($pName, 'Kepala Bidang Pemerintahan')) {
-                    $validated['unit_kerja'] = 'Bidang Pemerintahan & Pembangunan Manusia';
-                } elseif (str_contains($pName, 'Kepala Bidang Perekonomian')) {
-                    $validated['unit_kerja'] = 'Bidang Perekonomian, SDA, Infrastruktur & Kewilayahan';
-                } elseif (str_contains($pName, 'Kepala Bidang Perencanaan')) {
-                    $validated['unit_kerja'] = 'Bidang Perencanaan, Pengendalian & Evaluasi';
-                } elseif (str_contains($pName, 'Kepala Bidang Riset')) {
-                    $validated['unit_kerja'] = 'Bidang Riset & Inovasi Daerah';
+                $pName = strtolower($parent->nama_jabatan);
+                if (str_contains($pName, 'kepala badan')) {
+                    $validated['unit_kerja'] = 'kepala_badan';
+                } elseif (str_contains($pName, 'sekretaris')) {
+                    $validated['unit_kerja'] = 'sekretariat';
+                } elseif (str_contains($pName, 'sub bagian umum')) {
+                    $validated['unit_kerja'] = 'umum';
+                } elseif (str_contains($pName, 'sub bagian perencanaan')) {
+                    $validated['unit_kerja'] = 'perencanaan_evaluasi';
+                } elseif (str_contains($pName, 'pemerintahan')) {
+                    $validated['unit_kerja'] = 'ppm';
+                } elseif (str_contains($pName, 'perekonomian')) {
+                    $validated['unit_kerja'] = 'ekonomi';
+                } elseif (str_contains($pName, 'pengendalian') || str_contains($pName, 'ppepd')) {
+                    $validated['unit_kerja'] = 'ppepd';
+                } elseif (str_contains($pName, 'riset') || str_contains($pName, 'litbang')) {
+                    $validated['unit_kerja'] = 'litbang';
                 } elseif (!empty($parent->unit_kerja)) {
                     $validated['unit_kerja'] = $parent->unit_kerja;
                 }
@@ -442,7 +467,7 @@ class JabatanController extends Controller
             'Bidang Riset & Inovasi Daerah' => 'litbang',
             'Bidang Penelitian dan Pengembangan' => 'litbang',
             'Sekretariat' => 'sekretariat',
-            'Kepala Badan' => 'sekretariat',
+            'Kepala Badan' => 'kepala_badan',
         ];
 
         foreach ($unitReplacements as $old => $new) {
@@ -454,9 +479,12 @@ class JabatanController extends Controller
 
         $defaults = [
             // TOP LEVEL & ESELON
-            ['nama_jabatan' => 'Kepala Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah', 'jenis_jabatan' => 'Struktural', 'kelas_jabatan' => 14, 'kebutuhan' => 1, 'parent' => null, 'unit' => 'sekretariat'],
+            ['nama_jabatan' => 'Kepala Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah', 'jenis_jabatan' => 'Struktural', 'kelas_jabatan' => 14, 'kebutuhan' => 1, 'parent' => null, 'unit' => 'kepala_badan'],
             ['nama_jabatan' => 'Sekretaris Badan Perencanaan Pembangunan, Riset, dan Inovasi Daerah', 'jenis_jabatan' => 'Struktural', 'kelas_jabatan' => 12, 'kebutuhan' => 1, 'parent' => 'Kepala Badan', 'unit' => 'sekretariat'],
-            ['nama_jabatan' => 'JF Perencana Ahli Madya', 'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 11, 'kebutuhan' => 2, 'parent' => 'Kepala Badan', 'unit' => 'sekretariat'],
+            ['nama_jabatan' => 'JF Perencana Ahli Madya', 'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 11, 'kebutuhan' => 2, 'parent' => 'Kepala Badan', 'unit' => 'kepala_badan'],
+
+            // JABATAN FUNGSIONAL SEKRETARIAT (BAWAHAN LANGSUNG SEKRETARIS BADAN)
+            ['nama_jabatan' => 'JF Pranata Komputer Ahli Pertama', 'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 8, 'kebutuhan' => 1, 'parent' => 'Sekretaris Badan', 'unit' => 'sekretariat'],
 
             // SUBBAG 1: UMUM DAN KEPEGAWAIAN
             ['nama_jabatan' => 'Kepala Sub Bagian Umum dan Kepegawaian', 'jenis_jabatan' => 'Struktural', 'kelas_jabatan' => 9, 'kebutuhan' => 1, 'parent' => 'Sekretaris Badan', 'unit' => 'umum'],
@@ -466,10 +494,8 @@ class JabatanController extends Controller
 
             // SUBBAG 2: PERENCANAAN EVALUASI DAN KEUANGAN
             ['nama_jabatan' => 'Kepala Sub Bagian Perencanaan Evaluasi dan Keuangan', 'jenis_jabatan' => 'Struktural', 'kelas_jabatan' => 9, 'kebutuhan' => 1, 'parent' => 'Sekretaris Badan', 'unit' => 'perencanaan_evaluasi'],
-            ['nama_jabatan' => 'JF Pranata Komputer Ahli Pertama', 'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 8, 'kebutuhan' => 1, 'parent' => 'Sub Bagian Perencanaan', 'unit' => 'perencanaan_evaluasi'],
             ['nama_jabatan' => 'Penelaah Teknis Kebijakan', 'jenis_jabatan' => 'Pelaksana', 'kelas_jabatan' => 7, 'kebutuhan' => 2, 'parent' => 'Sub Bagian Perencanaan', 'unit' => 'perencanaan_evaluasi'],
             ['nama_jabatan' => 'Pengolah Data dan Informasi', 'jenis_jabatan' => 'Pelaksana', 'kelas_jabatan' => 6, 'kebutuhan' => 2, 'parent' => 'Sub Bagian Perencanaan', 'unit' => 'perencanaan_evaluasi'],
-            ['nama_jabatan' => 'JF Pranata Komputer Muda', 'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 9, 'kebutuhan' => 1, 'parent' => 'Sub Bagian Perencanaan', 'unit' => 'perencanaan_evaluasi'],
 
             // BIDANG 1: PEMERINTAHAN DAN PEMBANGUNAN MANUSIA
             ['nama_jabatan' => 'Kepala Bidang Pemerintahan dan Pembangunan Manusia', 'jenis_jabatan' => 'Struktural', 'kelas_jabatan' => 11, 'kebutuhan' => 1, 'parent' => 'Kepala Badan', 'unit' => 'ppm'],
@@ -530,6 +556,31 @@ class JabatanController extends Controller
                     'parent_id' => $parentItem ? $parentItem->id : null,
                 ]
             );
+        }
+
+        // Sinkronisasi khusus:
+        // 1. Bawahan langsung Kepala Badan unit_kerja-nya adalah 'kepala_badan'
+        $kepala = Jabatan::where('nama_jabatan', 'LIKE', '%Kepala Badan%')->where('jenis_jabatan', 'Struktural')->first();
+        if ($kepala) {
+            $kepala->update(['unit_kerja' => 'kepala_badan']);
+            Jabatan::where('parent_id', $kepala->id)
+                ->where('jenis_jabatan', '!=', 'Struktural')
+                ->update(['unit_kerja' => 'kepala_badan']);
+        }
+
+        // 2. Bawahan langsung Sekretaris Badan unit_kerja-nya adalah 'sekretariat'
+        $sekretaris = Jabatan::where('nama_jabatan', 'LIKE', '%Sekretaris Badan%')->first();
+        if ($sekretaris) {
+            $sekretaris->update(['unit_kerja' => 'sekretariat']);
+            Jabatan::where('nama_jabatan', 'LIKE', '%Pranata Komputer%Ahli Pertama%')
+                ->where('unit_kerja', 'perencanaan_evaluasi')
+                ->update([
+                    'unit_kerja' => 'sekretariat',
+                    'parent_id' => $sekretaris->id,
+                ]);
+            Jabatan::where('parent_id', $sekretaris->id)
+                ->where('jenis_jabatan', 'Fungsional')
+                ->update(['unit_kerja' => 'sekretariat']);
         }
     }
 }

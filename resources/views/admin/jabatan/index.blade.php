@@ -215,8 +215,14 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit / Bidang Kerja (Lokasi Peta)</label>
                             <select name="unit_kerja" x-model="form.unit_kerja" @change="onUnitChange()" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none text-sm">
                                 <option value="">-- Bebas / Otomatis --</option>
+                                <option value="kepala_badan">Kepala Badan (kepala_badan)</option>
+                                <option value="sekretariat">Sekretariat (sekretariat)</option>
+                                <option value="umum">Subbag Umum & Kepegawaian (umum)</option>
+                                <option value="perencanaan_evaluasi">Subbag Perencanaan Evaluasi & Keuangan (perencanaan_evaluasi)</option>
                                 @foreach($bidangs as $b)
-                                    <option value="{{ $b->singkatan }}">{{ $b->nama_bidang }} ({{ $b->singkatan }})</option>
+                                    @if(!in_array(strtolower($b->singkatan), ['sekretariat', 'umum', 'perencanaan_evaluasi', 'kepala_badan']))
+                                        <option value="{{ $b->singkatan }}">{{ $b->nama_bidang }} ({{ $b->singkatan }})</option>
+                                    @endif
                                 @endforeach
                             </select>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pilih lokasi unit/bidang (singkatan) untuk penempatan presisi di Peta Jabatan.</p>
@@ -325,20 +331,24 @@ document.addEventListener('alpine:init', () => {
 
         onUnitChange() {
             if (!this.form.unit_kerja) return;
-            const u = this.form.unit_kerja;
+            const u = this.form.unit_kerja.toLowerCase();
             let match = null;
-            if (u.includes('Subbag Umum')) {
-                match = this.allJabatan.find(j => j.nama_jabatan.includes('Sub Bagian Umum'));
-            } else if (u.includes('Subbag Perencanaan')) {
-                match = this.allJabatan.find(j => j.nama_jabatan.includes('Sub Bagian Perencanaan'));
-            } else if (u.includes('Pemerintahan')) {
-                match = this.allJabatan.find(j => j.nama_jabatan.includes('Kepala Bidang Pemerintahan'));
-            } else if (u.includes('Perekonomian')) {
-                match = this.allJabatan.find(j => j.nama_jabatan.includes('Kepala Bidang Perekonomian'));
-            } else if (u.includes('Perencanaan, Pengendalian')) {
-                match = this.allJabatan.find(j => j.nama_jabatan.includes('Kepala Bidang Perencanaan'));
-            } else if (u.includes('Riset')) {
-                match = this.allJabatan.find(j => j.nama_jabatan.includes('Kepala Bidang Riset'));
+            if (u.includes('kepala_badan') || u.includes('kepala badan')) {
+                match = this.allJabatan.find(j => (j.nama_jabatan || '').toLowerCase().includes('kepala badan'));
+            } else if (u.includes('sekretariat') || u.includes('sekretaris')) {
+                match = this.allJabatan.find(j => (j.nama_jabatan || '').toLowerCase().includes('sekretaris badan'));
+            } else if (u.includes('umum')) {
+                match = this.allJabatan.find(j => (j.nama_jabatan || '').toLowerCase().includes('sub bagian umum'));
+            } else if (u.includes('perencanaan')) {
+                match = this.allJabatan.find(j => (j.nama_jabatan || '').toLowerCase().includes('sub bagian perencanaan'));
+            } else if (u.includes('ppm') || u.includes('pemerintahan')) {
+                match = this.allJabatan.find(j => (j.nama_jabatan || '').toLowerCase().includes('kepala bidang pemerintahan'));
+            } else if (u.includes('ekonomi') || u.includes('perekonomian')) {
+                match = this.allJabatan.find(j => (j.nama_jabatan || '').toLowerCase().includes('kepala bidang perekonomian'));
+            } else if (u.includes('ppepd') || u.includes('pengendalian')) {
+                match = this.allJabatan.find(j => (j.nama_jabatan || '').toLowerCase().includes('kepala bidang perencanaan'));
+            } else if (u.includes('litbang') || u.includes('riset')) {
+                match = this.allJabatan.find(j => (j.nama_jabatan || '').toLowerCase().includes('kepala bidang riset'));
             }
             if (match) {
                 this.form.parent_id = match.id;
@@ -346,22 +356,29 @@ document.addEventListener('alpine:init', () => {
         },
 
         onParentChange() {
-            if (!this.form.parent_id) return;
+            if (!this.form.parent_id) {
+                this.form.unit_kerja = '';
+                return;
+            }
             const p = this.allJabatan.find(j => j.id == this.form.parent_id);
             if (!p) return;
-            const n = p.nama_jabatan;
-            if (n.includes('Sub Bagian Umum')) {
-                this.form.unit_kerja = 'Subbag Umum & Kepegawaian';
-            } else if (n.includes('Sub Bagian Perencanaan')) {
-                this.form.unit_kerja = 'Subbag Perencanaan Evaluasi & Keuangan';
-            } else if (n.includes('Kepala Bidang Pemerintahan')) {
-                this.form.unit_kerja = 'Bidang Pemerintahan & Pembangunan Manusia';
-            } else if (n.includes('Kepala Bidang Perekonomian')) {
-                this.form.unit_kerja = 'Bidang Perekonomian, SDA, Infrastruktur & Kewilayahan';
-            } else if (n.includes('Kepala Bidang Perencanaan')) {
-                this.form.unit_kerja = 'Bidang Perencanaan, Pengendalian & Evaluasi';
-            } else if (n.includes('Kepala Bidang Riset')) {
-                this.form.unit_kerja = 'Bidang Riset & Inovasi Daerah';
+            const n = (p.nama_jabatan || '').toLowerCase();
+            if (n.includes('kepala badan')) {
+                this.form.unit_kerja = 'kepala_badan';
+            } else if (n.includes('sekretaris')) {
+                this.form.unit_kerja = 'sekretariat';
+            } else if (n.includes('sub bagian umum')) {
+                this.form.unit_kerja = 'umum';
+            } else if (n.includes('sub bagian perencanaan')) {
+                this.form.unit_kerja = 'perencanaan_evaluasi';
+            } else if (n.includes('pemerintahan')) {
+                this.form.unit_kerja = 'ppm';
+            } else if (n.includes('perekonomian')) {
+                this.form.unit_kerja = 'ekonomi';
+            } else if (n.includes('pengendalian') || n.includes('ppepd')) {
+                this.form.unit_kerja = 'ppepd';
+            } else if (n.includes('riset') || n.includes('litbang')) {
+                this.form.unit_kerja = 'litbang';
             } else if (p.unit_kerja) {
                 this.form.unit_kerja = p.unit_kerja;
             }

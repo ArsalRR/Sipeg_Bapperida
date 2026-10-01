@@ -118,19 +118,34 @@
                     </div>
                 </div>
 
-                <!-- MIDDLE SECTION: MAIN VERTICAL STEM & BRANCHES (Height: 325px) -->
-                <div style="position: relative; width: 1200px; height: 325px;">
+                <!-- MIDDLE SECTION: MAIN VERTICAL STEM & BRANCHES (Dynamic Responsive Height) -->
+                @php
+                    $subbag1Children = $getChildrenData('Umum dan Kepegawaian');
+                    $subbag2Children = $getChildrenData('Perencanaan Evaluasi dan Keuangan');
+
+                    // Estimasi tinggi elemen untuk render awal server-side
+                    $estSubbag2H = 45 + max(1, count($subbag2Children)) * 20;
+                    $estSubbag1H = 45 + max(1, count($subbag1Children)) * 20;
+                    $estHijauH = 26 + max(1, $fungsionalPerencanaan->count()) * 20;
+                    $estMerahH = 26 + max(1, $fungsionalSekretariat->count()) * 20;
+
+                    // Posisi Y Kotak Hijau: Container Subbag top (82px) + tinggi Subbag 2 + gap (16px)
+                    $estHijauTop = 82 + $estSubbag2H + 16;
+                    $estBranchY = $estHijauTop + 13;
+                    $estMiddleH = max(325, $estHijauTop + $estHijauH + 25, 82 + $estSubbag1H + 25, 55 + $estMerahH + 25);
+                @endphp
+                <div id="middle-section" style="position: relative; width: 1200px; min-height: 325px; height: {{ $estMiddleH }}px;">
                     
                     <!-- SVG CONNECTOR OVERLAY FOR Crisp Anti-aliased Lines -->
-                    <svg style="position: absolute; left: 0; top: 0; width: 1200px; height: 325px; pointer-events: none; z-index: 1;">
-                        <!-- Main stem from Kepala Badan center (X=300, Y=0) all the way down to bottom bus bar (X=300, Y=325) -->
-                        <line x1="300" y1="0" x2="300" y2="325" stroke="#000000" stroke-width="1.5" />
+                    <svg id="peta-svg" style="position: absolute; left: 0; top: 0; width: 1200px; height: {{ $estMiddleH }}px; pointer-events: none; z-index: 1;">
+                        <!-- Main stem from Kepala Badan center (X=300, Y=0) all the way down to bottom bus bar -->
+                        <line id="svg-main-stem" x1="300" y1="0" x2="300" y2="{{ $estMiddleH }}" stroke="#000000" stroke-width="1.5" />
 
                         <!-- Horizontal branch to Sekretaris Badan (X=300 to X=430 at Y=25) -->
                         <line x1="300" y1="25" x2="430" y2="25" stroke="#000000" stroke-width="1.5" />
 
-                        <!-- Vertical stem from Sekretaris center (X=595, Y=45) down between Subbags to Fungsional table (Y=215) -->
-                        <line x1="595" y1="45" x2="595" y2="215" stroke="#000000" stroke-width="1.5" />
+                        <!-- Vertical stem from Sekretaris center (X=595, Y=45) down between Subbags to Kotak Hijau (Y=estBranchY) -->
+                        <line id="svg-sekretaris-stem" x1="595" y1="45" x2="595" y2="{{ $estBranchY }}" stroke="#000000" stroke-width="1.5" />
 
                         <!-- Subbag Bus Bar (Horizontal T-junction from Subbag 1 center X=455 to Subbag 2 center X=767 at Y=65) -->
                         <line x1="455" y1="65" x2="767" y2="65" stroke="#000000" stroke-width="1.5" />
@@ -139,11 +154,11 @@
                         <line x1="455" y1="65" x2="455" y2="78" stroke="#000000" stroke-width="1.5" />
                         <line x1="767" y1="65" x2="767" y2="78" stroke="#000000" stroke-width="1.5" />
 
-                        <!-- Horizontal branch from central stem (X=595 at Y=215) to left edge of Fungsional table (X=640) -->
-                        <line x1="595" y1="215" x2="640" y2="215" stroke="#000000" stroke-width="1.5" />
+                        <!-- Horizontal branch from central stem (X=595 at Y=estBranchY) to left edge of Kotak Hijau (X=640) -->
+                        <line id="svg-hijau-branch" x1="595" y1="{{ $estBranchY }}" x2="640" y2="{{ $estBranchY }}" stroke="#000000" stroke-width="1.5" />
 
-                        <!-- Horizontal branch to JF Perencana Ahli Madya (X=265 to X=300 at Y=95) -->
-                        <line x1="265" y1="95" x2="300" y2="95" stroke="#000000" stroke-width="1.5" />
+                        <!-- Horizontal branch to JF langsung di bawah Kepala Badan (X=265 to X=300 at Y=68) -->
+                        <line id="svg-merah-branch" x1="265" y1="68" x2="300" y2="68" stroke="#000000" stroke-width="1.5" />
                     </svg>
 
                     <!-- Sekretaris Box (spans X = 430px to X = 760px) -->
@@ -161,7 +176,7 @@
                     <div style="position: absolute; left: 335px; top: 82px; width: 560px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 5;">
                         
                         <!-- SUBBAG 1 (Umum & Kepegawaian, width 240px) -->
-                        <div style="width: 240px; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
+                        <div id="subbag1-box" style="width: 240px; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                             <div style="background-color: #ffd700 !important; color: #000000 !important; font-weight: bold; text-align: center; padding: 5px 4px; border-bottom: 1.5px solid #000000; font-size: 8.5px; line-height: 1.2;">
                                 <div>{{ $dSubbag1['nama'] ?? 'Kepala Sub Bagian Umum dan Kepegawaian' }}</div>
                                 <div style="font-size: 8px; margin-top: 1px; color: #000000 !important;">Kelas : {{ $dSubbag1['kelas'] ?? 9 }}</div>
@@ -177,22 +192,25 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($getChildrenData('Umum dan Kepegawaian') as $r)
-    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
-        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
-        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
-        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
-        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
-        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
-    </tr>
-@endforeach
+                                    @foreach($subbag1Children as $r)
+                                    <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
+                                        <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
+                                        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
+                                        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['B'] }}</td>
+                                        <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">{{ $r['K'] }}</td>
+                                        <td style="padding: 4px 2px; text-align: center; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['selisih'] > 0 ? '+'.$r['selisih'] : $r['selisih'] }}</td>
+                                    </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- SUBBAG 2 (Perencanaan Evaluasi dan Keuangan, width 255px) -->
-                        <div style="width: 255px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box;">
-                            <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
+                        <!-- SUBBAG 2 COLUMN (Perencanaan Evaluasi dan Keuangan + Kotak Hijau Fungsional) -->
+                        <!-- Menggunakan flex-col dengan gap otomatis agar TIDAK PERNAH tumpang tindih / tabrakan -->
+                        <div id="subbag2-col" style="width: 255px; display: flex; flex-direction: column; align-items: stretch; gap: 16px; box-sizing: border-box;">
+                            
+                            <!-- Box Subbag 2 -->
+                            <div id="subbag2-box" style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                 <div style="background-color: #ffd700 !important; color: #000000 !important; font-weight: bold; text-align: center; padding: 5px 4px; border-bottom: 1.5px solid #000000; font-size: 8.5px; line-height: 1.2;">
                                     <div>{{ $dSubbag2['nama'] ?? 'Kepala Sub Bagian Perencanaan Evaluasi dan Keuangan' }}</div>
                                     <div style="font-size: 8px; margin-top: 1px; color: #000000 !important;">Kelas : {{ $dSubbag2['kelas'] ?? 9 }}</div>
@@ -208,7 +226,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($getChildrenData('Perencanaan Evaluasi dan Keuangan') as $r)
+                                        @foreach($subbag2Children as $r)
                                         <tr style="border-bottom: 1px solid #000000; color: #000000 !important;">
                                             <td style="padding: 4px; border-right: 1.5px solid #000000; color: #000000 !important; word-break: break-word; font-size: 8px; line-height: 1.2;">{{ $r['nama'] }}</td>
                                             <td style="padding: 4px 2px; text-align: center; border-right: 1.5px solid #000000; font-weight: bold; color: #000000 !important; font-size: 8px;">{{ $r['kelas'] }}</td>
@@ -221,13 +239,12 @@
                                 </table>
                             </div>
 
-                            <!-- Standalone Box below Subbag 2 for Fungsional Perencanaan -->
-                            <div style="height: 15px;"></div>
-                            <div style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
+                            <!-- KOTAK HIJAU: JF Fungsional di bawah Sekretaris — mengalir otomatis di bawah Subbag 2 -->
+                            <div id="kotak-hijau" style="width: 100%; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; box-sizing: border-box;">
                                 <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
                                     <thead>
                                         <tr style="border-bottom: 1.5px solid #000000; background-color: #e5e7eb !important; text-align: center; font-weight: bold; color: #000000 !important;">
-                                            <th style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; color: #000000 !important; width: 155px; font-size: 8px;">Jabatan Fungsional</th>
+                                            <th style="padding: 4px; text-align: left; border-right: 1.5px solid #000000; color: #000000 !important; width: 155px; font-size: 8px;">Jabatan</th>
                                             <th style="padding: 4px 2px; width: 22px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">Kelas</th>
                                             <th style="padding: 4px 2px; width: 16px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">B</th>
                                             <th style="padding: 4px 2px; width: 16px; border-right: 1.5px solid #000000; color: #000000 !important; font-size: 8px;">K</th>
@@ -257,13 +274,13 @@
                                     </tbody>
                                 </table>
                             </div>
+
                         </div>
 
                     </div>
 
-                    <!-- 2. JF STANDALONE (Branch to the left at Y = 82px) -->
-                    <!-- Table Box (spans X = 25px to X = 265px at top Y = 82px) -->
-                    <div style="position: absolute; left: 25px; top: 82px; width: 240px; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; z-index: 5; box-sizing: border-box;">
+                    <!-- KOTAK MERAH: JF/Pelaksana di bawah Kepala Badan (Branch to the left) -->
+                    <div id="kotak-merah" style="position: absolute; left: 25px; top: 55px; width: 240px; border: 1.5px solid #000000; background-color: #ffffff !important; font-size: 8px; color: #000000 !important; z-index: 5; box-sizing: border-box;">
                         <table style="width: 100%; border-collapse: collapse; color: #000000 !important; background-color: #ffffff !important; table-layout: fixed;">
                             <thead>
                                 <tr style="border-bottom: 1.5px solid #000000; background-color: #e5e7eb !important; text-align: center; font-weight: bold; color: #000000 !important;">
@@ -524,4 +541,65 @@
     }
 }
 </style>
+
+<script>
+function adjustPetaConnectors() {
+    const middleSec = document.getElementById('middle-section');
+    const kotakHijau = document.getElementById('kotak-hijau');
+    const kotakMerah = document.getElementById('kotak-merah');
+    const subbag1Box = document.getElementById('subbag1-box');
+    const subbag2Box = document.getElementById('subbag2-box');
+    const svg = document.getElementById('peta-svg');
+    const mainStem = document.getElementById('svg-main-stem');
+    const sekrStem = document.getElementById('svg-sekretaris-stem');
+    const hijauBranch = document.getElementById('svg-hijau-branch');
+    const merahBranch = document.getElementById('svg-merah-branch');
+
+    if (!middleSec || !svg) return;
+
+    const middleRect = middleSec.getBoundingClientRect();
+
+    // Posisi Y cabang horizontal masuk Kotak Hijau (sejajar dengan header tabel Kotak Hijau)
+    if (kotakHijau && hijauBranch && sekrStem) {
+        const hijauRect = kotakHijau.getBoundingClientRect();
+        const branchY = Math.round(hijauRect.top - middleRect.top + 13);
+        sekrStem.setAttribute('y2', branchY);
+        hijauBranch.setAttribute('y1', branchY);
+        hijauBranch.setAttribute('y2', branchY);
+    }
+
+    // Posisi Y cabang horizontal masuk Kotak Merah (sejajar dengan header tabel Kotak Merah)
+    if (kotakMerah && merahBranch) {
+        const merahRect = kotakMerah.getBoundingClientRect();
+        const merahBranchY = Math.round(merahRect.top - middleRect.top + 13);
+        merahBranch.setAttribute('y1', merahBranchY);
+        merahBranch.setAttribute('y2', merahBranchY);
+    }
+
+    // Hitung batas bawah maksimum dari seluruh elemen di middle-section agar tidak menabrak 4 Bidang di bawahnya
+    let maxBottomY = 325;
+    [kotakHijau, kotakMerah, subbag1Box, subbag2Box].forEach(el => {
+        if (el) {
+            const r = el.getBoundingClientRect();
+            const b = Math.round(r.bottom - middleRect.top + 25);
+            if (b > maxBottomY) maxBottomY = b;
+        }
+    });
+
+    // Sesuaikan tinggi container dan SVG secara dinamis
+    middleSec.style.height = maxBottomY + 'px';
+    svg.setAttribute('height', maxBottomY);
+    svg.style.height = maxBottomY + 'px';
+
+    // Sesuaikan garis batang utama Kepala Badan
+    if (mainStem) mainStem.setAttribute('y2', maxBottomY);
+}
+
+window.addEventListener('DOMContentLoaded', adjustPetaConnectors);
+window.addEventListener('load', adjustPetaConnectors);
+window.addEventListener('resize', adjustPetaConnectors);
+window.addEventListener('beforeprint', adjustPetaConnectors);
+setTimeout(adjustPetaConnectors, 100);
+setTimeout(adjustPetaConnectors, 400);
+</script>
 @endsection
