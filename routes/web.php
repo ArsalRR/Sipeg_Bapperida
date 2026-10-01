@@ -8,11 +8,11 @@ use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\KeluargaController;
+use App\Http\Controllers\SsoController;
+use App\Http\Controllers\WelcomeController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
+Route::redirect('/', '/login');
+Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'processLogin'])->middleware('guest');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register')->middleware('guest');
@@ -24,6 +24,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+    // SSO
+    Route::get('/sso/authorize', [SsoController::class, 'authorize'])->name('sso.authorize');
 
     Route::resource('keluarga', KeluargaController::class)->except(['create', 'show', 'edit']);
     Route::get('/cetak-kp4', [\App\Http\Controllers\DokumenController::class, 'cetakKp4'])->name('dokumen.kp4');
@@ -37,8 +40,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/menu-file/jenis/{id}', [\App\Http\Controllers\DokumenFileController::class, 'destroyJenis'])->name('dokumen.file.destroyJenis');
     Route::get('/menu-file/download/{id}', [\App\Http\Controllers\DokumenFileController::class, 'download'])->name('dokumen.file.download');
     Route::delete('/menu-file/{id}', [\App\Http\Controllers\DokumenFileController::class, 'destroy'])->name('dokumen.file.destroy');
-
-
 });
 
 Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')->group(function () {

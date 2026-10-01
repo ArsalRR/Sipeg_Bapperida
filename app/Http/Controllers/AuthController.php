@@ -35,43 +35,43 @@ class AuthController extends Controller
         return view('auth.login', compact('captchaQuestion'));
     }
 
-    public function processLogin(Request $request): RedirectResponse
-    {
-        $credentials = $request->validate([
-            'login' => ['required', 'string', 'regex:/^\S+$/'],
-            'password' => ['required'],
-            'captcha' => ['required', 'numeric'],
-        ], [
-            'login.regex' => 'Username atau email tidak boleh mengandung spasi.'
-        ]);
+  public function processLogin(Request $request): RedirectResponse
+{
+    $credentials = $request->validate([
+        'login' => ['required', 'string', 'regex:/^\S+$/'],
+        'password' => ['required'],
+        'captcha' => ['required', 'numeric'],
+    ], [
+        'login.regex' => 'Username atau email tidak boleh mengandung spasi.'
+    ]);
 
-        $captchaResult = $request->session()->get('captcha_result');
-        if ((int)$credentials['captcha'] !== $captchaResult) {
+    $captchaResult = $request->session()->get('captcha_result');
+    if ((int)$credentials['captcha'] !== $captchaResult) {
+        return back()->withErrors([
+            'captcha' => 'Jawaban captcha salah.',
+        ])->onlyInput('login');
+    }
+
+    $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+    if (Auth::validate([$loginType => $credentials['login'], 'password' => $credentials['password']])) {
+        $user = User::where($loginType, $credentials['login'])->first();
+
+        if (!$user->is_active) {
             return back()->withErrors([
-                'captcha' => 'Jawaban captcha salah.',
+                'login' => 'Akun Anda belum aktif. Silakan hubungi superadmin untuk aktivasi.',
             ])->onlyInput('login');
         }
 
-        $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        if (Auth::validate([$loginType => $credentials['login'], 'password' => $credentials['password']])) {
-            $user = User::where($loginType, $credentials['login'])->first();
-            
-            if (!$user->is_active) {
-                return back()->withErrors([
-                    'login' => 'Akun Anda belum aktif. Silakan hubungi superadmin untuk aktivasi.',
-                ])->onlyInput('login');
-            }
+        Auth::login($user);
+        $request->session()->regenerate();
 
-            Auth::login($user);
-            $request->session()->regenerate();
-
-            return redirect()->intended('/dashboard');
-        }
-
-        return back()->withErrors([
-            'login' => 'Kredensial yang diberikan tidak cocok dengan catatan kami.',
-        ])->onlyInput('login');
+        return redirect()->intended(route('welcome'));
     }
+
+    return back()->withErrors([
+        'login' => 'Kredensial yang diberikan tidak cocok dengan catatan kami.',
+    ])->onlyInput('login');
+}
 
     public function showRegister(): View
     {
