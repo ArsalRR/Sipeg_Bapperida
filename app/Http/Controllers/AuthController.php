@@ -34,8 +34,7 @@ class AuthController extends Controller
 
         return view('auth.login', compact('captchaQuestion'));
     }
-
-  public function processLogin(Request $request): RedirectResponse
+public function processLogin(Request $request): RedirectResponse
 {
     $credentials = $request->validate([
         'login' => ['required', 'string', 'regex:/^\S+$/'],
@@ -65,7 +64,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->intended(route('welcome'));
+        return redirect()->route('welcome');
     }
 
     return back()->withErrors([
@@ -98,14 +97,15 @@ class AuthController extends Controller
 
         return redirect()->route('login')->with('success', 'Pendaftaran berhasil! Akun Anda menunggu persetujuan superadmin. Silakan hubungi admin untuk aktivasi.');
     }
+public function logout(Request $request): RedirectResponse
+{
+    $request->user()?->tokens()->delete();
 
-    public function logout(Request $request): RedirectResponse
-    {
-        Auth::logout();
+    Auth::logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
 
-        return redirect('/login');
-    }
+    return redirect('/login');
+}
 }

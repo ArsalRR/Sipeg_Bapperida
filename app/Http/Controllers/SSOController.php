@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -26,7 +27,7 @@ class SsoController extends Controller
         }
 
         $code = Str::random(64);
-        Cache::put('sso_code_' . $code, $user->id, now()->addSeconds(60));
+        Cache::put('sso_code_' . $code, $user->id, now()->addSeconds(config('sso.code_ttl', 60)));
 
         return redirect()->away($redirect . '?code=' . $code);
     }
@@ -61,5 +62,15 @@ class SsoController extends Controller
                 'role'     => $user->role,
             ],
         ]);
+    }
+    public function logout(Request $request)
+    {
+        $request->user()?->tokens()->delete(); 
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
     }
 }

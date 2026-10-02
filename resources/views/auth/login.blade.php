@@ -24,13 +24,11 @@
             <div class="absolute -top-24 -left-24 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl"></div>
             <div class="absolute bottom-0 right-0 w-full h-1/2 bg-gradient-to-t from-slate-900/50 to-transparent"></div>
 
-            <div class="z-10 flex items-center gap-2">
-                <div class="w-10 h-10 bg-white/20 rounded-md flex items-center justify-center text-white font-bold text-xl backdrop-blur-sm shadow-sm ring-1 ring-white/30">
-                    A
-                </div>
-                <span class="font-bold text-2xl tracking-tight">BAPERAN</span>
-            </div>
-
+         <div class="z-10">
+    <img src="{{ asset('bapperan_logo.png') }}" alt="BAPERAN"
+         style="height: 6rem; width: auto; max-width: 18rem;"
+         class="object-contain">
+</div>
             <div class="z-10 max-w-lg mt-auto mb-32">
                 <h1 class="text-6xl font-extrabold tracking-tight mb-6">Halo ASN! </h1>
                 <p class="text-lg text-blue-100/90 leading-relaxed font-light">
@@ -51,20 +49,6 @@
                     <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">BAPERAN</span>
                 </div>
                 <div class="hidden lg:block"></div>
-
-                <div class="flex items-center gap-3">
-                    <button 
-                        type="button" 
-                        onclick="openSsoModal()"
-                        class="p-2 rounded-lg text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        title="Informasi SSO"
-                    >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </button>
-                    <x-theme-toggle />
-                </div>
             </div>
 
             <div class="flex-1 flex flex-col justify-center items-center px-6 sm:px-12 py-8">
@@ -99,14 +83,6 @@
                             <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-md shadow-sm text-sm font-semibold text-white bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 dark:focus:ring-blue-600 transition-all transform hover:-translate-y-0.5">
                                 Masuk
                             </button>
-                            
-                            <button type="button" onclick="openSsoModal()" class="mt-4 w-full flex justify-center items-center gap-2 py-3 px-4 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-transparent border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 dark:focus:ring-gray-700 transition-colors">
-                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                Login dengan SSO BKN
-                            </button>
-
                             <p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
                                 Belum memiliki akun? 
                                 <a href="{{ route('register') }}" class="font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400">Daftar Akun</a>

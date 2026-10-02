@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
 
     // SSO
     Route::get('/sso/authorize', [SsoController::class, 'authorize'])->name('sso.authorize');
+    Route::get('/sso/logout', [SsoController::class, 'logout'])->name('sso.logout');
 
     Route::resource('keluarga', KeluargaController::class)->except(['create', 'show', 'edit']);
     Route::get('/cetak-kp4', [\App\Http\Controllers\DokumenController::class, 'cetakKp4'])->name('dokumen.kp4');
