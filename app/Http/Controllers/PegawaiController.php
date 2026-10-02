@@ -51,6 +51,8 @@ class PegawaiController extends Controller
             'jabatan_id' => ['required', 'exists:jabatans,id'],
             'bidang_id'  => ['required', 'exists:bidangs,id'],
             'golongan' => ['nullable', 'string', 'max:50'],
+            'mkg_tahun' => ['nullable', 'integer', 'min:0', 'max:60'],
+            'mkg_bulan' => ['nullable', 'integer', 'min:0', 'max:11'],
             'status_pernikahan' => ['required', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
             'status_kerja' => ['required', Rule::in(['Aktif', 'Tidak Aktif'])],
             'user_id' => ['nullable', 'exists:users,id', 'unique:pegawais,user_id'],
@@ -61,6 +63,9 @@ class PegawaiController extends Controller
         if (empty($validated['tanggal_berlaku'])) {
             $validated['tanggal_berlaku'] = now()->toDateString();
         }
+
+        $validated['mkg_tahun'] = ($request->filled('mkg_tahun') && $request->input('mkg_tahun') !== '') ? (int)$request->input('mkg_tahun') : null;
+        $validated['mkg_bulan'] = ($request->filled('mkg_bulan') && $request->input('mkg_bulan') !== '' && $validated['mkg_tahun'] !== null) ? (int)$request->input('mkg_bulan') : ($validated['mkg_tahun'] !== null ? 0 : null);
 
         if ($request->filled('cropped_foto')) {
             $imageParts = explode(";base64,", $request->input('cropped_foto'));
@@ -111,6 +116,8 @@ class PegawaiController extends Controller
             'jabatan_id' => ['required', 'exists:jabatans,id'],
             'bidang_id'  => ['required', 'exists:bidangs,id'],
             'golongan' => ['nullable', 'string', 'max:50'],
+            'mkg_tahun' => ['nullable', 'integer', 'min:0', 'max:60'],
+            'mkg_bulan' => ['nullable', 'integer', 'min:0', 'max:11'],
             'status_pernikahan' => ['required', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
             'status_kerja' => ['required', Rule::in(['Aktif', 'Tidak Aktif'])],
             'user_id' => ['nullable', 'exists:users,id', Rule::unique('pegawais')->ignore($pegawai->id)],
@@ -121,6 +128,9 @@ class PegawaiController extends Controller
         if (empty($validated['tanggal_berlaku'])) {
             $validated['tanggal_berlaku'] = now()->toDateString();
         }
+
+        $validated['mkg_tahun'] = ($request->filled('mkg_tahun') && $request->input('mkg_tahun') !== '') ? (int)$request->input('mkg_tahun') : null;
+        $validated['mkg_bulan'] = ($request->filled('mkg_bulan') && $request->input('mkg_bulan') !== '' && $validated['mkg_tahun'] !== null) ? (int)$request->input('mkg_bulan') : ($validated['mkg_tahun'] !== null ? 0 : null);
 
         if ($request->filled('cropped_foto')) {
             if ($pegawai->foto) {

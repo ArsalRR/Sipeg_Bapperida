@@ -21,6 +21,8 @@ class HistoryPegawai extends Model
         'gelar_belakang',
         'status_kepegawaian',
         'golongan',
+        'mkg_tahun',
+        'mkg_bulan',
         'jabatan_id',
         'bidang_id',
         'status_pernikahan',
@@ -31,6 +33,8 @@ class HistoryPegawai extends Model
     protected $casts = [
         'tanggal_berlaku' => 'date',
         'tanggal_lahir'   => 'date',
+        'mkg_tahun'       => 'integer',
+        'mkg_bulan'       => 'integer',
     ];
 
     public function pegawai()

@@ -161,42 +161,56 @@ class JabatanController extends Controller
             return str_starts_with($name, 'sekretaris ') && $j->jenis_jabatan === 'Struktural';
         });
 
-        // KOTAK MERAH (Kiri Atas): Jabatan Non-Struktural yang ber-atasan langsung ke KEPALA BADAN
+        // KOTAK MERAH (Kiri Atas): Jabatan Non-Struktural yang unit kerja/atasannya KEPALA BADAN
         $bawahanKepalaBadan = $allJabatans->filter(function($j) use ($kepalaBadan, $resolveCode) {
             if ($j->jenis_jabatan === 'Struktural') return false;
             
-            // Prioritaskan relasi atasan langsung ke Kepala Badan
+            // Prioritaskan pencocokan Unit Kerja lebih dahulu
+            $code = $resolveCode($j->unit_kerja);
+            if ($code !== null) {
+                return $code === 'kepala_badan';
+            }
+
+            // Fallback: Jika unit_kerja belum diset/kosong, cek relasi atasan langsung ke Kepala Badan
             if ($kepalaBadan && $j->parent_id == $kepalaBadan->id) {
                 return true;
             }
 
-            // Fallback: Jika parent_id belum diset, ambil jabatan dengan unit_kerja Kepala Badan
-            $code = $resolveCode($j->unit_kerja);
-            if (empty($j->parent_id) && $code === 'kepala_badan') {
-                return true;
-            }
-
             return false;
-        })->sortBy('nama_jabatan')->values();
+        })->sort(function ($a, $b) {
+            $kelasA = (int) ($a->kelas_jabatan ?? 0);
+            $kelasB = (int) ($b->kelas_jabatan ?? 0);
+            if ($kelasA === $kelasB) {
+                return strcmp($a->nama_jabatan, $b->nama_jabatan);
+            }
+            return $kelasB <=> $kelasA;
+        })->values();
 
-        // KOTAK HIJAU (Kanan Bawah Renvalkeu): Jabatan Fungsional yang ber-atasan langsung ke SEKRETARIS BADAN
+        // KOTAK HIJAU (Kanan Bawah Renvalkeu): Jabatan Fungsional yang unit kerja/atasannya SEKRETARIS BADAN
         $bawahanSekretaris = $allJabatans->filter(function($j) use ($sekretarisJabatan, $resolveCode, $bawahanKepalaBadan) {
             if ($j->jenis_jabatan !== 'Fungsional') return false;
             if ($bawahanKepalaBadan->pluck('id')->contains($j->id)) return false;
 
-            // Prioritaskan relasi atasan langsung ke Sekretaris Badan
+            // Prioritaskan pencocokan Unit Kerja lebih dahulu
+            $code = $resolveCode($j->unit_kerja);
+            if ($code !== null) {
+                return $code === 'sekretariat';
+            }
+
+            // Fallback: Jika unit_kerja belum diset/kosong, cek relasi atasan langsung ke Sekretaris Badan
             if ($sekretarisJabatan && $j->parent_id == $sekretarisJabatan->id) {
                 return true;
             }
 
-            // Fallback: Jabatan Fungsional yang unit kerjanya murni 'sekretariat' (bukan subbag)
-            $code = $resolveCode($j->unit_kerja);
-            if (empty($j->parent_id) && $code === 'sekretariat') {
-                return true;
-            }
-
             return false;
-        })->sortBy('nama_jabatan')->values();
+        })->sort(function ($a, $b) {
+            $kelasA = (int) ($a->kelas_jabatan ?? 0);
+            $kelasB = (int) ($b->kelas_jabatan ?? 0);
+            if ($kelasA === $kelasB) {
+                return strcmp($a->nama_jabatan, $b->nama_jabatan);
+            }
+            return $kelasB <=> $kelasA;
+        })->values();
 
         // Mapping ke variabel view agar kompatibel
         $fungsionalSekretariat = $bawahanKepalaBadan; // Kotak Merah (Atasan: Kepala Badan)
@@ -263,7 +277,14 @@ class JabatanController extends Controller
                 ];
             }
 
-            usort($results, fn ($a, $b) => strcmp($a['nama'], $b['nama']));
+            usort($results, function ($a, $b) {
+                $kelasA = (int) ($a['kelas'] ?? 0);
+                $kelasB = (int) ($b['kelas'] ?? 0);
+                if ($kelasA === $kelasB) {
+                    return strcmp($a['nama'], $b['nama']);
+                }
+                return $kelasB <=> $kelasA;
+            });
 
             return $results;
         };

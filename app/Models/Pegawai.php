@@ -66,6 +66,11 @@ class Pegawai extends Model
                 $historyData['bidang_id'] = $pegawai->bidang_id;
             }
 
+            if (\Illuminate\Support\Facades\Schema::hasColumn('history_pegawais', 'mkg_tahun')) {
+                $historyData['mkg_tahun'] = $pegawai->mkg_tahun;
+                $historyData['mkg_bulan'] = $pegawai->mkg_bulan;
+            }
+
             HistoryPegawai::create($historyData);
         });
     }
@@ -86,6 +91,8 @@ class Pegawai extends Model
         'jabatan_id',
         'bidang_id',
         'golongan',
+        'mkg_tahun',
+        'mkg_bulan',
         'status_pernikahan',
         'status_kerja',
         'tanggal_berlaku',
@@ -95,6 +102,8 @@ class Pegawai extends Model
     protected $casts = [
         'tanggal_lahir' => 'date',
         'tanggal_berlaku' => 'date',
+        'mkg_tahun' => 'integer',
+        'mkg_bulan' => 'integer',
     ];
 
     protected $appends = [
@@ -129,6 +138,13 @@ class Pegawai extends Model
 
     public function calculateMkg($targetDate = null): string
     {
+        // 0. Jika MKG diset secara manual (custom override tanpa tergantung NIP)
+        if ($this->mkg_tahun !== null && $this->mkg_tahun !== '') {
+            $thn = (int)$this->mkg_tahun;
+            $bln = (int)($this->mkg_bulan ?? 0);
+            return "{$thn} Tahun {$bln} Bulan";
+        }
+
         $now = $targetDate ? \Carbon\Carbon::parse($targetDate) : \Carbon\Carbon::now();
 
         // 1. Coba ekstrak TMT dari NIP (18 digit atau minimal 14 digit)

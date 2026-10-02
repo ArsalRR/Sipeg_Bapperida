@@ -545,6 +545,67 @@
                                 <input x-show="form.status_kepegawaian === 'Non ASN'" type="text" disabled value="-" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-400">
                             </div>
 
+                            {{-- Masa Kerja Golongan (MKG) - Default dihitung dari NIP, tapi bisa di-edit manual --}}
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Masa Kerja Golongan (MKG)
+                                    </label>
+                                    <template x-if="form.mkg_tahun !== '' && form.mkg_tahun !== null && form.mkg_tahun !== undefined">
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                            Manual Override
+                                        </span>
+                                    </template>
+                                    <template x-if="form.mkg_tahun === '' || form.mkg_tahun === null || form.mkg_tahun === undefined">
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                            Otomatis (NIP)
+                                        </span>
+                                    </template>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="relative">
+                                        <input type="number" name="mkg_tahun" x-model="form.mkg_tahun" min="0" max="60" placeholder="Tahun (Auto)"
+                                            class="w-full px-3 sm:px-4 py-2 pr-14 text-xs sm:text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                        <span class="absolute right-3 top-2 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">Tahun</span>
+                                    </div>
+                                    <div class="relative">
+                                        <input type="number" name="mkg_bulan" x-model="form.mkg_bulan" min="0" max="11" placeholder="Bulan (Auto)"
+                                            class="w-full px-3 sm:px-4 py-2 pr-14 text-xs sm:text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
+                                        <span class="absolute right-3 top-2 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">Bulan</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between gap-2 mt-1.5">
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">
+                                        <template x-if="form.mkg_tahun === '' || form.mkg_tahun === null || form.mkg_tahun === undefined">
+                                            <span>
+                                                Default otomatis dihitung dari NIP
+                                                <span class="font-medium text-slate-700 dark:text-slate-300" x-text="calculateMkgFromNip(form.nip, form.tanggal_berlaku) ? `(${calculateMkgFromNip(form.nip, form.tanggal_berlaku).years} Thn ${calculateMkgFromNip(form.nip, form.tanggal_berlaku).months} Bln)` : ''"></span>.
+                                            </span>
+                                        </template>
+                                        <template x-if="form.mkg_tahun !== '' && form.mkg_tahun !== null && form.mkg_tahun !== undefined">
+                                            <span>MKG manual tersimpan: <strong class="text-amber-600 dark:text-amber-400" x-text="`${form.mkg_tahun || 0} Thn ${form.mkg_bulan || 0} Bln`"></strong></span>
+                                        </template>
+                                    </p>
+                                    <div class="flex items-center gap-1.5 shrink-0">
+                                        <button type="button" @click="fillMkgFromNip()"
+                                            title="Hitung dan isikan angka tahun & bulan berdasarkan NIP saat ini"
+                                            class="text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                            Hitung dari NIP
+                                        </button>
+                                        <span x-show="form.mkg_tahun !== '' && form.mkg_tahun !== null && form.mkg_tahun !== undefined" class="text-gray-300 dark:text-gray-600">|</span>
+                                        <button x-show="form.mkg_tahun !== '' && form.mkg_tahun !== null && form.mkg_tahun !== undefined"
+                                            type="button" @click="resetMkgToAuto()"
+                                            title="Kosongkan nilai manual agar kembali menggunakan hitungan NIP otomatis"
+                                            class="text-[11px] font-medium text-rose-500 hover:underline">
+                                            Reset ke Auto
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Bidang / Unit Kerja <span class="text-red-500">*</span></label>
                                 <select name="bidang_id" x-model="form.bidang_id" @change="onBidangChange()" required class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-600 outline-none">
@@ -906,6 +967,8 @@ document.addEventListener('alpine:init', () => {
             status_kerja: 'Aktif',
             jabatan_id: '',
             golongan: '',
+            mkg_tahun: '',
+            mkg_bulan: '',
             status_pernikahan: 'Lajang',
             tanggal_berlaku: '',
             user_id: ''
@@ -967,7 +1030,73 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        calculateMkgFromNip(nip, tanggal_berlaku) {
+            const targetDate = new Date();
+            let tmtYear = null;
+            let tmtMonth = null;
+
+            if (nip && String(nip).length >= 14) {
+                const nipStr = String(nip);
+                const y = parseInt(nipStr.substring(8, 12));
+                const m = parseInt(nipStr.substring(12, 14));
+                if (y >= 1950 && y <= targetDate.getFullYear() && m >= 1 && m <= 12) {
+                    tmtYear = y;
+                    tmtMonth = m;
+                }
+            }
+
+            if (tmtYear === null && tanggal_berlaku) {
+                const tb = new Date(tanggal_berlaku);
+                if (!isNaN(tb.getTime())) {
+                    tmtYear = tb.getFullYear();
+                    tmtMonth = tb.getMonth() + 1;
+                }
+            }
+
+            if (tmtYear === null || tmtMonth === null) return null;
+
+            const tmtDate = new Date(tmtYear, tmtMonth - 1, 1);
+            if (tmtDate > targetDate) return { years: 0, months: 0 };
+
+            let years = targetDate.getFullYear() - tmtDate.getFullYear();
+            let months = targetDate.getMonth() - tmtDate.getMonth();
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            return { years, months };
+        },
+
+        fillMkgFromNip() {
+            const res = this.calculateMkgFromNip(this.form.nip, this.form.tanggal_berlaku);
+            if (res) {
+                this.form.mkg_tahun = res.years;
+                this.form.mkg_bulan = res.months;
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'NIP Belum Valid',
+                    text: 'Pastikan NIP minimal 14-18 digit angka yang memuat tahun & bulan pengangkatan CPNS/PNS.',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        },
+
+        resetMkgToAuto() {
+            this.form.mkg_tahun = '';
+            this.form.mkg_bulan = '';
+        },
+
         getMkgDisplay(p) {
+            // 0. Jika ada manual override mkg_tahun
+            if (p && p.mkg_tahun !== null && p.mkg_tahun !== undefined && p.mkg_tahun !== '') {
+                const thn = parseInt(p.mkg_tahun) || 0;
+                const bln = parseInt(p.mkg_bulan) || 0;
+                return `${thn} Tahun ${bln} Bulan`;
+            }
+
             const targetDate = new Date();
 
             let tmtYear = null;
@@ -1069,6 +1198,13 @@ document.addEventListener('alpine:init', () => {
         },
 
         getMkgTotalMonths(p) {
+            // 0. Jika ada manual override mkg_tahun
+            if (p && p.mkg_tahun !== null && p.mkg_tahun !== undefined && p.mkg_tahun !== '') {
+                const thn = parseInt(p.mkg_tahun) || 0;
+                const bln = parseInt(p.mkg_bulan) || 0;
+                return (thn * 12) + bln;
+            }
+
             const targetDate = new Date();
 
             let tmtYear = null;
@@ -1345,7 +1481,9 @@ document.addEventListener('alpine:init', () => {
             this.form = {
                 nama: '', gelar_depan: '', gelar_belakang: '', nip: '', nik: '', alamat: '',
                 tempat_lahir: '', tanggal_lahir: '', jenis_kelamin: 'Laki-laki', agama: '',
-                status_kepegawaian: 'PNS', status_kerja: 'Aktif', jabatan_id: '', bidang_id: '', golongan: '', status_pernikahan: 'Lajang',
+                status_kepegawaian: 'PNS', status_kerja: 'Aktif', jabatan_id: '', bidang_id: '', golongan: '',
+                mkg_tahun: '', mkg_bulan: '',
+                status_pernikahan: 'Lajang',
                 tanggal_berlaku: new Date().toISOString().split('T')[0], user_id: ''
             };
             this.currentAccount = null;
@@ -1381,7 +1519,10 @@ document.addEventListener('alpine:init', () => {
                 tanggal_lahir: p.tanggal_lahir ? p.tanggal_lahir.split('T')[0] : '',
                 jenis_kelamin: p.jenis_kelamin, agama: p.agama, status_kepegawaian: p.status_kepegawaian,
                 status_kerja: p.status_kerja || 'Aktif',
-                jabatan_id: p.jabatan_id, bidang_id: bId, golongan: p.golongan || '', status_pernikahan: p.status_pernikahan,
+                jabatan_id: p.jabatan_id, bidang_id: bId, golongan: p.golongan || '',
+                mkg_tahun: (p.mkg_tahun !== null && p.mkg_tahun !== undefined && p.mkg_tahun !== '') ? p.mkg_tahun : '',
+                mkg_bulan: (p.mkg_bulan !== null && p.mkg_bulan !== undefined && p.mkg_bulan !== '') ? p.mkg_bulan : '',
+                status_pernikahan: p.status_pernikahan,
                 tanggal_berlaku: new Date().toLocaleDateString('sv-SE'),
                 user_id: p.user_id || ''
             };
