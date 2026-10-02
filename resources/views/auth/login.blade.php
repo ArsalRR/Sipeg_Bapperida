@@ -24,11 +24,10 @@
             <div class="absolute -top-24 -left-24 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl"></div>
             <div class="absolute bottom-0 right-0 w-full h-1/2 bg-gradient-to-t from-slate-900/50 to-transparent"></div>
 
-         <div class="z-10">
-    <img src="{{ asset('bapperan_logo.png') }}" alt="BAPERAN"
-         style="height: 6rem; width: auto; max-width: 18rem;"
-         class="object-contain">
-</div>
+            <div class="z-10 select-none">
+                <div class="font-black text-5xl leading-none text-white tracking-tight">BAPPERAN</div>
+                <div class="text-[11px] font-bold tracking-[0.19em] text-blue-200/90 leading-tight mt-2 uppercase whitespace-nowrap">APLIKASI BASIS DATA PERSONALIA ASN</div>
+            </div>
             <div class="z-10 max-w-lg mt-auto mb-32">
                 <h1 class="text-6xl font-extrabold tracking-tight mb-6">Halo ASN! </h1>
                 <p class="text-lg text-blue-100/90 leading-relaxed font-light">
@@ -37,16 +36,14 @@
             </div>
 
             <div class="z-10">
-                <p class="text-sm text-blue-200/60">&copy; 2026 BAPERAN ASN. Hak Cipta Dilindungi.</p>
+                <p class="text-sm text-blue-200/60">&copy; 2026 BAPPERAN ASN. Hak Cipta Dilindungi.</p>
             </div>
         </div>
         <div class="w-full lg:w-1/2 bg-white dark:bg-slate-950 flex flex-col justify-between transition-colors duration-300 min-h-screen">
             <div class="w-full px-6 py-6 flex items-center justify-between z-10 shrink-0">
-                <div class="lg:hidden flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-700 dark:bg-blue-600 rounded-md flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                        A
-                    </div>
-                    <span class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">BAPERAN</span>
+                <div class="lg:hidden select-none">
+                    <div class="font-black text-xl leading-none text-slate-900 dark:text-white tracking-tight">BAPPERAN</div>
+                    <div class="text-[7px] font-bold tracking-[0.19em] text-gray-400 dark:text-gray-500 leading-tight mt-1 uppercase whitespace-nowrap">APLIKASI BASIS DATA PERSONALIA ASN</div>
                 </div>
                 <div class="hidden lg:block"></div>
             </div>

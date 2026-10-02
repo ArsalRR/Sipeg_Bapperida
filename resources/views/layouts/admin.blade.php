@@ -30,11 +30,9 @@
 <body class="bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-800 dark:text-slate-200 font-sans antialiased flex h-screen overflow-hidden transition-colors duration-300 isolate">
     <aside class="w-64 bg-white dark:bg-[#111111] border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-300 shrink-0 absolute z-30 h-full -translate-x-full md:relative md:translate-x-0" id="sidebar">
         <div class="h-20 flex items-center justify-between px-6 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0">
-                    B
-                </div>
-                <span class="font-bold text-2xl tracking-tight text-slate-900 dark:text-white">BAPERAN</span>
+            <div class="select-none">
+                <div class="font-black text-2xl leading-none text-slate-900 dark:text-white tracking-tight">BAPPERAN</div>
+                <div class="text-[6.5px] font-bold tracking-[0.2em] text-gray-400 dark:text-gray-500 leading-tight mt-1 uppercase whitespace-nowrap">APLIKASI BASIS DATA PERSONALIA ASN</div>
             </div>
 
             <button class="md:hidden text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors p-2 shrink-0" onclick="toggleSidebar()">
@@ -138,7 +136,7 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
                 <div class="hidden sm:flex flex-col min-w-0">
-                    <span class="text-xs text-gray-400 dark:text-gray-500 font-semibold tracking-wider uppercase truncate">BAPERAN ASN</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500 font-semibold tracking-wider uppercase truncate">BAPPERAN ASN</span>
                     <h2 class="text-lg font-bold text-slate-900 dark:text-white truncate">@yield('title', 'Dashboard')</h2>
                 </div>
             </div>
