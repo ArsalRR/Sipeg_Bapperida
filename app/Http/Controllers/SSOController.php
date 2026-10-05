@@ -1,14 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-class SsoController extends Controller
+class SSOController extends Controller
 {
     public function authorize(Request $request)
     {

@@ -9,7 +9,7 @@ return [
         [
             'name' => 'SURYA',
             'desc' => 'Surat Naskah: nomor surat otomatis, arsip surat, dan monitoring nomor kosong.',
-            'url'  => env('SURYA_URL', 'http://localhost:5173'),
+            'url'  => env('SURYA_URL', 'http://bapperida.my.id:84'),
         ],
     ],
 ];

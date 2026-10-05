@@ -4,10 +4,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthapiController;
 use App\Http\Controllers\Api\PegawaiApiController;
-use App\Http\Controllers\SsoController;
+use App\Http\Controllers\SSOController;
 
 Route::post('login', [AuthapiController::class, 'login']);
-Route::post('sso/token', [SsoController::class, 'token']);
+Route::post('sso/token', [SSOController::class, 'token']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('pegawai', [PegawaiApiController::class, 'index']);
