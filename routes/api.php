@@ -2,11 +2,11 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthapiController;
+use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\PegawaiApiController;
 use App\Http\Controllers\SSOController;
 
-Route::post('login', [AuthapiController::class, 'login']);
+Route::post('login', [AuthApiController::class, 'login']);
 Route::post('sso/token', [SSOController::class, 'token']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -15,4 +15,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user/me', function (Request $request) {
         return response()->json($request->user());
     });
+    Route::get('user/profile', [AuthapiController::class, 'profile']);
 });

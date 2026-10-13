@@ -11,5 +11,11 @@ return [
             'desc' => 'Surat Naskah: nomor surat otomatis, arsip surat, dan monitoring nomor kosong.',
             'url'  => env('SURYA_URL', 'http://bapperida.my.id:84'),
         ],
+         [
+            'name' => 'Jaga',
+            'desc' => 'Surat Naskah: nomor surat otomatis, arsip surat, dan monitoring nomor kosong.',
+            'url'  => env('JAGA_URL', 'http://localhost:8001'),
+        ],
     ],
+    
 ];
