@@ -7,6 +7,7 @@ return [
 
     'apps' => [
         [
+<<<<<<< HEAD
             'name'         => 'SURYA',
             'desc'         => 'Surat Naskah: nomor surat otomatis, arsip surat, dan monitoring nomor kosong.',
             'url'          => env('SURYA_URL', 'https://surya.ifaserver.my.id'),
@@ -20,6 +21,11 @@ return [
             'url'          => env('SIGAP_URL', 'http://localhost:5174'),
             // 'callback_url' = backend Laravel yang punya route /sso/callback
             'callback_url' => env('SIGAP_CALLBACK_URL', 'http://localhost:8001'),
+=======
+            'name' => 'SURYA',
+            'desc' => 'Surat Naskah: nomor surat otomatis, arsip surat, dan monitoring nomor kosong.',
+            'url'  => env('SURYA_URL', 'http://bapperida.my.id:84'),
+>>>>>>> 0130481b0d56aa388fed1a7cb59ef8f87fe00b8e
         ],
     ],
 

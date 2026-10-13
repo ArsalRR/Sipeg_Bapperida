@@ -8,11 +8,11 @@ use App\Http\Controllers\PegawaiController;
 use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\KeluargaController;
-use App\Http\Controllers\SsoController;
+use App\Http\Controllers\SSOController;
 use App\Http\Controllers\WelcomeController;
 
 Route::redirect('/', '/login');
-Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
+Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome')->middleware('auth');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'processLogin'])->middleware('guest');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register')->middleware('guest');
@@ -26,8 +26,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // SSO
-    Route::get('/sso/authorize', [SsoController::class, 'authorize'])->name('sso.authorize');
-    Route::get('/sso/logout', [SsoController::class, 'logout'])->name('sso.logout');
+    Route::get('/sso/authorize', [SSOController::class, 'authorize'])->name('sso.authorize');
+    Route::get('/sso/logout', [SSOController::class, 'logout'])->name('sso.logout');
 
     Route::resource('keluarga', KeluargaController::class)->except(['create', 'show', 'edit']);
     Route::get('/cetak-kp4', [\App\Http\Controllers\DokumenController::class, 'cetakKp4'])->name('dokumen.kp4');
