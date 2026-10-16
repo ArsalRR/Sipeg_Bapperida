@@ -5,72 +5,76 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Pegawai;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class AuthController extends Controller
 {
-    public function showLogin(Request $request): View
+    private function messages(): array
     {
-        // Generate Simple Math Captcha
-        $num1 = random_int(1, 10);
-        $num2 = random_int(1, 10);
-        $operator = random_int(0, 1) === 1 ? '+' : '-';
-        if ($operator === '-' && $num1 < $num2) {
-            $temp = $num1;
-            $num1 = $num2;
-            $num2 = $temp;
-        }
-        
-        $result = $operator === '+' ? ($num1 + $num2) : ($num1 - $num2);
-        
-        $request->session()->put('captcha_result', $result);
-        $captchaQuestion = "Berapa hasil dari {$num1} {$operator} {$num2}?";
-
-        return view('auth.login', compact('captchaQuestion'));
+        return [
+            'required' => ':attribute wajib diisi.',
+            'string' => ':attribute harus berupa teks.',
+            'numeric' => ':attribute harus berupa angka.',
+            'email' => ':attribute harus berupa alamat email yang valid.',
+            'max' => ':attribute maksimal :max karakter.',
+            'min' => ':attribute minimal :min karakter.',
+            'unique' => ':attribute sudah digunakan.',
+            'confirmed' => 'Konfirmasi :attribute tidak cocok.',
+            'captcha' => ':attribute salah.',
+            'username.regex' => 'Username tidak boleh mengandung spasi.',
+            'login.regex' => 'Username atau email tidak boleh mengandung spasi.',
+        ];
     }
-public function processLogin(Request $request): RedirectResponse
-{
-    $credentials = $request->validate([
-        'login' => ['required', 'string', 'regex:/^\S+$/'],
-        'password' => ['required'],
-        'captcha' => ['required', 'numeric'],
-    ], [
-        'login.regex' => 'Username atau email tidak boleh mengandung spasi.'
-    ]);
 
-    $captchaResult = $request->session()->get('captcha_result');
-    if ((int)$credentials['captcha'] !== $captchaResult) {
+    private function attributes(): array
+    {
+        return [
+            'login' => 'Username atau email',
+            'username' => 'Username',
+            'email' => 'Email',
+            'password' => 'Kata sandi',
+            'captcha' => 'Kode captcha',
+        ];
+    }
+
+    public function showLogin(): View
+    {
+        return view('auth.login');
+    }
+
+    public function processLogin(Request $request): RedirectResponse
+    {
+        $credentials = $request->validate([
+            'login' => ['required', 'string', 'regex:/^\S+$/'],
+            'password' => ['required'],
+            'captcha' => ['required', 'captcha'],
+        ], $this->messages(), $this->attributes());
+
+        $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        if (Auth::validate([$loginType => $credentials['login'], 'password' => $credentials['password']])) {
+            $user = User::where($loginType, $credentials['login'])->first();
+
+            if (!$user->is_active) {
+                return back()->withErrors([
+                    'login' => 'Akun Anda belum aktif. Silakan hubungi superadmin untuk aktivasi.',
+                ])->onlyInput('login');
+            }
+
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            return redirect()->route('welcome');
+        }
+
         return back()->withErrors([
-            'captcha' => 'Jawaban captcha salah.',
+            'login' => 'Kredensial yang diberikan tidak cocok dengan catatan kami.',
         ])->onlyInput('login');
     }
-
-    $loginType = filter_var($credentials['login'], FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-    if (Auth::validate([$loginType => $credentials['login'], 'password' => $credentials['password']])) {
-        $user = User::where($loginType, $credentials['login'])->first();
-
-        if (!$user->is_active) {
-            return back()->withErrors([
-                'login' => 'Akun Anda belum aktif. Silakan hubungi superadmin untuk aktivasi.',
-            ])->onlyInput('login');
-        }
-
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route('welcome');
-    }
-
-    return back()->withErrors([
-        'login' => 'Kredensial yang diberikan tidak cocok dengan catatan kami.',
-    ])->onlyInput('login');
-}
 
     public function showRegister(): View
     {
@@ -83,9 +87,7 @@ public function processLogin(Request $request): RedirectResponse
             'username' => ['required', 'string', 'max:255', 'unique:users,username', 'regex:/^\S+$/'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ], [
-            'username.regex' => 'Username tidak boleh mengandung spasi.'
-        ]);
+        ], $this->messages(), $this->attributes());
 
         User::create([
             'username' => $validated['username'],
@@ -97,15 +99,16 @@ public function processLogin(Request $request): RedirectResponse
 
         return redirect()->route('login')->with('success', 'Pendaftaran berhasil! Akun Anda menunggu persetujuan superadmin. Silakan hubungi admin untuk aktivasi.');
     }
-public function logout(Request $request): RedirectResponse
-{
-    $request->user()?->tokens()->delete();
 
-    Auth::logout();
+    public function logout(Request $request): RedirectResponse
+    {
+        $request->user()?->tokens()->delete();
 
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+        Auth::logout();
 
-    return redirect('/login');
-}
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
+    }
 }
