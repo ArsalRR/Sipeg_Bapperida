@@ -126,19 +126,19 @@
                                     <div>
 
                                         @if ($field['name'] === 'captcha')
-                                            <div class="mb-2 flex items-center justify-between gap-3">
-                                                <img id="captchaImage"
-                                                     src="{{ captcha_src('flat') }}"
-                                                     data-base="{{ url('captcha/flat') }}"
-                                                     alt="Gambar captcha"
-                                                     class="h-12 w-auto rounded-lg border border-gray-200 bg-white dark:border-slate-700">
+                                           <div class="mb-2 flex items-center justify-between gap-3">
+    <img id="captchaImage"
+         src="{{ captcha_src('flat') }}"
+         data-base="{{ url('captcha/flat') }}"
+         alt="Gambar captcha"
+         class="h-[72px] w-auto min-w-0 rounded-lg border border-gray-200 bg-white dark:border-slate-700">
 
-                                                <button type="button"
-                                                        id="captchaRefresh"
-                                                        class="rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-blue-400 dark:hover:bg-slate-800">
-                                                    Ganti Captcha
-                                                </button>
-                                            </div>
+    <button type="button"
+            id="captchaRefresh"
+            class="shrink-0 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-blue-400 dark:hover:bg-slate-800">
+        Ganti Captcha
+    </button>
+</div>
                                         @endif
 
                                         <div class="flex items-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 transition focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20 dark:border-slate-700 dark:bg-slate-950">
