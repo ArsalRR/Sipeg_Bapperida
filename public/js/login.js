@@ -1,98 +1,96 @@
-    (function () {
-            var root = document.documentElement;
+(function () {
+    var root = document.documentElement;
+    var saved = null;
 
-            var themeToggle = document.getElementById('themeToggle');
-            themeToggle.setAttribute('aria-checked', String(root.classList.contains('dark')));
+    try {
+        saved = localStorage.getItem('theme');
+    } catch (e) {}
 
-            themeToggle.addEventListener('click', function () {
-                var dark = !root.classList.contains('dark');
+    var initialDark = saved
+        ? saved === 'dark'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-                root.classList.toggle('dark', dark);
-                themeToggle.setAttribute('aria-checked', String(dark));
+    root.classList.toggle('dark', initialDark);
 
-                try {
-                    localStorage.setItem('theme', dark ? 'dark' : 'light');
-                } catch (e) {}
-            });
+    var themeToggle = document.getElementById('themeToggle');
+    themeToggle.setAttribute('aria-checked', String(root.classList.contains('dark')));
 
-            var tabs = document.querySelectorAll('[data-tab]');
-            var tabList = document.getElementById('tabList');
+    themeToggle.addEventListener('click', function () {
+        var dark = !root.classList.contains('dark');
 
-            var copy = {
-                login: [
-                    'Selamat Datang Kembali!',
-                    'Silakan masuk menggunakan Akun Anda.'
-                ],
-                register: [
-                    'Buat Akun Baru',
-                    'Isi data berikut untuk mendaftar.'
-                ]
-            };
+        root.classList.toggle('dark', dark);
+        themeToggle.setAttribute('aria-checked', String(dark));
 
-            function setTab(name) {
-                tabList.classList.toggle('is-register', name === 'register');
+        try {
+            localStorage.setItem('theme', dark ? 'dark' : 'light');
+        } catch (e) {}
+    });
 
-                tabs.forEach(function (tab) {
-                    tab.setAttribute(
-                        'aria-selected',
-                        String(tab.dataset.tab === name)
-                    );
-                });
+    var tabs = document.querySelectorAll('[data-tab]');
+    var tabList = document.getElementById('tabList');
 
-                ['login', 'register'].forEach(function (key) {
-                    document.getElementById('panel-' + key)
-                        .classList.toggle('hidden', key !== name);
-                });
+    var copy = {
+        login: [
+            'Selamat Datang Kembali!',
+            'Silakan masuk menggunakan Akun Anda.'
+        ],
+        register: [
+            'Buat Akun Baru',
+            'Isi data berikut untuk mendaftar.'
+        ]
+    };
 
-                document.getElementById('formTitle').textContent = copy[name][0];
-                document.getElementById('formSubtitle').textContent = copy[name][1];
-            }
+    function setTab(name) {
+        tabList.classList.toggle('is-register', name === 'register');
 
-            tabs.forEach(function (tab) {
-                tab.addEventListener('click', function () {
-                    setTab(tab.dataset.tab);
-                });
-            });
+        tabs.forEach(function (tab) {
+            tab.setAttribute(
+                'aria-selected',
+                String(tab.dataset.tab === name)
+            );
+        });
 
-            document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
-                button.addEventListener('click', function () {
-                    var input = document.getElementById(button.dataset.togglePassword);
-                    var show = input.type === 'password';
+        ['login', 'register'].forEach(function (key) {
+            document.getElementById('panel-' + key)
+                .classList.toggle('hidden', key !== name);
+        });
 
-                    input.type = show ? 'text' : 'password';
+        document.getElementById('formTitle').textContent = copy[name][0];
+        document.getElementById('formSubtitle').textContent = copy[name][1];
+    }
 
-                    button.querySelector('[data-eye]').classList.toggle('hidden', show);
-                    button.querySelector('[data-eye-off]').classList.toggle('hidden', !show);
-                    button.setAttribute(
-                        'aria-label',
-                        show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'
-                    );
-                });
-            });
-            var captchaImage = document.getElementById('captchaImage');
-            var captchaRefresh = document.getElementById('captchaRefresh');
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            setTab(tab.dataset.tab);
+        });
+    });
 
-            if (captchaImage && captchaRefresh) {
-                captchaRefresh.addEventListener('click', function () {
-                    captchaImage.src = captchaImage.dataset.base + '?' + Math.random();
+    document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var input = document.getElementById(button.dataset.togglePassword);
+            var show = input.type === 'password';
 
-                    var input = document.getElementById('captcha');
-                    input.value = '';
-                    input.focus();
-                });
-            }
-        })();
+            input.type = show ? 'text' : 'password';
 
-         (function () {
-            var saved = null;
+            button.querySelector('[data-eye]').classList.toggle('hidden', show);
+            button.querySelector('[data-eye-off]').classList.toggle('hidden', !show);
+            button.setAttribute(
+                'aria-label',
+                show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'
+            );
+        });
+    });
 
-            try {
-                saved = localStorage.getItem('theme');
-            } catch (e) {}
+    var captchaImage = document.getElementById('captchaImage');
+    var captchaRefresh = document.getElementById('captchaRefresh');
 
-            var dark = saved
-                ? saved === 'dark'
-                : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (captchaImage && captchaRefresh) {
+        captchaRefresh.addEventListener('click', function () {
+            captchaImage.src = captchaImage.dataset.base + '?' + Math.random();
 
-            document.documentElement.classList.toggle('dark', dark);
-        })();
+            var input = document.getElementById('captcha');
+            input.value = '';
+            input.focus();
+        });
+    }
+})();

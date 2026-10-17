@@ -1,0 +1,111 @@
+      :root {
+            --bg: #ffffff;
+            --fg: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --card: #ffffff;
+            --accent: #3b82f6;
+            --tint: rgba(59, 130, 246, .1);
+            --shadow: rgba(59, 130, 246, .35);
+            --orbit: rgba(59, 130, 246, .45);
+        }
+        html.dark {
+            --bg: #0b1120;
+            --fg: #f8fafc;
+            --muted: #94a3b8;
+            --line: #263349;
+            --card: #111a2e;
+            --tint: rgba(59, 130, 246, .18);
+            --shadow: rgba(59, 130, 246, .45);
+        }
+        body { background: var(--bg); color: var(--fg); transition: background .3s, color .3s; }
+
+        /* Header: merek di kiri, pengguna + tema + keluar di kanan */
+        .top {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+            padding: .875rem 1.25rem; background: var(--bg); border-bottom: 1px solid var(--line);
+            transition: background .3s, border-color .3s;
+        }
+        @media (min-width: 768px) { .top { padding: .875rem 3rem; } }
+        .brand { display: flex; align-items: center; gap: .75rem; min-width: 0; }
+        .brand img { width: 2.5rem; height: 2.5rem; object-fit: contain; flex: none; }
+        .brand b { display: block; font-size: .875rem; line-height: 1.2; }
+        .brand small { display: block; font-size: .75rem; line-height: 1.2; color: var(--muted); }
+        .right { display: flex; align-items: center; gap: .625rem; margin-left: auto; flex: none; }
+
+        .user { display: flex; align-items: center; gap: .625rem; min-width: 0; max-width: 18rem; margin-right: .25rem; }
+        .user-text { text-align: right; min-width: 0; line-height: 1.25; }
+        .user-text b { display: block; font-size: .875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-text small { display: block; font-size: .75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .avatar {
+            width: 2.25rem; height: 2.25rem; flex: none; border-radius: 9999px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--tint); color: var(--accent); font-weight: 700; font-size: .9rem;
+        }
+        @media (max-width: 639px) { .user { display: none; } .brand small { display: none; } }
+
+        .greet { display: none; }
+        @media (max-width: 639px) { .greet { display: block; margin-bottom: .75rem; font-size: .875rem; color: var(--muted); } .greet b { color: var(--fg); } }
+
+        .tbtn {
+            display: flex; align-items: center; justify-content: center; height: 2.5rem; min-width: 2.5rem;
+            padding: 0 .9rem; border-radius: .5rem; border: 1px solid var(--line); background: transparent;
+            color: var(--fg); font: 600 .875rem/1 Inter, system-ui, sans-serif; cursor: pointer;
+            text-decoration: none; transition: background .15s;
+        }
+        .tbtn:hover { background: var(--line); }
+        .tbtn svg { width: 1.1rem; height: 1.1rem; }
+        .tbtn .sun { display: none; }
+        html.dark .tbtn .sun { display: block; }
+        html.dark .tbtn .moon { display: none; }
+
+        .hub-orb {
+            --o: min(92vw, 42rem, calc(100vh - 8rem));
+            position: relative; width: var(--o); height: var(--o); flex: none;
+            touch-action: none; user-select: none; cursor: grab; outline: none;
+        }
+        .hub-orb.drag { cursor: grabbing; }
+        .hub-ring {
+            position: absolute; left: 50%; top: 50%; width: 74%; height: 74%;
+            transform: translate(-50%, -50%); border-radius: 9999px;
+            border: 2px dashed var(--orbit);
+        }
+        .hub-center {
+            position: absolute; left: 50%; top: 50%; width: 38%; height: 38%;
+            transform: translate(-50%, -50%); border-radius: 9999px;
+            background: var(--card); border: 1px solid var(--line);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: calc(var(--o) * .015); text-align: center; padding: 0 4%;
+        }
+        .hub-center img { width: 46%; height: auto; object-fit: contain; }
+        .hub-center span { color: var(--fg); font-weight: 700; font-size: clamp(.7rem, calc(var(--o) * .032), 1rem); line-height: 1.25; }
+
+        .nd { position: absolute; width: 0; height: 0; }
+        .cr {
+            position: absolute; width: calc(var(--o) * .15); height: calc(var(--o) * .15);
+            left: calc(var(--o) * -.075); top: calc(var(--o) * -.075);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 9999px; background: var(--card); color: var(--accent);
+            border: 1px solid var(--line); cursor: pointer;
+            transition: transform .4s cubic-bezier(.34, 1.4, .64, 1), border-color .25s, box-shadow .25s;
+        }
+        .cr svg { width: 42%; height: 42%; }
+        .nd.on .cr {
+            transform: scale(1.6); border: 3px solid var(--accent);
+            box-shadow: 0 14px 28px -10px var(--shadow);
+        }
+        .lb {
+            position: absolute; left: -4rem; width: 8rem; top: calc(var(--o) * .095);
+            text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .04em;
+            color: var(--muted); pointer-events: none;
+            transition: top .4s cubic-bezier(.34, 1.4, .64, 1), color .25s;
+        }
+        .lb .hint { display: none; margin-top: 2px; font-size: 10px; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+        .nd.on .lb { top: calc(var(--o) * .15); color: var(--accent); }
+        .nd.on .lb .hint { display: block; }
+
+        .dot { height: 5px; width: 5px; border-radius: 9999px; background: var(--line); transition: width .3s, background .3s; }
+        .dot.on { width: 28px; background: var(--accent); }
+
+        @media (prefers-reduced-motion: reduce) { .cr, .lb, .dot { transition: none; } }

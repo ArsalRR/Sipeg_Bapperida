@@ -2,12 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class WelcomeController extends Controller
 {
     public function index()
     {
-        return view('welcome');
+        $user = auth()->user();
+        $profile = null;
+
+        if ($user) {
+            $user->loadMissing('pegawai.jabatan');
+
+            $profile = [
+                'nama'    => $user->pegawai?->nama ?? $user->username,
+                'jabatan' => $user->pegawai?->jabatan?->nama_jabatan,
+            ];
+        }
+
+        return view('ssopage', compact('profile'));
     }
 }

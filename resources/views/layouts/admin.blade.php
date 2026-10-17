@@ -29,23 +29,46 @@
 </head>
 <body class="bg-[#f8fafc] dark:bg-[#0a0a0a] text-slate-800 dark:text-slate-200 font-sans antialiased flex h-screen overflow-hidden transition-colors duration-300 isolate">
     <aside class="w-64 bg-white dark:bg-[#111111] border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-300 shrink-0 absolute z-30 h-full -translate-x-full md:relative md:translate-x-0" id="sidebar">
-        <div class="h-20 flex items-center justify-between px-6 shrink-0">
-            <div class="select-none">
-                <div class="font-black text-2xl leading-none text-slate-900 dark:text-white tracking-tight">BAPERAN</div>
-                <div class="text-[6.5px] font-bold tracking-[0.2em] text-gray-400 dark:text-gray-500 leading-tight mt-1 uppercase whitespace-nowrap">APLIKASI BASIS DATA PERSONALIA ASN</div>
-            </div>
-
-            <button class="md:hidden text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors p-2 shrink-0" onclick="toggleSidebar()">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+       <div class="h-20 flex items-center justify-between px-5 shrink-0 gap-3">
+    <a href="{{ route('dashboard') }}"
+       class="group flex items-center gap-3 min-w-0 rounded-lg -mx-2 px-2 py-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]"
+       title="BAPERAN — Beranda">
+        {{-- Logo Pemkot --}}
+        <div class="shrink-0 w-11 h-11 rounded-xl bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-sm overflow-hidden">
+            <img src="{{ asset('pemkot.webp') }}"
+                 alt="Logo Pemerintah Kota"
+                 class="w-8 h-8 object-contain"
+                 loading="eager"
+                 decoding="async">
         </div>
+
+        {{-- Nama brand + tagline --}}
+        <div class="min-w-0">
+            <div class="font-extrabold text-xl leading-tight text-slate-900 dark:text-white tracking-tight truncate">
+                BAPERAN
+            </div>
+            <div class="text-[10px] font-medium tracking-wide text-gray-500 dark:text-gray-400 leading-snug mt-0.5 truncate">
+                Basis Data Personalia ASN
+            </div>
+        </div>
+    </a>
+
+    <button type="button"
+            class="md:hidden shrink-0 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            onclick="toggleSidebar()"
+            aria-label="Tutup menu">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+</div>
         <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg {{ request()->routeIs('dashboard') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-lg {{ request()->routeIs('dashboard') ? 'bg-blue-700 text-white shadow-sm dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                 Dashboard
             </a>
             @if(in_array(auth()->user()->role, ['admin', 'superadmin']))
-            <a href="{{ route('admin.pegawais.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.pegawais.*') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+            <a href="{{ route('admin.pegawais.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.pegawais.*') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 Data Pegawai
             </a>
@@ -54,7 +77,7 @@
                 $hasPengajuanTable = \Illuminate\Support\Facades\Schema::hasTable('pengajuan_perubahans');
                 $pendingVerifikasisCount = $hasPengajuanTable ? \App\Models\PengajuanPerubahan::where('status', 'pending')->count() : 0;
             @endphp
-            <a href="{{ route('admin.verifikasi.index') }}" class="flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.verifikasi.*') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10 font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+            <a href="{{ route('admin.verifikasi.index') }}" class="flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.verifikasi.*') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                 <div class="flex items-center gap-3 min-w-0">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span class="truncate">Verifikasi Perubahan</span>
@@ -75,7 +98,7 @@
                  }"
                  x-init="$watch('open', val => localStorage.setItem('jabatanMenuOpen', val))"
                  class="space-y-1">
-                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg {{ (request()->routeIs('admin.jabatans.*') || request()->routeIs('admin.bidangs.*')) ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10 font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg {{ (request()->routeIs('admin.jabatans.*') || request()->routeIs('admin.bidangs.*')) ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                         <span>Manajemen Jabatan</span>
@@ -86,42 +109,42 @@
                 </button>
 
                 <div x-show="open" x-cloak style="display:none" class="pl-9 pr-2 space-y-1">
-                    <a href="{{ route('admin.jabatans.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.jabatans.index') ? 'text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-900/30 font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
-                        <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('admin.jabatans.index') ? 'bg-blue-600 dark:bg-blue-400' : 'bg-gray-400 dark:bg-gray-600' }}"></span>
+                    <a href="{{ route('admin.jabatans.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.jabatans.index') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
+                        <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('admin.jabatans.index') ? 'bg-white' : 'bg-gray-400 dark:bg-gray-600' }}"></span>
                         Data Jabatan
                     </a>
-                    <a href="{{ route('admin.bidangs.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.bidangs.*') ? 'text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-900/30 font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
-                        <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('admin.bidangs.*') ? 'bg-blue-600 dark:bg-blue-400' : 'bg-gray-400 dark:bg-gray-600' }}"></span>
+                    <a href="{{ route('admin.bidangs.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.bidangs.*') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
+                        <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('admin.bidangs.*') ? 'bg-white' : 'bg-gray-400 dark:bg-gray-600' }}"></span>
                         Data Bidang / Unit
                     </a>
-                    <a href="{{ route('admin.jabatans.peta') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.jabatans.peta') ? 'text-blue-600 dark:text-blue-400 bg-blue-100/50 dark:bg-blue-900/30 font-semibold' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
-                        <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('admin.jabatans.peta') ? 'bg-blue-600 dark:bg-blue-400' : 'bg-gray-400 dark:bg-gray-600' }}"></span>
+                    <a href="{{ route('admin.jabatans.peta') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-lg {{ request()->routeIs('admin.jabatans.peta') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
+                        <span class="w-1.5 h-1.5 rounded-full {{ request()->routeIs('admin.jabatans.peta') ? 'bg-white' : 'bg-gray-400 dark:bg-gray-600' }}"></span>
                         Peta Jabatan
                     </a>
                 </div>
             </div>
             @endif
 
-            <a href="{{ route('keluarga.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('keluarga.*') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+            <a href="{{ route('keluarga.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('keluarga.*') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 Data Keluarga
             </a>
-            <a href="{{ route('dokumen.kp4') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('dokumen.kp4') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+            <a href="{{ route('dokumen.kp4') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('dokumen.kp4') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                 Cetak Form KP4
             </a>
 
-            <a href="{{ route('dokumen.file.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('dokumen.file.*') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+            <a href="{{ route('dokumen.file.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('dokumen.file.*') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 002 2z"></path></svg>
                 Menu File
             </a>
-            <a href="{{ route('profile.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('profile.*') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+            <a href="{{ route('profile.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('profile.*') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 Edit Profile
             </a>
 
             @if(auth()->user()->role === 'superadmin')
-            <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.users.*') ? 'text-blue-600 bg-blue-50 dark:bg-blue-600/10' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50' }} transition-colors">
+            <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ request()->routeIs('admin.users.*') ? 'bg-blue-700 text-white shadow-sm font-semibold dark:bg-blue-600 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 active:bg-blue-800 active:text-white' }} transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#111111]">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 Data User
             </a>
@@ -198,8 +221,6 @@
                                 'message'   => "Jadwal Kenaikan Gaji Berkala (KGB) Anda pada {$info['due_date']} ({$info['days_left']} hari lagi)."
                             ]);
                         }
-
-                        // Notifikasi H-1 ulang tahun diri sendiri
                         $tglLahir = $currentUser->pegawai->tanggal_lahir;
                         if ($tglLahir &&
                             $tglLahir->month === $tomorrow->month &&

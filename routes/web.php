@@ -24,6 +24,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('pegawais/export/pdf', [PegawaiController::class, 'exportPdf'])
+    ->name('admin.pegawais.export-pdf'); // sesuaikan prefix nama: jadi admin.pegawais.export-pdf
 
     // SSO
     Route::get('/sso/authorize', [SSOController::class, 'authorize'])->name('sso.authorize');

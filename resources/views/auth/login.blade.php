@@ -78,9 +78,6 @@
                         <div class="mt-2 text-[10px] font-bold uppercase tracking-[0.19em] text-gray-400 dark:text-gray-500">
                             Aplikasi Basis Data Personalia ASN
                         </div>
-
-                        <div class="mx-auto mt-5 h-1 w-12 rounded-full bg-blue-600"></div>
-
                         <h1 id="formTitle" class="mt-6 text-2xl font-bold tracking-tight">
                             {{ $isRegister ? 'Buat Akun Baru' : 'Selamat Datang Kembali!' }}
                         </h1>
@@ -139,7 +136,7 @@
                                                 <button type="button"
                                                         id="captchaRefresh"
                                                         class="rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:text-blue-400 dark:hover:bg-slate-800">
-                                                    Muat ulang
+                                                    Ganti Captcha
                                                 </button>
                                             </div>
                                         @endif
@@ -232,33 +229,38 @@
         </aside>
 
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-       function showAlert(title, message) {
-                var dark = root.classList.contains('dark');
-
-                var icon = title === 'Berhasil' ? 'success' : 'error';
-
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: icon,
-                    title: message,
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    background: dark ? '#0f172a' : '#ffffff',
-                    color: dark ? '#ffffff' : '#0f172a'
-                });
+        function showAlert(title, message) {
+            if (typeof Swal === 'undefined') {
+                return;
             }
 
+            var dark = document.documentElement.classList.contains('dark');
+
+      Swal.fire({
+    icon: title === 'Berhasil' ? 'success' : 'error',
+    title: title,
+    text: message,
+    showConfirmButton: true,
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#2563eb',
+    background: dark ? '#0f172a' : '#ffffff',
+    color: dark ? '#ffffff' : '#0f172a'
+});
+
+        document.addEventListener('DOMContentLoaded', function () {
             @if (session('success'))
                 showAlert('Berhasil', @json(session('success')));
             @endif
 
             @if (session('error'))
                 showAlert('Gagal', @json(session('error')));
+            @elseif ($errors->any())
+                showAlert('Gagal', @json($errors->first()));
             @endif
+        });
     </script>
 
 </body>
