@@ -2,9 +2,7 @@
 
 return [
     'disable' => env('CAPTCHA_DISABLE', false),
-
-    // Tanpa huruf berekor (g j p q y) dan tanpa karakter mirip (i l o s, 0 1)
-    'characters' => ['a', 'b', 'c', 'd', 'e', 'f', 'h', 'k', 'm', 'n', 'r', 't', 'u', 'v', 'w', 'x', 'z',
+    'characters' => ['A', 'B', 'C', 'D', 'E', 'F', 'H', 'K', 'M', 'N', 'R', 'T', 'U', 'V', 'W', 'X', 'Z',
         2, 3, 4, 5, 6, 7, 8, 9],
 
     'default' => [
@@ -15,6 +13,7 @@ return [
         'math' => false,
         'expire' => 60,
         'encrypt' => false,
+        'sensitive' => true,
     ],
 
     'flat' => [
@@ -28,12 +27,14 @@ return [
         'bgImage' => false,
         'bgColor' => '#f1f5f9',
         'contrast' => 0,
+        'sensitive' => true,
     ],
 
     'mini' => [
         'length' => 3,
         'width' => 60,
         'height' => 32,
+        'sensitive' => true,
     ],
 
     'inverse' => [
