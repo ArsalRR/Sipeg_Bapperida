@@ -56,4 +56,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pegawai::class);
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($user) {
+            if ($user->pegawai) {
+                Pegawai::triggerKawalWebhook('saved', $user->pegawai->id, $user->pegawai->nip);
+            }
+        });
+    }
 }

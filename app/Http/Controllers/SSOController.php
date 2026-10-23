@@ -34,7 +34,14 @@ class SSOController extends Controller
     public function token(Request $request)
     {
         $request->validate(['code' => 'required|string']);
-        $userId = Cache::pull('sso_code_' . $request->input('code'));
+        $code = $request->input('code');
+
+        // Jika kode ini sudah pernah ditukar dalam 60 detik terakhir (mengatasi React StrictMode / double call)
+        if ($cachedResponse = Cache::get('sso_response_' . $code)) {
+            return response()->json($cachedResponse);
+        }
+
+        $userId = Cache::pull('sso_code_' . $code);
 
         if (!$userId) {
             return response()->json(['message' => 'Kode tidak valid atau kedaluwarsa'], 401);
@@ -54,7 +61,7 @@ class SSOController extends Controller
 
         $pegawai = $user->pegawai;
 
-        return response()->json([
+        $responseData = [
             'token' => $token,
             'user'  => [
                 'id'        => $user->id,
@@ -95,7 +102,12 @@ class SSOController extends Controller
                     'singkatan'   => $pegawai->bidang->singkatan,
                 ] : null,
             ] : null,
-        ]);
+        ];
+
+        // Cache respon selama 60 detik agar jika ada request berulang dengan kode yang sama, tetap sukses
+        Cache::put('sso_response_' . $code, $responseData, now()->addSeconds(60));
+
+        return response()->json($responseData);
     }
     public function logout(Request $request)
     {

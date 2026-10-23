@@ -65,6 +65,23 @@ class PegawaiApiController extends Controller
     }
 
     /**
+     * GET /api/sso/master-pegawai
+     * Endpoint untuk sistem terintegrasi (KAWAL, SURYA, JAGA) menarik semua pegawai aktif.
+     */
+    public function masterData(Request $request)
+    {
+        $pegawai = Pegawai::with(['jabatan', 'bidang', 'user'])
+            ->get()
+            ->map(fn($p) => $this->formatPegawai($p));
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $pegawai,
+            'total'  => $pegawai->count(),
+        ]);
+    }
+
+    /**
      * Format output pegawai agar konsisten di semua endpoint.
      */
     private function formatPegawai(Pegawai $pegawai): array
