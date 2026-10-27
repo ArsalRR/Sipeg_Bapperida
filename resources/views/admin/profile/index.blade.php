@@ -90,7 +90,7 @@
                         </div>
                         <label class="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
                             <span class="text-sm font-medium">Ubah Foto</span>
-                            <input type="file" id="foto-input" accept="image/*" class="hidden" onchange="initCrop(this)">
+                            <input type="file" id="foto-input" accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="hidden" onchange="initCrop(this)">
                         </label>
                     </div>
                     @error('foto') <p class="text-red-500 text-[10px] font-semibold mt-1">{{ $message }}</p> @enderror
@@ -390,6 +390,35 @@
     function initCrop(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
+
+            // Validasi format: Hanya JPG, JPEG, PNG
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            const allowedExts = ['.jpg', '.jpeg', '.png'];
+            const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+            if (!allowedTypes.includes(file.type) && !allowedExts.includes(fileExt)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Format File Tidak Didukung',
+                    text: 'Foto profil hanya boleh menggunakan format JPG, JPEG, atau PNG.',
+                    confirmButtonColor: '#2563eb'
+                });
+                input.value = '';
+                return;
+            }
+
+            // Validasi ukuran: Maksimal 2 MB
+            if (file.size > 2 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ukuran Terlalu Besar',
+                    text: 'Ukuran foto maksimal adalah 2 MB. Silakan pilih foto dengan ukuran lebih kecil.',
+                    confirmButtonColor: '#2563eb'
+                });
+                input.value = '';
+                return;
+            }
+
             const reader = new FileReader();
             
             reader.onload = function(e) {
