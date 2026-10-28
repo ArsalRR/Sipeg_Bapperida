@@ -20,7 +20,13 @@ return [
         [
             'name' => 'JAGA',
             'desc' => 'Sistem Jaga Asset.',
-            'url'  => env('JAGA_URL', 'http://localhost:5173'),
+            'url'  => env('JAGA_URL', 'http://localhost:8002'),
+            'icon' => 'icons/assets.webp',
+        ],
+           [
+            'name' => 'SAKU',
+            'desc' => 'Sistem Jaga Asset.',
+            'url'  => env('JAGA_URL', 'http://localhost:8001'),
             'icon' => 'icons/assets.webp',
         ],
     ],
