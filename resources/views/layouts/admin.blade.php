@@ -317,8 +317,12 @@
                         </p>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 capitalize">{{ auth()->user()->role ?? 'Admin' }}</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-slate-900 dark:bg-gray-800 flex items-center justify-center text-white font-bold shadow-sm border border-gray-200 dark:border-gray-700 shrink-0">
-                        {{ substr(auth()->user()->pegawai?->nama ?? auth()->user()->username, 0, 1) }}
+                    <div class="w-10 h-10 rounded-full bg-slate-900 dark:bg-gray-800 overflow-hidden flex items-center justify-center text-white font-bold shadow-sm border border-gray-200 dark:border-gray-700 shrink-0">
+                        @if(auth()->user()->pegawai && auth()->user()->pegawai->foto)
+                            <img src="{{ asset('storage/' . auth()->user()->pegawai->foto) }}" alt="{{ auth()->user()->username }}" class="w-full h-full object-cover">
+                        @else
+                            {{ substr(auth()->user()->pegawai?->nama ?? auth()->user()->username, 0, 1) }}
+                        @endif
                     </div>
 
                     <form method="POST" action="{{ route('logout') }}" class="ml-1 shrink-0">

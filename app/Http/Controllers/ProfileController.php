@@ -66,10 +66,12 @@ class ProfileController extends Controller
             'golongan' => ['nullable', 'string', 'max:50'],
             'status_pernikahan' => ['nullable', Rule::in(['Lajang', 'Menikah', 'Cerai Hidup', 'Cerai Mati'])],
             'tanggal_berlaku' => ['nullable', 'date'],
-            'foto' => ['nullable', 'image', 'max:2048'],
+            'foto' => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:2048'],
         ], [
             'username.regex' => 'Username tidak boleh mengandung spasi.',
-            'current_password.required_with' => 'Password lama wajib diisi jika ingin mengubah password.'
+            'current_password.required_with' => 'Password lama wajib diisi jika ingin mengubah password.',
+            'foto.mimes' => 'Format foto profil harus berupa JPG, JPEG, atau PNG.',
+            'foto.max' => 'Ukuran foto profil maksimal 2 MB.',
         ]);
 
         // Password update is always applied directly for security

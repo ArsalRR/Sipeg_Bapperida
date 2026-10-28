@@ -72,7 +72,43 @@ class Pegawai extends Model
             }
 
             HistoryPegawai::create($historyData);
+
+            // Otomatis sinkronkan data ke KAWAL via Webhook
+            static::triggerKawalWebhook('saved', $pegawai->id, $pegawai->nip);
         });
+
+        static::deleted(function ($pegawai) {
+            static::triggerKawalWebhook('deleted', $pegawai->id, $pegawai->nip);
+        });
+    }
+
+    /**
+     * Kirim webhook sinkronisasi otomatis ke KAWAL setelah respons HTTP selesai (terminating).
+     */
+    public static function triggerKawalWebhook(string $action, $pegawaiId, $nip): void
+    {
+        $callback = function () use ($action, $pegawaiId, $nip) {
+            $webhookUrl = config('sso.kawal_webhook_url', env('KAWAL_WEBHOOK_URL', 'http://localhost:8001/api/webhook/pegawai-sync'));
+            if (empty($webhookUrl)) {
+                return;
+            }
+
+            try {
+                \Illuminate\Support\Facades\Http::timeout(5)->post($webhookUrl, [
+                    'action'     => $action,
+                    'pegawai_id' => $pegawaiId,
+                    'nip'        => $nip,
+                ]);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Gagal memicu webhook sinkronisasi KAWAL: ' . $e->getMessage());
+            }
+        };
+
+        if (function_exists('app') && app()->bound('events')) {
+            app()->terminating($callback);
+        } else {
+            $callback();
+        }
     }
 
     protected $fillable = [

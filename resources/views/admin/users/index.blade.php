@@ -516,29 +516,85 @@ document.addEventListener('alpine:init', () => {
         },
 
         printPdf() {
-            const printContent = document.getElementById('printable-area').innerHTML;
-            const originalContent = document.body.innerHTML;
-            
-            // Simpan state CSS untuk print
-            const style = document.createElement('style');
-            style.innerHTML = `
-                @media print {
-                    body { visibility: hidden; }
-                    #print-section { visibility: visible; position: absolute; left: 0; top: 0; width: 100%; }
-                    .print\\:hidden { display: none !important; }
-                }
-            `;
-            document.head.appendChild(style);
+            const self = this;
+            const tanggal = new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'});
+            const namaFile = 'Laporan_Data_User_' + new Date().toISOString().slice(0,10) + '.pdf';
 
-            const printSection = document.createElement('div');
-            printSection.id = 'print-section';
-            printSection.innerHTML = '<h2 style="font-size:24px; font-weight:bold; margin-bottom: 20px;">Laporan Data User BAPERAN</h2>' + printContent;
-            document.body.appendChild(printSection);
+            const generate = () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-            window.print();
+                // Header
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Laporan Data User BAPERAN', 14, 15);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(100);
+                doc.text('Dicetak pada: ' + tanggal + '  |  Total: ' + self.filteredUsers.length + ' user', 14, 22);
+                doc.setTextColor(0);
 
-            document.body.removeChild(printSection);
-            document.head.removeChild(style);
+                // Build rows
+                const tableRows = [];
+                self.filteredUsers.forEach(function(u, idx) {
+                    let pegawai = u.pegawai ? u.pegawai.nama : '-';
+                    let status = u.is_active ? 'Aktif' : 'Menunggu';
+                    tableRows.push([
+                        idx + 1,
+                        u.username || '-',
+                        u.email || '-',
+                        u.role || '-',
+                        pegawai,
+                        status
+                    ]);
+                });
+
+                doc.autoTable({
+                    startY: 27,
+                    head: [['No', 'Username', 'Email', 'Role', 'Nama Pegawai', 'Status']],
+                    body: tableRows,
+                    styles: { fontSize: 8, cellPadding: 2.5 },
+                    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [249, 250, 251] },
+                    columnStyles: {
+                        0: { halign: 'center', cellWidth: 10 },
+                        1: { cellWidth: 35 },
+                        2: { cellWidth: 60 },
+                        3: { cellWidth: 25 },
+                        4: { cellWidth: 'auto' },
+                        5: { cellWidth: 25, halign: 'center' }
+                    },
+                    didDrawCell: (data) => {
+                        // Warnai kolom Status
+                        if (data.section === 'body' && data.column.index === 5) {
+                            const val = data.cell.raw;
+                            if (val === 'Aktif') {
+                                data.doc.setTextColor(5, 150, 105);
+                            } else {
+                                data.doc.setTextColor(217, 119, 6);
+                            }
+                        }
+                    },
+                    margin: { left: 14, right: 14 }
+                });
+
+                doc.save(namaFile);
+            };
+
+            // Load jsPDF + autoTable jika belum ada
+            if (typeof window.jspdf === 'undefined') {
+                const s1 = document.createElement('script');
+                s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                s1.onload = () => {
+                    const s2 = document.createElement('script');
+                    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
+                    s2.onload = generate;
+                    document.head.appendChild(s2);
+                };
+                document.head.appendChild(s1);
+            } else {
+                generate();
+            }
         },
 
         openCreateModal() {

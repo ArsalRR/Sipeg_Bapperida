@@ -28,10 +28,18 @@
         if (empty($a['name']) || empty($a['url'])) {
             continue;
         }
+
+        // Jika user login di BAPERAN dan aplikasi memiliki SSO callback_url (seperti KAWAL),
+        // arahkan melalui route sso.authorize agar akun yang sedang login otomatis masuk ke KAWAL!
+        $appUrl = $a['url'];
+        if (!empty($a['callback_url']) && auth()->check()) {
+            $appUrl = route('sso.authorize', ['redirect_uri' => $a['callback_url']]);
+        }
+
         $items[] = [
             'name' => $a['name'],
             'desc' => $a['desc'] ?? 'Aplikasi terintegrasi SSO BAPERAN.',
-            'url'  => $a['url'],
+            'url'  => $appUrl,
             'icon' => $resolveIcon($a),
         ];
     }

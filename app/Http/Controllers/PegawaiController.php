@@ -272,7 +272,7 @@ class PegawaiController extends Controller
             'status_kerja'       => ['required', Rule::in(['Aktif', 'Tidak Aktif'])],
             'user_id'            => ['nullable', 'exists:users,id', $unique('user_id')],
             'tanggal_berlaku'    => ['nullable', 'date'],
-            'foto'               => ['nullable', 'image', 'max:2048'],
+            'foto'               => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:2048'],
             'cropped_foto'       => ['nullable', 'string'],
         ];
     }

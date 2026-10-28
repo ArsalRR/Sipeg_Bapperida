@@ -445,6 +445,34 @@ function pegawaiCrud() {
             const file = e.target.files[0];
             if (!file) return;
 
+            // Validasi format: Hanya JPG, JPEG, PNG
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            const allowedExts = ['.jpg', '.jpeg', '.png'];
+            const fileExt = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+            if (!allowedTypes.includes(file.type) && !allowedExts.includes(fileExt)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Format File Tidak Didukung',
+                    text: 'Foto profil hanya boleh menggunakan format JPG, JPEG, atau PNG.',
+                    confirmButtonColor: '#2563eb'
+                });
+                e.target.value = '';
+                return;
+            }
+
+            // Validasi ukuran: Maksimal 2 MB
+            if (file.size > 2 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ukuran Terlalu Besar',
+                    text: 'Ukuran foto maksimal adalah 2 MB. Silakan pilih foto dengan ukuran lebih kecil.',
+                    confirmButtonColor: '#2563eb'
+                });
+                e.target.value = '';
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = (evt) => {
                 const img = this.$refs.adminCropImg;

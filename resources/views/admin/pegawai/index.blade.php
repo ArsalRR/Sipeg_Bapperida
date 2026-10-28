@@ -32,7 +32,7 @@ window.PEGAWAI_CONFIG = {
     jabatans:     @json($jabatans),
     bidangs:      @json($bidangs),
     users:        @json($users),
-    storageBase:  '/storage/',
+    storageBase:  @json(asset('storage') . '/'),
     baseUrl:      @json(url('/admin/pegawais')),
     exportPdfUrl: @json(route('admin.pegawais.export-pdf')),
     storeUrl:     @json(route('admin.pegawais.store')),
