@@ -259,9 +259,9 @@ class Pegawai extends Model
 
         $now = \Carbon\Carbon::now();
 
-        // Cek apakah Golongan II (II/a, II/b, II/c, II/d, II, atau 2)
+        // Cek apakah Golongan II (hanya II/a, II/b, II/c, II/d, atau II saja — bukan III/x)
         $gol = (string)($this->golongan ?? '');
-        $isGolongan2 = (strpos($gol, 'II') === 0 || strpos($gol, '2') === 0);
+        $isGolongan2 = (bool) preg_match('/^(II(\/[a-dA-D])?|2(\/[a-dA-D])?)$/', trim($gol));
 
         // Ambil kandidat tanggal KGB pada tahun berjalan
         $candidateThisYear = $tmt->copy()->year($now->year);
