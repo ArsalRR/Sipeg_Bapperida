@@ -8,45 +8,27 @@ return [
         )
     )),
 
-    'code_ttl'  => 300,
+    'code_ttl'  => 60,
     'token_ttl' => 60 * 60 * 8,
-    'kawal_webhook_url' => env('KAWAL_WEBHOOK_URL', 'http://localhost:8001/api/webhook/pegawai-sync'),
+
     'apps' => [
         [
-            'name'         => 'SURYA',
-            'desc'         => 'Surat Naskah: nomor surat otomatis, arsip surat, dan monitoring nomor kosong.',
-            'url'          => env('SURYA_URL', 'http://bapperida.my.id:84'),
-            'icon'         => 'icons/mail.webp',
-            // SURYA tidak pakai SSO callback lokal (production), buka langsung
-            'callback_url' => null,
+            'name' => 'SURYA',
+            'desc' => 'Sistem Pengelolaan Surat dan Arsip untuk penomoran surat otomatis, pengarsipan naskah dinas, dan monitoring nomor surat.',
+            'url'  => env('SURYA_URL', 'http://localhost:5173'),
+            'icon' => 'icons/mail.webp',
         ],
         [
-<<<<<<< HEAD
             'name' => 'JAGA',
-            'desc' => 'Sistem Jaga Asset.',
-            'url'  => env('JAGA_URL', 'http://localhost:8002'),
+            'desc' => 'Sistem Pengendalian Aset untuk pencatatan aset, pemantauan pemeliharaan, pengelolaan peminjaman, dan pelaporan biaya perawatan.',
+            'url'  => env('JAGA_URL', 'http://localhost:5174'),
             'icon' => 'icons/assets.webp',
-        ],
-           [
-            'name' => 'SAKU',
-            'desc' => 'Sistem Jaga Asset.',
-            'url'  => env('JAGA_URL', 'http://localhost:8001'),
-            'icon' => 'icons/assets.webp',
-=======
-            'name'         => 'KAWAL',
-            'desc'         => 'Platform Pengawalan Alur & Publikasi Konten.',
-            // 'url' = link yang dibuka user (frontend React)
-            'url'          => env('KAWAL_URL', 'http://localhost:5173'),
-            'icon'         => 'icons/pns.webp',
-            // 'callback_url' = backend Laravel yang punya route /sso/callback
-            'callback_url' => env('KAWAL_CALLBACK_URL', 'http://localhost:8001/sso/callback'),
         ],
         [
-            'name'         => 'JAGA',
-            'desc'         => 'Sistem Jaga Asset.',
-            'url'          => env('JAGA_URL', 'http://localhost:5173'),
-            'icon'         => 'icons/assets.webp',
->>>>>>> 7827b1c2af808aee85fe5ea69fb2d706736621c1
+            'name' => 'SAKU',
+            'desc' => 'Sistem Pengelolaan Dokumen untuk mengatur folder, menyimpan dan mencari dokumen, serta mengelola akses dokumen secara terstruktur.',
+            'url'  => env('SAKU_URL', 'http://192.168.254.191:90'),
+            'icon' => 'icons/folder.webp',
         ],
     ],
 ];
