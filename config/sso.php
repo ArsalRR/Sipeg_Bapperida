@@ -14,7 +14,7 @@ return [
     'apps' => [
         [
             'name' => 'SURYA',
-            'desc' => 'Sistem Pengelolaan Surat dan Arsip untuk penomoran surat otomatis, pengarsipan naskah dinas, dan monitoring nomor surat.',
+            'desc' => 'Sistem Pengelolaan Surat dan Arsip untuk penomoran suragitt otomatis, pengarsipan naskah dinas, dan monitoring nomor surat.',
             'url'  => env('SURYA_URL', 'http://localhost:5173'),
             'icon' => 'icons/mail.webp',
         ],
