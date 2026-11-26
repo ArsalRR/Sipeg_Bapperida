@@ -30,5 +30,11 @@ return [
             'url'  => env('SAKU_URL', 'http://192.168.254.191:90'),
             'icon' => 'icons/folder.webp',
         ],
+           [
+            'name' => 'Kawal',
+            'desc' => 'Sistem Pengelolaan Surat dan Arsip untuk penomoran suragitt otomatis, pengarsipan naskah dinas, dan monitoring nomor surat.',
+            'url'  => env('KAWAL_URL', 'http://localhost:8001'),
+            'icon' => 'icons/mail.webp',
+        ],
     ],
 ];
